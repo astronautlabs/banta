@@ -1,0 +1,30 @@
+:host {	
+	background: #111;
+	border: 1px solid #333;
+	border-radius: 5px;
+	padding: 0.5em;
+
+	display: flex;
+	flex-direction: column;
+}
+
+.emoji-list {
+	flex-grow: 1;
+	overflow-y: auto;
+	height: 20em;
+	a {
+		display: inline-block;
+		padding: 2px;
+		margin: 4px;
+		background-color: #111;
+
+		::ng-deep .emoji {
+			width: 32px;
+			height: 32px;
+		}
+
+		&:hover {
+			background-color: #333;
+		}
+	}
+}

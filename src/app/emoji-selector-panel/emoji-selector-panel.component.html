@@ -1,0 +1,12 @@
+<div class="categories">
+	<a title="{{category.name}}" mat-icon-button *ngFor="let category of categories" (click)="activeCategory = category.name">
+		<mat-icon>{{category.icon}}</mat-icon>
+	</a>
+</div>
+
+<div *ngFor="let category of categories">
+	<div class="emoji-list" *ngIf="activeCategory && activeCategory == category.name">
+		<a href="javascript:;" (click)="select(emoji.char)" *ngFor="let emoji of category.emojis" [innerHtml]="emoji.html || ''">
+		</a>
+	</div>
+</div>

@@ -1,1 +1,52 @@
-/* You can add global styles to this file, and also import other style files */
+@import './theme.scss';
+
+* {
+    font-family: 'Montserrat';
+    
+    scrollbar-color: #666 black;
+    scrollbar-arrow-color: white;
+    
+    &::-webkit-scrollbar {
+        width: 8px;
+        background-color: #222;
+    }
+
+    &::-webkit-scrollbar-button {
+        background-color: #111;
+        color: white;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: #333;
+        color: white;
+    }
+    
+}
+
+body {
+    font-family: sans-serif;
+    padding: 0.5em 1em;
+    color: #ddd;
+    background: black;
+}
+
+.logo {
+    font-family: 'Odibee Sans';
+    font-size: 40pt;
+    font-weight: bold;
+}
+
+nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .logo {
+        font-size: 30pt;
+    }
+}
+
+.spacer {
+    flex-grow: 1;
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
