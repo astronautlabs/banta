@@ -61,7 +61,7 @@ export class CommentViewComponent {
         this._sourceSubs.unsubscribe();
         this._sourceSubs = new SubSink();
         this._source = value;
-        
+
         this.messages = value.messages.slice();
 
         this._sourceSubs.add(
@@ -81,7 +81,7 @@ export class CommentViewComponent {
     messageContainer : ElementRef<HTMLElement>;
 
     private messageReceived(message : ChatMessage) {
-        this.messages.push(message);
+        this.messages.unshift(message);
 
         if (this.isScrolledToLatest())
             setTimeout(() => this.scrollToLatest());
@@ -99,7 +99,7 @@ export class CommentViewComponent {
     }
 
     private messageSent(message : ChatMessage) {
-        this.messages.push(message);
+        this.messages.unshift(message);
         
         if (!this.messageContainer)
             return;
