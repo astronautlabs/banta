@@ -1,0 +1,18 @@
+
+<form class="new-message" (submit)="sendMessage()">
+    <textarea 
+        name="message" 
+        (keydown)="onKeyDown($event)"
+        [(ngModel)]="newMessageText"></textarea>
+
+    <div class="actions">
+        <button [disabled]="!newMessageText" mat-raised-button color="primary">Send</button>
+    </div>
+</form>
+
+<engage-comment-view 
+    [source]="source"
+    (selected)="selectMessage($event)"
+    (upvoted)="upvoteMessage($event)"
+    (reported)="reportMessage($event)"
+    ></engage-comment-view>

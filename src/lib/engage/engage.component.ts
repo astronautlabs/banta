@@ -1,14 +1,6 @@
 import { Component, Input, ViewChild, ElementRef, HostBinding } from "@angular/core";
-import { DomSanitizer } from '@angular/platform-browser';
-import { ChatMessage } from '../chat-message';
-import { ChatUser } from '../chat-user';
-import { ChatSource } from '../chat-source';
-import { Subject, BehaviorSubject, ConnectableObservable, Observable } from 'rxjs';
-import { publish } from 'rxjs/operators';
-
-export interface NewMessageForm {
-    message? : string;
-}
+import { ChatMessage, ChatUser, ChatSource, NewMessageForm } from '../model';
+import { Subject, BehaviorSubject, Observable } from 'rxjs';
 
 const GENERIC_AVATAR_URL = 'https://gravatar.com/avatar/915c804e0be607a4ad766ddadea5c48a?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png';
 
@@ -114,6 +106,7 @@ export class MockFirehoseSource implements ChatSource {
             `Tacos!`,
             `@liam, Life is a box of chocolates, you never know which one... oh fuck it`,
             `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI!`,
+            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI!`,
             `The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such.`
         ];
 
@@ -181,7 +174,8 @@ export class MockPointSource implements ChatSource {
             `If only things were as simple as they appear`,
             `Life is a box of chocolates, you never know which one... oh fuck it`,
             `More things that are done tomorrow may not be done today`,
-            `Google is a useful tool to find things`
+            `Google is a useful tool to find things`,
+            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI!`
         ];
 
         setInterval(() => {
@@ -340,6 +334,10 @@ export class EngageComponent {
     @ViewChild('firehoseMessageContainer', { static: false })
     firehoseMessageContainer : ElementRef<HTMLElement>;
 
+    upvoteMessage(message : ChatMessage) {
+        message.upvotes += 1;
+    }
+    
     reportMessage(message : ChatMessage) {
         alert(`reporting ${message.user.username}`)
     }
@@ -461,9 +459,6 @@ export class EngageComponent {
     }
 
     genericAvatarUrl = 'https://gravatar.com/avatar/915c804e0be607a4ad766ddadea5c48a?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png';
-    upvoteMessage(message : ChatMessage) {
-        message.upvotes += 1;
-    }
 
     sendFirehoseMessage() {
         let text = (this.newFirehoseMessage.message || '').trim();

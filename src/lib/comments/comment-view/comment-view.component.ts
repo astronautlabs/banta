@@ -1,7 +1,5 @@
 import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
-import { ChatMessage } from '../chat-message';
-import { ChatUser } from '../chat-user';
-import { ChatSource } from '../chat-source';
+import { ChatUser, ChatMessage, ChatSource } from '../../model';
 import { SubSink } from 'subsink';
 import { Subject } from 'rxjs';
 
@@ -20,6 +18,9 @@ export class CommentViewComponent {
     private _selected = new Subject<ChatMessage>();
     private _upvoted = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
+
+    @Input() 
+    allowReplies = true;
 
     @Output()
     get selected() {
@@ -80,8 +81,18 @@ export class CommentViewComponent {
     @ViewChild('messageContainer', { static: false })
     messageContainer : ElementRef<HTMLElement>;
 
-    private messageReceived(message : ChatMessage) {
+    @Input()
+    maxMessages = 200;
+
+    private addMessage(message : ChatMessage) {
+        while (this.messages.length + 1 > this.maxMessages)
+            this.messages.shift();
+            
         this.messages.unshift(message);
+    }
+
+    private messageReceived(message : ChatMessage) {
+        this.addMessage(message);
 
         if (this.isScrolledToLatest())
             setTimeout(() => this.scrollToLatest());
@@ -99,7 +110,7 @@ export class CommentViewComponent {
     }
 
     private messageSent(message : ChatMessage) {
-        this.messages.unshift(message);
+        this.addMessage(message);
         
         if (!this.messageContainer)
             return;

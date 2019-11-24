@@ -1,0 +1,24 @@
+<div class="message-content">
+    <div class="user">
+        <div class="avatar" [style.background-image]="avatarForUser(message.user)"></div>
+        <label>{{message.user.username}}</label>
+    </div>
+    <div class="content">
+        <div>
+            {{message.message}}
+        </div>
+        <div class="status">
+            <div class="count-indicator" *ngIf="message.upvotes > 0">
+                {{message.upvotes}} <mat-icon [inline]="true">star</mat-icon>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="actions">
+    <button mat-icon-button matTooltip="Upvote" matTooltipPosition="below" (click)="upvoteMessage(message)">
+        <mat-icon [inline]="true">thumb_up</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Report" matTooltipPosition="below" (click)="reportMessage(message)">
+        <mat-icon [inline]="true">report</mat-icon>
+    </button>
+</div>

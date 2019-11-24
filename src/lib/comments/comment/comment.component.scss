@@ -1,31 +1,6 @@
-:host {    
-    flex-grow: 1;
+:host {
     display: flex;
     flex-direction: column;
-    opacity: 1;
-    transition: 200ms opacity ease-in;
-}
-
-.message-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 10em;
-    color: white;
-    background: black;
-    padding: 0.5em 1em 0.5em 0.5em;
-
-    &.no-scroll {
-        height: auto;
-        overflow-y: visible;
-    }
-}
-
-.message {
-    display: flex;
-    flex-direction: column;
-}
-.message {
     position: relative;
     padding: 0.5em;
 
@@ -36,9 +11,19 @@
     .message-content {
         .content {
             margin-left: 4em;
+            margin-right: 3em;
         }
     }
 
+    &.abbreviated {
+        .message-content {
+            .content {
+                max-height: 8.5em;
+                text-overflow: ellipsis;
+                overflow-y: hidden;
+            }
+        }
+    }
     .actions {
         display: flex;
         padding-right: 10px;

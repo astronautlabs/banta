@@ -1,6 +1,6 @@
 import { Component, OnInit, Output } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 interface Emoji {
 	keywords : string[];
@@ -9,7 +9,7 @@ interface Emoji {
 	category : string;
 }
 
-import emojis from '../emojis';
+import { EMOJIS } from '../emojis';
 
 @Component({
 	selector: 'emoji-selector-panel',
@@ -49,7 +49,7 @@ export class EmojiSelectorPanelComponent implements OnInit {
 			objects: 'computer',
 			flags: 'flag'
 		};
-		for (let pair of this.pairs(emojis)) {
+		for (let pair of this.pairs(EMOJIS)) {
 			let name = pair[0];
 			let emoji : Emoji = pair[1];
 

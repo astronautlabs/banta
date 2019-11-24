@@ -1,0 +1,164 @@
+:host {
+    display: flex;
+    flex-direction: row;
+    background: #090909;
+    color: white;
+    padding: 0.5em;
+    height: 40em;
+    position: relative;
+}
+
+header {
+    text-transform: uppercase;
+    position: relative;
+    margin-bottom: 1em;
+    
+    label {
+        z-index: 1;
+        position: relative;
+        padding: 0 0.5em;
+        font-size: 12pt;
+        letter-spacing: 2px;
+        font-weight: 100;
+        color: #aaa;
+        margin: 0 0 0 auto;
+        display: block;
+        width: fit-content;
+        position: relative;
+        top: -4px;        
+    }
+    
+    &:after {
+        content: '';
+        border: 1px solid #222;
+        height: 0px;
+        width: 100%;
+        display: block;
+        position: relative;
+        top: 50%;
+        z-index: 0;
+    }
+}
+
+.points {
+    width: 33%;
+    max-width: 50em;
+    display: flex;
+    flex-direction: column;
+}
+
+:host.point-focus {
+    .points {
+        width: 66%;
+        max-width: 50em;
+
+        .points-section {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .point-focus {
+            opacity: 1;
+            pointer-events: initial;
+
+            .actions {
+                display: flex;
+
+            }
+        }
+
+    }
+}
+
+engage-comments {
+    flex-grow: 1;
+}
+
+.points {
+    width: 33%;
+    margin-left: 0.5em;
+    font-size: 12pt;
+    flex-shrink: 0;
+    max-width: 30em;
+    transition: 200ms width ease-in, 200ms max-width ease-in;
+    position: relative;
+    
+    .points-section {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        opacity: 1;
+        transition: 200ms opacity ease-in;
+        z-index: 2;
+    }
+    
+    .point-focus {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        top: 1.75em;
+        right: 0;
+        left: 0;
+        padding: 0.5em;
+        opacity: 0;
+        transition: 200ms opacity ease-in;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.firehose {
+    flex-grow: 1;
+    font-size: 10pt;
+    display: flex;
+    flex-direction: column;
+}
+
+form {
+    display: flex;
+    padding: 0.5em 0;
+    align-items: center;
+
+    textarea {
+        font-size: 14pt;
+        background: black;
+        color: white;
+        border: 1px solid #333;
+        min-height: 6em;
+        width: 100%;
+    }
+
+    input[type=text] {
+        background: black;
+        color: white;
+        border: 1px solid #333;
+        width: 100%;
+        height: 1em;
+    }
+
+
+
+    .actions {
+        margin-left: 1em;
+    }
+
+    button {
+        display: block;
+        margin: 0 0 0 auto;
+    }
+}
+
+.subcomments {
+    ::ng-deep {
+        engage-comment {
+            font-size: 10pt;
+        }
+
+        engage-comment.focused-comment {
+            background: #001321;
+            color: white;
+            font-size: 12pt;
+        }
+    }
+}

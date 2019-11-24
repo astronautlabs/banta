@@ -1,0 +1,13 @@
+<div class="message-container">
+    <ng-content select="[data-before]"></ng-content>
+    <engage-comment 
+        *ngFor="let message of messages"
+        class="abbreviated"
+        [message]="message"
+        [showReplyAction]="allowReplies"
+        (upvoted)="upvoteMessage(message)"
+        (reported)="reportMessage(message)"
+        (selected)="selectMessage(message)"
+        ></engage-comment>
+    <ng-content select=":not([data-before])"></ng-content>
+</div>

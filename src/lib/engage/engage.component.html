@@ -1,0 +1,80 @@
+<div class="firehose">
+    <header>
+        <label>Firehose</label>
+    </header>
+    <engage-firehose 
+        [source]="firehoseSource"
+        (upvoted)="upvoteMessage($event)"
+        (reported)="reportMessage($event)"
+        ></engage-firehose>
+</div>
+
+<div class="points">
+    <header>
+        <label>The Point</label>
+    </header>
+    <div class="point-focus">
+        <div class="actions">
+            <button mat-button (click)="pointOpen = null">
+                <mat-icon>arrow_back</mat-icon>
+                Back
+            </button>
+
+            <div class="spacer"></div>
+            
+            <ng-container *ngIf="pointOpen">
+                <div class="counted-action">
+                    <div class="count-indicator">  
+                        {{pointOpen.upvotes}}
+                    </div>
+                    <button mat-icon-button>
+                        <mat-icon>thumb_up</mat-icon>
+                    </button>
+                </div>
+
+            </ng-container>
+        </div>
+
+        <div *ngIf="!pointSubChat">
+            Error: No subchat
+        </div>
+        
+        <engage-comment-view
+            class="subcomments"
+            *ngIf="pointSubChat"
+            [source]="pointSubChat"
+            [allowReplies]="false"
+            >
+            
+            <engage-comment
+                class="focused-comment"
+                data-before
+                *ngIf="pointOpen"
+                [showReplyAction]="false"
+                [message]="pointOpen"
+                ></engage-comment>
+        
+            <div class="message">
+                <form class="new-message" (submit)="sendPointSubMessage()">
+                    <textarea 
+                        name="message" 
+                        (keydown)="newPointSubMessageKeyDown($event)"
+                        [(ngModel)]="newPointSubMessage.message"></textarea>
+                
+                    <div class="actions">
+                        <button [disabled]="!newPointSubMessage.message" 
+                            mat-raised-button color="primary">Send</button>
+                    </div>
+                </form>
+            </div>
+        </engage-comment-view>
+    </div>
+    <div class="points-section">
+        <engage-comments
+            [source]="pointSource"
+            (upvoted)="upvoteMessage($event)"
+            (reported)="reportMessage($event)"
+            (selected)="focusOnPointMessage($event)"
+            ></engage-comments>
+    </div>
+</div>

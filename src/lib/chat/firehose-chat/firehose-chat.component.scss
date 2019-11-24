@@ -1,0 +1,83 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    padding: 10px;
+
+    flex-grow: 1;
+    font-size: 10pt;
+}
+
+.entry-container {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    position: relative;
+    
+    button.emojis {
+        position: absolute;
+        right: 0;
+        top: 0.15em;
+    }
+
+    input {
+        height: 2.6em;
+        font-size: 12pt;
+        padding-left: 1em;
+        
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover, 
+        &:-webkit-autofill:focus {
+            outline: 1px solid #9da302;
+            -webkit-text-fill-color: #9da302;
+            -webkit-box-shadow: 0 0 0px 1000px #211e07 inset;
+            transition: background-color 5000s ease-in-out 0s;
+            caret-color: #9da302;
+        }
+    }
+
+    emoji-selector-panel {
+        pointer-events: none;
+        opacity: 0;
+        position: absolute;
+        bottom: 3.5em;
+        right: 0;
+
+        &.visible {
+            opacity: 1;
+            pointer-events: initial;
+        }
+    }
+}
+
+form {
+    display: flex;
+    padding: 0.5em 0;
+    align-items: center;
+
+    textarea {
+        font-size: 14pt;
+        background: black;
+        color: white;
+        border: 1px solid #333;
+        min-height: 6em;
+        width: 100%;
+    }
+
+    input[type=text] {
+        background: black;
+        color: white;
+        border: 1px solid #333;
+        width: 100%;
+        height: 2.5em;
+    }
+
+    .actions {
+        margin-left: 1em;
+    }
+
+    button {
+        display: block;
+        margin: 0 0 0 auto;
+    }
+}

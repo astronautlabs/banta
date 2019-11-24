@@ -1,0 +1,13 @@
+<div class="message-container" #messageContainer>
+    <ng-content select="[data-before]"></ng-content>
+    <engage-chat-message 
+        *ngFor="let message of messages"
+        [message]="message"
+        [class.highlight]="mentionsMe(message)" 
+        (selected)="selectMessage(message)"
+        (upvoted)="upvoteMessage(message)"
+        (reported)="reportMessage(message)"
+        >
+        </engage-chat-message>
+    <ng-content select=":not([data-before])"></ng-content>
+</div>

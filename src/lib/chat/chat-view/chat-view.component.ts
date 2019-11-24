@@ -1,7 +1,5 @@
 import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
-import { ChatMessage } from '../chat-message';
-import { ChatUser } from '../chat-user';
-import { ChatSource } from '../chat-source';
+import { ChatSource, ChatUser, ChatMessage } from '../../model';
 import { SubSink } from 'subsink';
 import { Subject } from 'rxjs';
 
@@ -65,8 +63,20 @@ export class ChatViewComponent {
     @ViewChild('messageContainer', { static: false })
     messageContainer : ElementRef<HTMLElement>;
 
-    private messageReceived(message : ChatMessage) {
+    @Input()
+    maxMessages : number = 200;
+
+    private addMessage(message : ChatMessage) {
+        if (this.messages.length > this.maxMessages + 1) {
+            while (this.messages.length > this.maxMessages)
+                this.messages.shift();
+        }
+
         this.messages.push(message);
+    }
+
+    private messageReceived(message : ChatMessage) {
+        this.addMessage(message);
 
         if (this.isScrolledToLatest())
             setTimeout(() => this.scrollToLatest());
@@ -84,12 +94,12 @@ export class ChatViewComponent {
     }
 
     private messageSent(message : ChatMessage) {
-        this.messages.push(message);
+        this.addMessage(message);
         
         if (!this.messageContainer)
             return;
 
-        this.scrollToLatest();
+        setTimeout(() => this.scrollToLatest());
     }
 
     scrollToLatest() {
