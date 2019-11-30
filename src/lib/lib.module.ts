@@ -7,6 +7,8 @@ import { EngageLogoComponent } from './engage-logo.component';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../material.module';
 import { FormsModule } from '@angular/forms';
+import { AccountsModule } from './accounts';
+import { EngageCommonModule } from './common/common.module';
 
 const COMPONENTS = [
     EngageComponent,
@@ -18,6 +20,8 @@ const COMPONENTS = [
         CommonModule,
         MaterialModule,
         FormsModule,
+        EngageCommonModule,
+        AccountsModule,
         CommentsModule,
         ChatModule,
         EmojiModule

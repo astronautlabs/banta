@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
-import { ChatSource, ChatUser, ChatMessage } from '../../model';
+import { ChatSource, User, ChatMessage } from '../../model';
 import { SubSink } from 'subsink';
 import { Subject } from 'rxjs';
 
@@ -9,7 +9,9 @@ import { Subject } from 'rxjs';
     styleUrls: ['./chat-view.component.scss']
 })
 export class ChatViewComponent {
-    constructor() {
+    constructor(
+        private elementRef : ElementRef<HTMLElement>
+    ) {
 
     }
 
@@ -41,24 +43,32 @@ export class ChatViewComponent {
     }
 
     set source(value) {
-        this._sourceSubs.unsubscribe();
-        this._sourceSubs = new SubSink();
+        if (this._sourceSubs) {
+            this._sourceSubs.unsubscribe();
+            this._sourceSubs = null;
+        }
+
         this._source = value;
 
-        this.messages = value.messages.slice();
+        this.messages = [];
 
-        this._sourceSubs.add(
-            this._source.messageReceived
-                .subscribe(msg => this.messageReceived(msg)),
-            this._source.messageSent
-                .subscribe(msg => this.messageSent(msg)),
-            this._source.currentUserChanged
-                .subscribe(user => this.currentUser = user)
-        );
+        if (value) {
+            this._sourceSubs = new SubSink();
+            this.messages = value.messages.slice();
+
+            this._sourceSubs.add(
+                this._source.messageReceived
+                    .subscribe(msg => this.messageReceived(msg)),
+                this._source.messageSent
+                    .subscribe(msg => this.messageSent(msg)),
+                this._source.currentUserChanged
+                    .subscribe(user => this.currentUser = user)
+            );
+        }
     }
 
     messages : ChatMessage[] = [];
-    currentUser : ChatUser;
+    currentUser : User;
 
     @ViewChild('messageContainer', { static: false })
     messageContainer : ElementRef<HTMLElement>;
@@ -110,6 +120,31 @@ export class ChatViewComponent {
         el.scrollTop = el.scrollHeight;
     }
 
+    jumpTo(message : ChatMessage) {
+        let element = this.elementRef.nativeElement;
+        let messageElement = element.querySelector(`engage-chat-message[data-id="${message.id}"]`)
+
+        if (!messageElement) {
+            alert(`could not find message ${message.id}`);
+            return;
+        }
+
+        messageElement.scrollIntoView({ behavior: 'smooth' });
+
+        this.flashMessage(message);
+    }
+
+    flashMessage(message : ChatMessage) {
+        if (!message)
+            return;
+        
+        this.flashedMessageId = message.id;
+        //setTimeout(() => this.flashedMessageId = null, 250);
+    }
+
+    flashedMessageId : string;
+
+
     mentionsMe(message : ChatMessage) {
         if (!this.currentUser)
             return false;
@@ -132,7 +167,7 @@ export class ChatViewComponent {
         this._selected.next(message);
     }
 
-    avatarForUser(user : ChatUser) {
+    avatarForUser(user : User) {
         if (user && user.avatarUrl) {
             let url = user.avatarUrl;
             return `url(${url})`;

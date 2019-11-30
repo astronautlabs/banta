@@ -28,6 +28,12 @@
         display: flex;
         padding-right: 10px;
         margin-left: 4em;
+        align-items: center;
+
+        engage-timestamp {
+            color: #666;
+            font-size: 10pt;
+        }
     }
 }
 

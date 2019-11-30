@@ -1,5 +1,5 @@
 import { Component, Input, Output } from "@angular/core";
-import { ChatUser, ChatMessage } from '../../model';
+import { User, ChatMessage } from '../../model';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -30,7 +30,7 @@ export class ChatMessageComponent {
         return this._upvoted;
     }
 
-    avatarForUser(user : ChatUser) {
+    avatarForUser(user : User) {
         if (user && user.avatarUrl) {
             let url = user.avatarUrl;
             return `url(${url})`;

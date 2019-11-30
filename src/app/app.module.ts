@@ -8,6 +8,7 @@ import { HomeComponent } from './home/home.component';
 import { MaterialModule } from '../material.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LibModule } from '../lib/lib.module';
+import { FirebaseModule } from 'src/firebase/firebase.module';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { LibModule } from '../lib/lib.module';
     FormsModule,
     MaterialModule,
     BrowserAnimationsModule,
-    LibModule
+    LibModule,
+    FirebaseModule
   ],
   providers: [],
   bootstrap: [AppComponent]

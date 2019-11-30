@@ -1,5 +1,5 @@
 import { Component, Input, Output } from '@angular/core';
-import { ChatUser, ChatSource, ChatMessage } from '../../model';
+import { User, ChatSource, ChatMessage } from '../../model';
 import { Subject } from 'rxjs';
 import { SubSink } from 'subsink';
 
@@ -42,7 +42,7 @@ export class CommentsBoxComponent {
 
     private sourceSink : SubSink;
 
-    currentUser : ChatUser;
+    currentUser : User;
     newMessageText : string;
 
     @Output()
@@ -75,6 +75,7 @@ export class CommentsBoxComponent {
 
         let message : ChatMessage = { 
             user: this.currentUser,
+            sentAt: Date.now(),
             upvotes: 0,
             message: text
         };

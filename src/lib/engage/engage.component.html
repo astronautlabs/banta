@@ -1,21 +1,105 @@
+
+<mat-menu #userMenu="matMenu">
+    <ng-container *ngIf="currentUser">
+        <button [disabled]="true" mat-menu-item>{{currentUser.displayName}} (@{{currentUser.username}})</button>
+        <button mat-menu-item (click)="signOut()">Sign Out</button>
+    </ng-container>
+    <ng-container *ngIf="!currentUser">
+        <button mat-menu-item>Sign In</button>
+    </ng-container>
+    <button mat-menu-item>Help</button>
+</mat-menu>
+    
 <div class="firehose">
     <header>
-        <label>Firehose</label>
+        <div>
+            <label>Firehose</label>
+            <div class="spacer"></div>
+
+            <ng-container *ngIf="currentUser">
+                <button mat-button [matMenuTriggerFor]="userMenu">
+                    @{{currentUser.username}}
+                </button>
+                <button mat-icon-button (click)="showNotifications()">
+                    <mat-icon>notification_important</mat-icon>
+                </button>
+            </ng-container>
+            
+            <button mat-button *ngIf="!currentUser" (click)="showSignInDialog()">
+                Sign In
+            </button>
+        </div>
     </header>
     <engage-firehose 
+        #firehose
         [source]="firehoseSource"
         (upvoted)="upvoteMessage($event)"
         (reported)="reportMessage($event)"
         ></engage-firehose>
 </div>
 
+<div class="aux" [class.open]="auxOpen">
+    <header>
+        <div>
+            <label>{{auxTitle}}</label>
+            <div class="spacer"></div>
+            <button mat-icon-button (click)="auxOpen = false">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+    </header>
+    <div class="aux-contents">
+        <ng-container *ngIf="auxMode === 'notifications'">
+
+            <div *ngIf="!notifications || notifications.length === 0">
+                <em>You do not have any notifications yet</em>
+            </div>
+            
+            <div class="notifications">
+                <div class="notification" *ngFor="let notif of notifications">
+                    <div>
+                        <ng-container *ngIf="notif.type === 'notice'">
+                            <div>
+                                {{notif.message}}
+                            </div>
+                            <a mat-button target="_blank" href="{{notif.actionUrl}}">
+                                {{notif.actionLabel}}
+                            </a>
+                        </ng-container>
+                        <ng-container *ngIf="notif.type === 'mention'">
+                            You were mentioned by @{{notif.message?.user?.username}}
+
+
+                            <engage-chat-message
+                                *ngIf="getViewType(notif.message) === 'chat'"
+                                [message]="notif.message"
+                                (selected)="goToMessage(notif.message)">
+                            </engage-chat-message>
+
+                            <engage-comment 
+                                *ngIf="getViewType(notif.message) === 'comment'"
+                                [message]="notif.message"
+                                (selected)="goToMessage(notif.message)">
+                            </engage-comment>
+
+                        </ng-container>
+                    </div>
+
+                    <engage-timestamp [value]="notif.sentAt"></engage-timestamp>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+</div>
 <div class="points">
     <header>
-        <label>The Point</label>
+        <div>
+            <label>The Point</label>
+        </div>
     </header>
     <div class="point-focus">
         <div class="actions">
-            <button mat-button (click)="pointOpen = null">
+            <button mat-button (click)="pointUnfocus()">
                 <mat-icon>arrow_back</mat-icon>
                 Back
             </button>
@@ -42,8 +126,9 @@
         <engage-comment-view
             class="subcomments"
             *ngIf="pointSubChat"
-            [source]="pointSubChat"
+            [newestLast]="true"
             [allowReplies]="false"
+            [source]="pointSubChat"
             >
             
             <engage-comment
@@ -74,7 +159,7 @@
             [source]="pointSource"
             (upvoted)="upvoteMessage($event)"
             (reported)="reportMessage($event)"
-            (selected)="focusOnPointMessage($event)"
+            (selected)="goToMessage($event)"
             ></engage-comments>
     </div>
 </div>

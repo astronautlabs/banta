@@ -8,24 +8,40 @@
     position: relative;
 }
 
+.counted-action {
+    display: flex;
+    align-items: center;
+}
+
+.count-indicator {
+    font-size: 9pt;
+    padding: 0 3px;
+    border-radius: 3px;
+    border: 1px solid #333;
+}
+
 header {
-    text-transform: uppercase;
     position: relative;
     margin-bottom: 1em;
+
+    div {
+        display: flex;
+        align-items: center;
+        height: 30px;
+    }
     
     label {
+        text-transform: uppercase;
         z-index: 1;
         position: relative;
-        padding: 0 0.5em;
         font-size: 12pt;
         letter-spacing: 2px;
         font-weight: 100;
         color: #aaa;
-        margin: 0 0 0 auto;
+        margin: 0 auto 0 0;
         display: block;
         width: fit-content;
         position: relative;
-        top: -4px;        
     }
     
     &:after {
@@ -35,7 +51,6 @@ header {
         width: 100%;
         display: block;
         position: relative;
-        top: 50%;
         z-index: 0;
     }
 }
@@ -159,6 +174,33 @@ form {
             background: #001321;
             color: white;
             font-size: 12pt;
+        }
+    }
+}
+
+.aux {
+    width: 0px;
+    overflow-x: hidden;
+    transition: 400ms width ease-out;
+    &.open {
+        width: 30em;
+    }
+
+    .aux-contents {
+        width: 30em;
+    }
+}
+
+.notifications {
+    .notification {
+        border-bottom: 1px solid #333;
+        padding: 1em;
+
+        engage-timestamp {
+            display: block;
+            text-align: right;
+            font-size: 9pt;
+            color: #999;
         }
     }
 }

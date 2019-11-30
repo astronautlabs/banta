@@ -1,91 +1,116 @@
 import { Component, Input, ViewChild, ElementRef, HostBinding } from "@angular/core";
-import { ChatMessage, ChatUser, ChatSource, NewMessageForm } from '../model';
+import { ChatMessage, User, ChatSource, NewMessageForm, ChatBackendService, Notification } from '../model';
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
+import { SubSink } from 'subsink';
+import { MatDialog } from '@angular/material/dialog';
+import { SignInDialogComponent } from '../accounts';
+import { FirehoseChatComponent } from '../chat';
 
 const GENERIC_AVATAR_URL = 'https://gravatar.com/avatar/915c804e0be607a4ad766ddadea5c48a?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png';
 
 const MOCK_USERS = [
     { 
+        id: 'a',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Tom`, 
         username: `tom` 
     }, { 
+        id: 'b',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Dick`, 
         username: `dick` 
     }, { 
+        id: 'c',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Harry`, 
         username: `harry` 
     }, { 
+        id: 'd',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `John`, 
         username: `john` 
     }, { 
+        id: 'e',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Wayne`, 
         username: `wayne` 
     }, { 
+        id: 'f',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Heather`, 
         username: `heather` 
     }, { 
+        id: 'g',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Mary`, 
         username: `mary` 
     }, { 
+        id: 'h',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Jennifer`, 
         username: `jennifer` 
     }, { 
+        id: 'i',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Kyle`, 
         username: `kyle` 
     }, { 
+        id: 'j',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Wanda`, 
         username: `wanda` 
     }, { 
+        id: 'k',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Josh`, 
         username: `josh` 
     }, { 
+        id: 'l',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Jane`, 
         username: `jane` 
     }, { 
+        id: 'm',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Joy`, 
         username: `joy` 
     }, { 
+        id: 'n',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Jesus`, 
         username: `jesus` 
     }, { 
+        id: 'o',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `I bathe in Bernie's tears of joy`, 
         username: `landem` 
     }, { 
+        id: 'p',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `The thing about socialism is that its the best`, 
         username: `mangahead` 
     }, { 
+        id: 'q',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `If only I knew the first thing about this stuff`, 
         username: `redstripe` 
     }, { 
+        id: 'r',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Time is not something that should be treated unfairly`, 
         username: `fantom` 
     }, { 
+        id: 's',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `What is the meaning of this capitalism?`, 
         username: `ganjaking` 
     }, { 
+        id: 't',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `The world is not ready for us`, 
         username: `leggo` 
     }, { 
+        id: 'u',
         avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Make or break, now is our time`, 
         username: `mako` 
@@ -116,6 +141,7 @@ export class MockFirehoseSource implements ChatSource {
 
             let message : ChatMessage = {
                 user,
+                sentAt: Date.now(),
                 upvotes: 0,
                 message: messageText,
                 submessages: []
@@ -128,7 +154,12 @@ export class MockFirehoseSource implements ChatSource {
         this._currentUserChanged.next(this.currentUser);
     }
 
-    currentUser : ChatUser = {
+    close() {
+        // TODO
+    }
+
+    currentUser : User = {
+        id: 'z',
         username: 'liam',
         displayName: 'Liam',
         avatarUrl: GENERIC_AVATAR_URL
@@ -144,7 +175,7 @@ export class MockFirehoseSource implements ChatSource {
     }
 
     private _messages : ChatMessage[] = [];
-    private _currentUserChanged = new BehaviorSubject<ChatUser>(null);
+    private _currentUserChanged = new BehaviorSubject<User>(null);
     private _messageReceived = new Subject<ChatMessage>();
     private _messageSent = new Subject<ChatMessage>();
     
@@ -184,35 +215,42 @@ export class MockPointSource implements ChatSource {
 
             let message : ChatMessage = {
                 user,
+                sentAt: Date.now(),
                 upvotes: 0,
                 message: messageText,
                 submessages: [
                     {
                         user: this.currentUser,
                         message: `Good point!`,
+                        sentAt: Date.now(),
                         upvotes: 0
                     },
                     {
                         user: { 
+                            id: 'aa',
                             avatarUrl: GENERIC_AVATAR_URL, 
                             displayName: 'FunnilyGuy', 
                             username: 'funnyguy' 
                         },
+                        sentAt: Date.now(),
                         message: `What would this mean for Buttigieg?`,
                         upvotes: 0
                     },
                     {
                         user,
+                        sentAt: Date.now(),
                         message: `Klobucharino`,
                         upvotes: 0
                     },
                     {
                         user: this.currentUser,
+                        sentAt: Date.now(),
                         message: `Good question!`,
                         upvotes: 0
                     },
                     {
                         user,
+                        sentAt: Date.now(),
                         message: `But whyigieg`,
                         upvotes: 0
                     }
@@ -226,7 +264,8 @@ export class MockPointSource implements ChatSource {
         this._currentUserChanged.next(this.currentUser);
     }
 
-    currentUser : ChatUser = {
+    currentUser : User = {
+        id: 'z',
         username: 'liam',
         displayName: 'Liam',
         avatarUrl: GENERIC_AVATAR_URL
@@ -237,7 +276,7 @@ export class MockPointSource implements ChatSource {
     }
 
     private _messages : ChatMessage[] = [];
-    private _currentUserChanged = new BehaviorSubject<ChatUser>(null);
+    private _currentUserChanged = new BehaviorSubject<User>(null);
     private _messageReceived = new Subject<ChatMessage>();
     private _messageSent = new Subject<ChatMessage>();
     
@@ -275,7 +314,7 @@ export class MockSubpointSource implements ChatSource {
     private _messages : ChatMessage[] = [];
     private _messageReceived = new Subject<ChatMessage>();
     private _messageSent = new Subject<ChatMessage>();
-    private _currentUserChanged: Observable<ChatUser>;
+    private _currentUserChanged: Observable<User>;
 
     get messages() {
         return this._messages;
@@ -294,7 +333,7 @@ export class MockSubpointSource implements ChatSource {
     }
 
     send?(message: ChatMessage) {
-        throw new Error("Method not implemented.");
+        //throw new Error("Method not implemented.");
     }
 
 
@@ -307,19 +346,164 @@ export class MockSubpointSource implements ChatSource {
 })
 export class EngageComponent {
     constructor(
+        private backend : ChatBackendService,
+        private matDialog : MatDialog
     ) {
-        this.firehoseSource = new MockFirehoseSource();
-        this.pointSource = new MockPointSource();
+        // this.firehoseSource = new MockFirehoseSource();
+        // this.pointSource = new MockPointSource();
     }
 
     firehoseSource : ChatSource;
     pointSource : ChatSource;
 
-    @Input()
-    topic : string;
+    private _topicID : string;
+    private _subs = new SubSink();
 
-    firehoseMessages : ChatMessage[] = [];
-    pointedMessages : ChatMessage[] = [];
+    auxOpen = false;
+    auxTitle = 'Notifications';
+    auxMode = 'notifications';
+
+    ngOnInit() {
+        this._subs.add(
+            this.backend.userChanged.subscribe(user => this.currentUser = user),
+            this.backend.notificationsChanged.subscribe(notifs => this.notifications = notifs),
+            this.backend.newNotification.subscribe(notif => {
+                this.newNotifications = true;
+            })
+        );
+    }
+
+    newPointSubMessageKeyDown(event : KeyboardEvent) {
+        // TODO
+    }
+    
+
+    async sendPointSubMessage() {
+        let text = (this.newPointSubMessage.message || '').trim();
+        this.newPointSubMessage.message = '';
+
+        if (text === '')
+            return;
+        
+        let message : ChatMessage = {
+            user: null,
+            sentAt: Date.now(),
+            upvotes: 0,
+            message: text
+        };
+
+        try {
+            await this.pointSubChat.send(message);
+        } catch (e) {
+            console.error(`Failed to send point sub-message:`);
+            console.error(e);
+        }
+    }
+
+    @ViewChild('firehose', { static: true })
+    firehose : FirehoseChatComponent;
+
+    async goToMessage(message : ChatMessage) {
+
+        let targetMessage = message;
+
+        if (message.parentMessageId) {
+            // jump to the parent message thread...
+
+            let parentMessage = await this.backend.getMessage(message.topicId, message.parentMessageId);
+
+            if (!parentMessage) {
+                console.error(`Failed to look up parent message ${message.topicId}/${message.parentMessageId}`);
+                console.error(`Original message was:`);
+                console.dir(targetMessage);
+                return;
+            }
+
+            message = parentMessage;
+        }
+
+        let viewType = this.getViewType(message);
+
+        if (viewType === 'comment') {
+            if (this.pointSubChat) {
+                this.pointSubChat.close();
+                this.pointSubChat = null;
+            }
+            this.pointOpen = message;
+            this.pointSubChat = this.backend.getSourceForThread(message);
+            this.pointOpen = await this.backend.refreshMessage(message);
+            this.newPointSubMessage = {};
+        } else if (viewType === 'chat') {
+            this.firehose.jumpToMessage(message);
+        }
+    }
+
+    notifications : Notification[];
+    newNotifications = false;
+    
+    pointUnfocus() {
+        this.pointOpen = null;
+        if (this.pointSubChat) {
+            this.pointSubChat.close();
+            this.pointSubChat = null;
+        }
+    }
+
+    ngOnDestroy() {
+        this._subs.unsubscribe();
+    }
+
+    showNotifications() {
+        this.auxOpen = true;
+        this.auxTitle = 'Notifications';
+        this.auxMode = 'notifications';
+    }
+
+    @Input()
+    get topicID() : string {
+        return this._topicID;
+    }
+
+    set topicID(value) {
+        this._topicID = value;
+
+        this.close();
+        this.connectToTopic(this._topicID);
+    }
+
+    async signOut() {
+        try {
+            await this.backend.signOut();
+        } catch (e) {
+            console.error(`Caught error while trying to sign out:`);
+            console.error(e);
+
+            alert(`An error occurred while trying to sign out: ${e.message}`);
+        }
+    }
+
+    private connectToTopic(id : string) {
+        this.firehoseSource = this.backend.getSourceForTopic(`${id}_firehose`);
+        this.pointSource = this.backend.getSourceForTopic(`${id}_thepoint`);
+    }
+
+    showSignInDialog() {
+        this.matDialog.open(SignInDialogComponent);
+    }
+
+    close() {
+        if (this.firehoseSource) {
+            if (this.firehoseSource.close)
+                this.firehoseSource.close();
+            this.firehoseSource = null;
+        }
+
+        if (this.pointSource) {
+            if (this.pointSource.close)
+                this.pointSource.close();
+            this.pointSource = null;
+        }
+    }
 
     @HostBinding('class.point-focus')
     get hasPoint() {
@@ -329,10 +513,14 @@ export class EngageComponent {
     pointOpen : ChatMessage = null;
     pointSubChat : ChatSource = null;
 
-    menuMessage : ChatMessage;
+    getViewType(message : ChatMessage) {
+        if (message.topicId.endsWith('_firehose'))
+            return 'chat';
+        else if (message.topicId.endsWith('_thepoint'))
+            return 'comment';
 
-    @ViewChild('firehoseMessageContainer', { static: false })
-    firehoseMessageContainer : ElementRef<HTMLElement>;
+        return 'comment';
+    }
 
     upvoteMessage(message : ChatMessage) {
         message.upvotes += 1;
@@ -342,137 +530,9 @@ export class EngageComponent {
         alert(`reporting ${message.user.username}`)
     }
 
-    mentionsMe(message : ChatMessage) {
-        if (!this.currentUser)
-            return false;
+    currentUser : User;
 
-        if (message.message.includes(`@${this.currentUser.username}`))
-            return true;
-    }
-
-    private addPointMessage(message : ChatMessage) {
-        this.pointedMessages.unshift(message);
-    }
-
-    insertEmojiIntoFirehose(emoji) {
-        if (!emoji)
-            return;
-        
-        let existingMessage = this.newFirehoseMessage.message || '';
-
-        this.newFirehoseMessage.message = existingMessage + emoji;
-    }
-
-    avatarForUser(user : ChatUser) {
-        let url = this.genericAvatarUrl;
-
-        if (user && user.avatarUrl)
-            url = user.avatarUrl;
-        
-        return `url(${url})`;
-    }
-
-    private addFirehoseMessage(message : ChatMessage) {
-        this.firehoseSource.send(message);
-
-        this.firehoseMessages.push(message);
-        
-        if (!this.firehoseMessageContainer)
-            return;
-
-        let el = this.firehoseMessageContainer.nativeElement;
-        let currentScroll = el.scrollTop;
-        let currentTotal = el.scrollHeight - el.offsetHeight;
-        let currentSpot = currentScroll / currentTotal;
-
-        setTimeout(() => {
-            if (!this.firehoseMessageContainer) {
-                return;
-            }
-
-            if (currentScroll > currentTotal - 10) {
-                // we are at the bottom
-                el.scrollTop = el.scrollHeight;
-            }
-        }, 1);
-    }
-
-    currentUser : ChatUser = {
-        username: 'liam',
-        displayName: 'Liam'
-    };
-
-    newFirehoseMessage : NewMessageForm = {};
-    newPointMessage : NewMessageForm = {};
     newPointSubMessage : NewMessageForm = {};
 
-    focusOnPointMessage(message : ChatMessage) {
-        this.pointOpen = message;
-        this.newPointSubMessage = {};
-        this.pointSubChat = new MockSubpointSource(this.pointSource, message);
-    }
-
-    newPointMessageKeyDown(event : KeyboardEvent) {
-        if (event.key === 'Enter' && event.ctrlKey) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            this.sendPointMessage();
-            return;
-        }
-    }
-
-    newFirehoseMessageKeyDown(event : KeyboardEvent) {
-        if (event.key === 'Enter') {
-            if (event.shiftKey)
-                return;
-            
-            event.preventDefault();
-            event.stopPropagation();
-
-            this.sendFirehoseMessage();
-        }
-    }
-
-    newPointSubMessageKeyDown(event : KeyboardEvent) {
-        
-    }
-
-    sendPointSubMessage() {
-
-    }
-
-    sendPointMessage() {
-        let text = (this.newPointMessage.message || '').trim();
-        this.newPointMessage.message = '';
-
-        if (text === '')
-            return;
-
-        let message : ChatMessage = { 
-            user: this.currentUser,
-            upvotes: 0,
-            message: text
-        };
-
-        this.addPointMessage(message);
-    }
-
     genericAvatarUrl = 'https://gravatar.com/avatar/915c804e0be607a4ad766ddadea5c48a?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png';
-
-    sendFirehoseMessage() {
-        let text = (this.newFirehoseMessage.message || '').trim();
-        this.newFirehoseMessage.message = '';
-
-        if (text === '')
-            return;
-
-        let message : ChatMessage = { 
-            user: this.currentUser,
-            upvotes: 0,
-            message: text
-        };
-
-        this.addFirehoseMessage(message);
-    }
 }

@@ -5,6 +5,7 @@ import { CommentsBoxComponent } from './comments-box/comments-box.component';
 import { MaterialModule } from '../../material.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { EngageCommonModule } from '../common/common.module';
 
 const COMPONENTS = [
     CommentComponent,
@@ -17,7 +18,8 @@ const COMPONENTS = [
     imports: [
         CommonModule,
         FormsModule,
-        MaterialModule
+        MaterialModule,
+        EngageCommonModule
     ],
     exports: COMPONENTS
 })

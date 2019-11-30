@@ -1,6 +1,6 @@
 import { Component, Output, Input } from "@angular/core";
 import { Subject } from 'rxjs';
-import { ChatMessage, ChatUser } from '../../model';
+import { ChatMessage, User } from '../../model';
 
 @Component({
     selector: 'engage-comment',
@@ -45,7 +45,7 @@ export class CommentComponent {
         this._selected.next();
     }
     
-    avatarForUser(user : ChatUser) {
+    avatarForUser(user : User) {
         if (user && user.avatarUrl) {
             let url = user.avatarUrl;
             return `url(${url})`;

@@ -4,9 +4,11 @@
         *ngFor="let message of messages"
         [message]="message"
         [class.highlight]="mentionsMe(message)" 
+        [class.flash]="message.id === flashedMessageId"
         (selected)="selectMessage(message)"
         (upvoted)="upvoteMessage(message)"
         (reported)="reportMessage(message)"
+        [attr.data-id]="message.id"
         >
         </engage-chat-message>
     <ng-content select=":not([data-before])"></ng-content>

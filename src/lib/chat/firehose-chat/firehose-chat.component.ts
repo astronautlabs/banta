@@ -1,8 +1,9 @@
-import { Component, Input, Output } from "@angular/core";
+import { Component, Input, Output, ElementRef, ViewChild } from "@angular/core";
 import { Subject } from 'rxjs';
 
-import { ChatUser, ChatSource, ChatMessage, NewMessageForm } from '../../model';
+import { User, ChatSource, ChatMessage, NewMessageForm, ChatBackendService } from '../../model';
 import { SubSink } from 'subsink';
+import { ChatViewComponent } from '../chat-view/chat-view.component';
 
 @Component({
     selector: 'engage-firehose',
@@ -10,6 +11,11 @@ import { SubSink } from 'subsink';
     styleUrls: ['./firehose-chat.component.scss']
 })
 export class FirehoseChatComponent {
+    constructor(
+        private backend : ChatBackendService,
+        private elementRef : ElementRef<HTMLElement>
+    ) {
+    }
 
     private _source : ChatSource;
 
@@ -18,25 +24,10 @@ export class FirehoseChatComponent {
         return this._source;
     }
 
-    private _sourceSink : SubSink;
-
     set source(value) {
-        if (this._sourceSink) {
-            this._sourceSink.unsubscribe();
-            this._sourceSink = null;
-        }
-
         this._source = value;
-
-        this._sourceSink = new SubSink();
-        this._sourceSink.add(
-            this._source.currentUserChanged.subscribe(user => {
-                this._user = user;
-            })
-        );
     }
     
-    private _user : ChatUser = null;
     private _selected = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _upvoted = new Subject<ChatMessage>();
@@ -48,6 +39,14 @@ export class FirehoseChatComponent {
 
     onKeyDown(event : KeyboardEvent) {
         // TODO
+    }
+
+    @ViewChild('chatView', { static: true })
+    chatView : ChatViewComponent;
+
+    jumpToMessage(message : ChatMessage) {
+        if (this.chatView)
+            this.chatView.jumpTo(message);
     }
 
     select(message : ChatMessage) {
@@ -90,7 +89,8 @@ export class FirehoseChatComponent {
             return;
 
         let message : ChatMessage = { 
-            user: this._user,
+            user: null,
+            sentAt: Date.now(),
             upvotes: 0,
             message: text
         };

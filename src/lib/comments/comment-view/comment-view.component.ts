@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
-import { ChatUser, ChatMessage, ChatSource } from '../../model';
+import { User, ChatMessage, ChatSource } from '../../model';
 import { SubSink } from 'subsink';
 import { Subject } from 'rxjs';
 
@@ -39,7 +39,7 @@ export class CommentViewComponent {
 
     menuMessage : ChatMessage = null;
     messages : ChatMessage[] = [];
-    currentUser : ChatUser;
+    currentUser : User;
 
     @Input()
     get source() {
@@ -59,20 +59,27 @@ export class CommentViewComponent {
     }
 
     set source(value) {
-        this._sourceSubs.unsubscribe();
-        this._sourceSubs = new SubSink();
+        if (this._sourceSubs) {
+            this._sourceSubs.unsubscribe();
+            this._sourceSubs = null;
+        }
         this._source = value;
 
-        this.messages = value.messages.slice();
+        if (value) {
+            let messages = value.messages || [];
 
-        this._sourceSubs.add(
-            this._source.messageReceived
-                .subscribe(msg => this.messageReceived(msg)),
-            this._source.messageSent
-                .subscribe(msg => this.messageSent(msg)),
-            this._source.currentUserChanged
-                .subscribe(user => this.currentUser = user)
-        );
+            this._sourceSubs = new SubSink();
+            this.messages = messages.slice();
+
+            this._sourceSubs.add(
+                this._source.messageReceived
+                    .subscribe(msg => this.messageReceived(msg)),
+                this._source.messageSent
+                    .subscribe(msg => this.messageSent(msg)),
+                this._source.currentUserChanged
+                    .subscribe(user => this.currentUser = user)
+            );
+        }
     }
 
     @Input()
@@ -84,11 +91,21 @@ export class CommentViewComponent {
     @Input()
     maxMessages = 200;
 
+    @Input()
+    newestLast = false;
+
     private addMessage(message : ChatMessage) {
-        while (this.messages.length + 1 > this.maxMessages)
-            this.messages.shift();
-            
-        this.messages.unshift(message);
+        if (this.newestLast) {
+            while (this.messages.length + 1 > this.maxMessages)
+                this.messages.shift();
+                
+            this.messages.push(message);
+        } else {
+            while (this.messages.length + 1 > this.maxMessages)
+                this.messages.pop();
+                
+            this.messages.unshift(message);
+        }
     }
 
     private messageReceived(message : ChatMessage) {
@@ -136,7 +153,7 @@ export class CommentViewComponent {
         return false;
     }
 
-    avatarForUser(user : ChatUser) {
+    avatarForUser(user : User) {
         let url = this.genericAvatarUrl;
 
         if (user && user.avatarUrl)

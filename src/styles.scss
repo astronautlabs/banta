@@ -50,3 +50,13 @@ nav {
 }
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.alert {
+    display: block;
+    background: #7e3e3e;
+    color: white;
+    border-radius: 4px;
+    padding: 0.5em;
+    margin: 0.5em 0;
+
+}
