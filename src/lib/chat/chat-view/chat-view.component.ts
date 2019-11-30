@@ -26,10 +26,16 @@ export class ChatViewComponent {
     private _selected = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _upvoted = new Subject<ChatMessage>();
+    private _userSelected = new Subject<ChatMessage>();
 
     @Output()
     get selected() {
         return this._selected;
+    }
+
+    @Output()
+    get userSelected() {
+        return this._userSelected;
     }
 
     @Output()
@@ -165,6 +171,10 @@ export class ChatViewComponent {
 
     selectMessage(message : ChatMessage) {
         this._selected.next(message);
+    }
+
+    selectMessageUser(message : ChatMessage) {
+        this._userSelected.next(message);
     }
 
     avatarForUser(user : User) {

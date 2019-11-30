@@ -522,12 +522,35 @@ export class EngageComponent {
         return 'comment';
     }
 
-    upvoteMessage(message : ChatMessage) {
-        message.upvotes += 1;
+    async upvoteMessage(message : ChatMessage) {
+        if (message.parentMessageId)
+            await this.backend.upvoteMessage(message.topicId, message.parentMessageId, message.id);
+        else
+            await this.backend.upvoteMessage(message.topicId, message.id);
+        //message.upvotes += 1;
     }
+
+    showProfile(user : User) {
+        this.profileUser = user;
+        this.auxMode = 'profile';
+        this.auxOpen = true;
+        this.auxTitle = `@${user.username}'s Profile`;
+    }
+
+    profileUser : User;
     
+    reportedMessage : ChatMessage;
+
+    sendReport(message : ChatMessage) {
+        this.auxOpen = false;
+        alert('would send report');
+    }
+
     reportMessage(message : ChatMessage) {
-        alert(`reporting ${message.user.username}`)
+        this.reportedMessage = message;
+        this.auxMode = 'report';
+        this.auxOpen = true;
+        this.auxTitle = `Report message from @${message.user.username}`
     }
 
     currentUser : User;

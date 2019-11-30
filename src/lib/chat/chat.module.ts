@@ -6,9 +6,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../material.module';
 import { EmojiModule } from '../emoji';
+import { LiveChatMessageComponent } from './live-chat-message.component';
 
 const COMPONENTS = [
     ChatMessageComponent,
+    LiveChatMessageComponent,
     ChatViewComponent,
     FirehoseChatComponent
 ];

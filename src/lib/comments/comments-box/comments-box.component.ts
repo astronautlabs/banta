@@ -16,6 +16,7 @@ export class CommentsBoxComponent {
     private _upvoted = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _selected = new Subject<ChatMessage>();
+    private _userSelected = new Subject<ChatMessage>();
     private _source : ChatSource;
 
     @Input()
@@ -59,8 +60,16 @@ export class CommentsBoxComponent {
     get selected() {
         return this._selected;
     }
+    @Output()
+    get userSelected() {
+        return this._userSelected;
+    }
 
     onKeyDown(event : KeyboardEvent) {
+    }
+
+    insertEmoji(text : string) {
+        this.newMessageText += text;
     }
 
     sendMessage() {
@@ -93,5 +102,9 @@ export class CommentsBoxComponent {
 
     selectMessage(message : ChatMessage) {
         this._selected.next(message);
+    }
+
+    selectMessageUser(message : ChatMessage) {
+        this._userSelected.next(message);
     }
 }

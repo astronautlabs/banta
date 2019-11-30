@@ -11,12 +11,18 @@ export class CommentComponent {
     private _reported = new Subject<void>();
     private _selected = new Subject<void>();
     private _upvoted = new Subject<void>();
+    private _userSelected = new Subject<void>();
     
     @Input()
     message : ChatMessage;
 
     @Input()
     showReplyAction = true;
+
+    @Output()
+    get userSelected() {
+        return this._userSelected;
+    }
 
     @Output()
     get reported() {
@@ -43,6 +49,10 @@ export class CommentComponent {
 
     select() {
         this._selected.next();
+    }
+
+    selectUser() {
+        return this._userSelected.next();
     }
     
     avatarForUser(user : User) {

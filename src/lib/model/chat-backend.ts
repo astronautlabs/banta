@@ -40,7 +40,9 @@ export interface ChatBackend {
     getSourceForThread(message : ChatMessage) : ChatSource;
     refreshMessage(message : ChatMessage): Promise<ChatMessage>;
     getMessage(topicId : string, messageId : string): Promise<ChatMessage>;
-    
+    upvoteMessage(topicId : string, messageId : string, submessageId? : string): Promise<void>;
+    watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void;
+
     readonly notificationsChanged : Observable<Notification[]>;
     readonly newNotification : Observable<Notification>;
 

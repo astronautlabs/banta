@@ -31,10 +31,14 @@ export class FirehoseChatComponent {
     private _selected = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _upvoted = new Subject<ChatMessage>();
+    private _userSelected = new Subject<ChatMessage>();
+
     showEmojiPanel = false;
 
     insertEmoji(emoji) {
-        // TODO
+        let message = this.newMessage.message || '';
+
+        this.newMessage.message = message + emoji;
     }
 
     onKeyDown(event : KeyboardEvent) {
@@ -51,6 +55,10 @@ export class FirehoseChatComponent {
 
     select(message : ChatMessage) {
         this._selected.next(message);
+    }
+
+    selectUser(message : ChatMessage) {
+        this._userSelected.next(message);
     }
     
     report(message : ChatMessage) {
@@ -74,6 +82,11 @@ export class FirehoseChatComponent {
     @Output()
     get upvoted() {
         return this._upvoted;
+    }
+
+    @Output()
+    get userSelected() {
+        return this._userSelected;
     }
 
     newMessage : NewMessageForm = {};

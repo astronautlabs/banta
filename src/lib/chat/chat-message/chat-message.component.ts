@@ -8,13 +8,19 @@ import { Subject } from 'rxjs';
     styleUrls: ['./chat-message.component.scss']
 })
 export class ChatMessageComponent {
-    private _selected = new Subject<ChatMessage>();
-    private _reported = new Subject<ChatMessage>();
-    private _upvoted = new Subject<ChatMessage>();
+    private _selected = new Subject<void>();
+    private _reported = new Subject<void>();
+    private _upvoted = new Subject<void>();
+    private _userSelected = new Subject<User>();
 
     @Input()
     message : ChatMessage;
     
+    @Output() 
+    get userSelected() {
+        return this._userSelected;
+    }
+
     @Output()
     get selected() {
         return this._selected;
@@ -39,16 +45,20 @@ export class ChatMessageComponent {
         return null;
     }
     
-    upvoteMessage(message : ChatMessage) {
-        this._upvoted.next(message);
+    upvote() {
+        this._upvoted.next();
     }
 
-    reportMessage(message : ChatMessage) {
-        this._reported.next(message);
+    report() {
+        this._reported.next();
     }
 
-    selectMessage(message : ChatMessage) {
-        this._selected.next(message);
+    select() {
+        this._selected.next();
+    }
+    
+    selectUser() {
+        this._userSelected.next();
     }
 
 }

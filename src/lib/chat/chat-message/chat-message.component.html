@@ -1,10 +1,10 @@
 <div class="message-content">
-    <div class="user">
+    <div class="user" (click)="selectUser()">
         <div class="avatar" [style.background-image]="avatarForUser(message.user)"></div>
         <label>{{message.user.username}}</label>
     </div>
     <div class="content">
-        <div (click)="selectMessage()">
+        <div (click)="select()">
             {{message.message}}
         </div>
         <div class="status">
@@ -15,10 +15,10 @@
     </div>
 </div>
 <div class="actions">
-    <button mat-icon-button matTooltip="Upvote" matTooltipPosition="below" (click)="upvoteMessage(message)">
+    <button mat-icon-button matTooltip="Upvote" matTooltipPosition="below" (click)="upvote(message)">
         <mat-icon [inline]="true">thumb_up</mat-icon>
     </button>
-    <button mat-icon-button matTooltip="Report" matTooltipPosition="below" (click)="reportMessage(message)">
+    <button mat-icon-button matTooltip="Report" matTooltipPosition="below" (click)="report(message)">
         <mat-icon [inline]="true">report</mat-icon>
     </button>
 </div>

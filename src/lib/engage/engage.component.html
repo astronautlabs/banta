@@ -34,6 +34,7 @@
         #firehose
         [source]="firehoseSource"
         (upvoted)="upvoteMessage($event)"
+        (userSelected)="showProfile($event.user)"
         (reported)="reportMessage($event)"
         ></engage-firehose>
 </div>
@@ -49,6 +50,47 @@
         </div>
     </header>
     <div class="aux-contents">
+        <ng-container *ngIf="auxMode === 'profile'">
+            <ng-container *ngIf="profileUser">
+
+                <div>
+                    <strong style="font-size: 125%;">
+                        {{profileUser.displayName}}
+                    </strong>
+                    @{{profileUser.username}}
+                </div>
+
+                <br/>
+                <strong>Top Messages</strong>
+
+                <div>
+                    <em>Not yet available</em>
+                </div>
+
+                <br/>
+                <strong>Recent Messages</strong>
+
+                <div>
+                    <em>Not yet available</em>
+                </div>
+
+                <pre>{{profileUser | json}}</pre>
+            </ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="auxMode === 'report'">
+            <p>Are you sure you want to report this message?</p>
+
+            <engage-live-message [message]="reportedMessage"></engage-live-message>
+
+            <div style="text-align: center;">
+                <button mat-raised-button color="primary" (click)="sendReport(reportedMessage)">Yes, Report</button>
+                &nbsp;
+                <button mat-raised-button color="secondary" (click)="auxOpen = false">No, Cancel</button>
+            </div>
+
+        </ng-container>
+
         <ng-container *ngIf="auxMode === 'notifications'">
 
             <div *ngIf="!notifications || notifications.length === 0">
@@ -58,6 +100,17 @@
             <div class="notifications">
                 <div class="notification" *ngFor="let notif of notifications">
                     <div>
+                        <ng-container *ngIf="notif.type === 'upvote'">
+                            @{{notif.message?.user?.username}} upvoted your post
+                            
+                            <engage-live-message
+                                [message]="notif.message"
+                                (upvoted)="upvoteMessage(notif.message)"
+                                (reported)="reportMessage(notif.message)"
+                                (selected)="goToMessage(notif.message)">
+                            </engage-live-message>
+
+                        </ng-container>
                         <ng-container *ngIf="notif.type === 'notice'">
                             <div>
                                 {{notif.message}}
@@ -69,19 +122,23 @@
                         <ng-container *ngIf="notif.type === 'mention'">
                             You were mentioned by @{{notif.message?.user?.username}}
 
-
-                            <engage-chat-message
-                                *ngIf="getViewType(notif.message) === 'chat'"
+                            <engage-live-message
                                 [message]="notif.message"
+                                (upvoted)="upvoteMessage(notif.message)"
+                                (reported)="reportMessage(notif.message)"
                                 (selected)="goToMessage(notif.message)">
-                            </engage-chat-message>
+                            </engage-live-message>
 
-                            <engage-comment 
-                                *ngIf="getViewType(notif.message) === 'comment'"
-                                [message]="notif.message"
-                                (selected)="goToMessage(notif.message)">
-                            </engage-comment>
-
+                        </ng-container>
+                        <ng-container *ngIf="notif.type === 'reply'">
+                            @{{notif.replyMessage?.user?.username}} replied to your post
+                            
+                            <engage-live-message
+                                [message]="notif.replyMessage"
+                                (upvoted)="upvoteMessage(notif.replyMessage)"
+                                (reported)="reportMessage(notif.replyMessage)"
+                                (selected)="goToMessage(notif.replyMessage)">
+                            </engage-live-message>
                         </ng-container>
                     </div>
 
@@ -129,17 +186,24 @@
             [newestLast]="true"
             [allowReplies]="false"
             [source]="pointSubChat"
+            (upvoted)="upvoteMessage($event)"
+            (reported)="reportMessage($event)"
+            (userSelected)="showProfile($event.user)"
             >
             
             <engage-comment
                 class="focused-comment"
                 data-before
                 *ngIf="pointOpen"
+                (upvoted)="upvoteMessage(pointOpen)"
+                (userSelected)="showProfile(pointOpen.user)"
+                (reported)="reportMessage(pointOpen)"
                 [showReplyAction]="false"
                 [message]="pointOpen"
                 ></engage-comment>
         
-            <div class="message">
+            <div class="message reply">
+                Reply:
                 <form class="new-message" (submit)="sendPointSubMessage()">
                     <textarea 
                         name="message" 
@@ -160,6 +224,7 @@
             (upvoted)="upvoteMessage($event)"
             (reported)="reportMessage($event)"
             (selected)="goToMessage($event)"
+            (userSelected)="showProfile($event.user)"
             ></engage-comments>
     </div>
 </div>

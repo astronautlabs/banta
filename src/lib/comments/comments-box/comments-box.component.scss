@@ -8,13 +8,25 @@ form {
     padding: 0.5em 0;
     align-items: center;
 
-    textarea {
-        font-size: 14pt;
-        background: black;
-        color: white;
-        border: 1px solid #333;
-        min-height: 6em;
-        width: 100%;
+    .text-container {
+        position: relative;
+        display: flex;
+        flex-grow: 1;
+
+        textarea {
+            font-size: 14pt;
+            background: black;
+            color: white;
+            border: 1px solid #333;
+            min-height: 6em;
+            width: 100%;
+        }
+
+        emoji-selector-button {
+            bottom: 0;
+            right: 0;
+            position: absolute;
+        }
     }
 
     input[type=text] {

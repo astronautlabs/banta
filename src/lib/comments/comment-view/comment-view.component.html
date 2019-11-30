@@ -5,6 +5,7 @@
         class="abbreviated"
         [message]="message"
         [showReplyAction]="allowReplies"
+        (userSelected)="selectMessageUser(message)"
         (upvoted)="upvoteMessage(message)"
         (reported)="reportMessage(message)"
         (selected)="selectMessage(message)"

@@ -6,11 +6,14 @@ import { MaterialModule } from '../../material.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EngageCommonModule } from '../common/common.module';
+import { LiveCommentComponent } from './live-comment.component';
+import { EmojiModule } from '../emoji';
 
 const COMPONENTS = [
     CommentComponent,
     CommentViewComponent,
-    CommentsBoxComponent
+    CommentsBoxComponent,
+    LiveCommentComponent
 ];
 
 @NgModule({
@@ -19,7 +22,8 @@ const COMPONENTS = [
         CommonModule,
         FormsModule,
         MaterialModule,
-        EngageCommonModule
+        EngageCommonModule,
+        EmojiModule
     ],
     exports: COMPONENTS
 })

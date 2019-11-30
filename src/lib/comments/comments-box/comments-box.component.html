@@ -1,10 +1,15 @@
 
 <form class="new-message" (submit)="sendMessage()">
-    <textarea 
-        name="message" 
-        (keydown)="onKeyDown($event)"
-        [(ngModel)]="newMessageText"></textarea>
-
+    <div class="text-container">
+        <textarea 
+            name="message" 
+            (keydown)="onKeyDown($event)"
+            [(ngModel)]="newMessageText"></textarea>
+        <emoji-selector-button 
+            class="top-right"
+            (selected)="insertEmoji($event)"
+            ></emoji-selector-button>
+    </div>
     <div class="actions">
         <button [disabled]="!newMessageText" mat-raised-button color="primary">Send</button>
     </div>
@@ -12,6 +17,7 @@
 
 <engage-comment-view 
     [source]="source"
+    (userSelected)="selectMessageUser($event)"
     (selected)="selectMessage($event)"
     (upvoted)="upvoteMessage($event)"
     (reported)="reportMessage($event)"

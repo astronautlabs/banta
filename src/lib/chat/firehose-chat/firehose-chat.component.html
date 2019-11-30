@@ -4,6 +4,7 @@
     (upvoted)="upvote($event)"
     (reported)="report($event)"
     (selected)="select($event)"
+    (userSelected)="selectUser($event)"
     ></engage-chat-view>
 
 <form class="new-message" (submit)="sendMessage()">
@@ -15,13 +16,9 @@
             (keydown)="onKeyDown($event)"
             [(ngModel)]="newMessage.message" />
             
-        <button class="emojis" type="button" mat-icon-button (click)="showEmojiPanel = !showEmojiPanel">
-            <mat-icon>emoji_emotions</mat-icon>
-        </button>
-        <emoji-selector-panel 
+        <emoji-selector-button
             (selected)="insertEmoji($event)"
-            [class.visible]="showEmojiPanel"
-            ></emoji-selector-panel>
+            ></emoji-selector-button>
     </div>
 
     <div class="actions">

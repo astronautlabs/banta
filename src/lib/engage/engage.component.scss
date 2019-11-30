@@ -42,6 +42,9 @@ header {
         display: block;
         width: fit-content;
         position: relative;
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
     }
     
     &:after {
@@ -203,4 +206,8 @@ form {
             color: #999;
         }
     }
+}
+
+.message.reply {
+    padding: 1em;
 }

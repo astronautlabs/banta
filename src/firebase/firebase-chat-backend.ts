@@ -96,6 +96,53 @@ export class FirebaseChatBackend extends ChatBackendService {
         return this.getSourceForCollection(`/topics/${topicId}/messages`)
     }
 
+    private get baseUrl() {
+        return 'http://192.168.1.2:3000';
+    }
+
+    watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void {
+        if (!message || !message.id) {
+            //debugger;
+            //throw new Error(`Cannot watch invalid message`);
+            return;
+        }
+
+        let path = `/topics/${message.topicId}/messages/${message.id}`;
+
+        if (message.parentMessageId)
+            path = `/topics/${message.topicId}/messages/${message.parentMessageId}/messages/${message.id}`;
+
+        return firebase.firestore().doc(path).onSnapshot(snapshot => {
+            handler(<ChatMessage>snapshot.data());
+        });
+    }
+
+    async upvoteMessage(topicId : string, messageId : string, submessageId? : string): Promise<void> {
+        let path = `${this.baseUrl}/topics/${topicId}/messages/${messageId}/upvote`;
+
+        if (submessageId) 
+            path = `${this.baseUrl}/topics/${topicId}/messages/${messageId}/messages/${submessageId}/upvote`;
+
+        let response = await fetch(
+            path, 
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${
+                        await firebase.auth().currentUser.getIdToken()
+                    }`,
+                    'Content-Type': 'application/json'
+                },
+                body: '{}'
+            }
+        );
+
+        if (response.status >= 400) {
+            let body = await response.json();
+            throw new Error(`Caught error upvoting message ${topicId}/${messageId}: ${response.status} ${response.statusText}: ${body.message || '<no message>'}`);
+        }
+    }
+
     private getSourceForCollection(collectionPath: string): ChatSource {
         let maxCount = 200;
         let liveMessagesRef = this.datastore.firestore
@@ -135,6 +182,8 @@ export class FirebaseChatBackend extends ChatBackendService {
                 messages.shift();
         });
 
+        let self = this;
+
         return {
             messageReceived,
             messageSent,
@@ -145,7 +194,6 @@ export class FirebaseChatBackend extends ChatBackendService {
             },
 
             async send(message : ChatMessage) {
-                console.log(`SENDING MESSAGE NOW`);
                 let fbUser = firebase.auth().currentUser;
 
                 if (!fbUser) {
@@ -155,7 +203,7 @@ export class FirebaseChatBackend extends ChatBackendService {
                 }
 
                 let response = await fetch(
-                    `http://192.168.1.2:3000${collectionPath}`, 
+                    `${self.baseUrl}${collectionPath}`, 
                     {
                         method: 'POST',
                         headers: {
