@@ -5,7 +5,7 @@ import { SKUS } from './skus';
 export const PRODUCT : ProductInit = {
     name: 'Banta',
     logoUrl: '/assets/logo.svg',
-    summary: 'A short description of this app',
+    summary: 'Realtime chat and commenting',
     features: FEATURES,
     skus: SKUS,
     promotionalLicenseAvailability: [],
