@@ -13,7 +13,7 @@ export const PRODUCT : ProductInit = {
     version: 'Alpha',
     release: '1.0.0alpha1',
     pages: {
-        pricing: {
+        features: {
             summary: '',
             callToActionText: 'Try it now',
             callToActionUrl: '/try'
