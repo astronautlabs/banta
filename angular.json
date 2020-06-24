@@ -128,5 +128,8 @@
       }
     }
   },
-  "defaultProject": "engage"
+  "defaultProject": "engage",
+  "cli": {
+    "analytics": "4ee2ac6f-4fe6-4946-8540-3e5715c2bc63"
+  }
 }
