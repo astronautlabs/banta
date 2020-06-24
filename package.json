@@ -23,7 +23,7 @@
     "@angular/platform-browser": "~9.1.11",
     "@angular/platform-browser-dynamic": "~9.1.11",
     "@angular/router": "~9.1.11",
-    "@astronautlabs/chassis": "^1.0.1",
+    "@astronautlabs/chassis": "^1.0.2",
     "@astronautlabs/licensing": "0.0.10",
     "firebase": "^7.5.0",
     "ngx-markdown": "^9.1.1",
