@@ -4,7 +4,7 @@ import { AccountsService } from 'src/lib/accounts';
 import { ChatBackendService, User } from '../lib';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { AboutComponent } from '@astronautlabs/chassis';
+import { AboutComponent, LoginComponent } from '@astronautlabs/chassis';
 
 @Component({
   selector: 'app-root',
@@ -18,9 +18,10 @@ export class AppComponent {
     private router : Router,
     private matDialog : MatDialog
   ) {
-
+    this.year = new Date().getFullYear();
   }
 
+  year = 2020;
   title = 'engage';
   user : User;
 
@@ -53,7 +54,7 @@ export class AppComponent {
   }
 
   showSignIn() {
-    this.accounts.showSignIn();
+    this.matDialog.open(LoginComponent);
   }
 
   showAbout() {
