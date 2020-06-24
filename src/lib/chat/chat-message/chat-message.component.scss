@@ -121,6 +121,12 @@
     background-color: black;
     color: white;
     
+    .message-content {
+        .content {
+            color: #ddd;
+        }
+    }
+
     &:hover {
         background-color: #111;
     }
@@ -132,7 +138,7 @@
                 background: #002b44;
             }
         }
-        
+
         &:hover {
             background-color: #111;
         }
