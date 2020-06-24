@@ -17,5 +17,18 @@
 </main>
 
 <footer>
-  &copy; 2019 Banta
+  <div>
+    &copy; 2019 Banta
+  </div>
+  <div>
+    <a (click)="showAbout()">About</a>
+    | <a (click)="darkTheme = !darkTheme">
+      <ng-container *ngIf="darkTheme">
+        Light Mode
+      </ng-container>
+      <ng-container *ngIf="!darkTheme">
+        Dark Mode
+      </ng-container>
+    </a>
+  </div>
 </footer>

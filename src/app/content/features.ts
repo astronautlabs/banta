@@ -1,57 +1,43 @@
-import { Feature } from '../../saas';
+import { Feature } from '@astronautlabs/licensing';
 
 export const FEATURES : Feature[] =  [
     {
-        id: 'chat',
+        id: 'realtime-chat',
         name: 'Realtime Chat',
         iconName: 'chat',
-        skus: ['oss', 'engage', 'enterprise'],
+        skus: ['open-source', 'engage', 'enterprise'],
         summary: `
-            Let your audience experience first-class,
-            cross-platform live chat during your live 
-            events
+          Let your audience experience first-class, cross-platform live 
+          chat during your live events
         `
-    },
-    {
-        id: 'comments',
+      },
+      {
+        id: 'realtime-comments',
         name: 'Realtime Comments',
         iconName: 'comment',
-        skus: ['oss', 'engage', 'enterprise'],
+        skus: ['open-source', 'engage', 'enterprise'],
         summary: `
-            Let your audience engage in threaded conversations
-            during your live events
+          Let your audience engage in threaded conversations during your 
+          live events
         `
-    },
-    {
-        id: 'hosted',
+      },
+      {
+        id: 'managed-hosting',
         name: 'Managed Hosting',
         iconName: 'flight_takeoff',
         skus: ['engage', 'enterprise'],
         summary: `
-            We will set up and manage everything needed to 
-            host Banta on your behalf
+          We will set up and manage everything needed to host Banta on 
+          your behalf
         `
-    },
-    {
-        id: 'sso',
+      },
+      {
+        id: 'single-sign-on',
         name: 'Single Sign On',
         iconName: 'security',
         skus: ['enterprise'],
-        summary: 'Provide your own authentication and login stack'
-    },
-    {
-        id: 'support',
-        name: 'Support',
-        iconName: 'contact_support',
-        skuContent: {
-            oss: `Community supported`,
-            engage: `9AM-5PM PST, M-F excluding US holidays`,
-            enterprise: `24/7 support available`
-        },
         summary: `
-            We want you to be successful. 
-            We provide support options that help you make 
-            the most out of your purchase.
+          Provide your own authentication and login stack
         `
-    }
+      }
 ];

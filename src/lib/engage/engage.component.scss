@@ -1,8 +1,6 @@
 :host {
     display: flex;
     flex-direction: row;
-    background: #090909;
-    color: white;
     padding: 0.5em;
     height: 40em;
     position: relative;
@@ -30,6 +28,10 @@ header {
         height: 30px;
     }
     
+    button {
+        color: #666;
+    }
+
     label {
         text-transform: uppercase;
         z-index: 1;
@@ -37,7 +39,7 @@ header {
         font-size: 12pt;
         letter-spacing: 2px;
         font-weight: 100;
-        color: #aaa;
+        color: #333;
         margin: 0 auto 0 0;
         display: block;
         width: fit-content;
@@ -49,7 +51,8 @@ header {
     
     &:after {
         content: '';
-        border: 1px solid #222;
+        border: 1px solid;
+        border-color: #ccc;
         height: 0px;
         width: 100%;
         display: block;
@@ -279,6 +282,32 @@ form {
 
         &.focus {
             z-index: 2;
+        }
+    }
+}
+
+:host-context(.mat-dark-theme) {
+    :host {
+        background: #090909;
+        color: white;
+    }
+
+    form {
+        textarea {
+            background: #ccc;
+            color: #333;
+        }
+    }
+}
+
+:host-context(.mat-dark-theme) {
+    header {
+        &:after {
+            border-color: #222;
+        }
+        
+        label {
+            color: #aaa;
         }
     }
 }

@@ -3,6 +3,8 @@ import * as firebase from 'firebase';
 import { AccountsService } from 'src/lib/accounts';
 import { ChatBackendService, User } from '../lib';
 import { Router, NavigationEnd } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { AboutComponent } from '@astronautlabs/chassis';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +15,8 @@ export class AppComponent {
   constructor(
     private accounts : AccountsService,
     private backend : ChatBackendService,
-    private router : Router
+    private router : Router,
+    private matDialog : MatDialog
   ) {
 
   }
@@ -23,6 +26,9 @@ export class AppComponent {
 
   @HostBinding('class.demo')
   demoMode = false;
+
+  @HostBinding('class.mat-dark-theme')
+  darkTheme = true;
 
   ngOnInit() {
     this.backend.userChanged.subscribe(user => this.user = user);
@@ -48,5 +54,9 @@ export class AppComponent {
 
   showSignIn() {
     this.accounts.showSignIn();
+  }
+
+  showAbout() {
+    this.matDialog.open(AboutComponent);
   }
 }

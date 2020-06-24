@@ -32,6 +32,10 @@ import { Subject, Observable } from 'rxjs';
             opacity: 1;
         }
 
+        button {
+            color: #666
+        }
+
         :host.bottom-left emoji-selector-panel {
             right: auto;
             left: 0;

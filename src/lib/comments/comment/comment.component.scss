@@ -5,7 +5,7 @@
     padding: 0.5em;
 
     &:hover {
-        background: #060606;
+        background: #eee;
     }
 
     .message-content {
@@ -30,6 +30,10 @@
         margin-left: 4em;
         align-items: center;
 
+        button {
+            color: #666;
+        }
+
         engage-timestamp {
             color: #666;
             font-size: 10pt;
@@ -48,7 +52,7 @@
         position: relative;
         padding: 0 0 0 1em;
         font-size: 10pt;
-        color: white;
+        color: black;
         margin: 0 auto 0 0;
         display: block;
         width: fit-content;
@@ -88,5 +92,23 @@
     font-size: 9pt;
     padding: 0 3px;
     border-radius: 3px;
-    border: 1px solid #333;
+    border: 1px solid;
+    border-color: #ccc;
+    color: #666;
+}
+
+:host-context(.mat-dark-theme) {
+    .count-indicator {
+        border-color: #333;
+    }
+
+    &:hover {
+        background: #060606;
+    }
+
+    .user {
+        label {
+            color: white;
+        }
+    }
 }

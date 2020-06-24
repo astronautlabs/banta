@@ -15,9 +15,10 @@ form {
 
         textarea {
             font-size: 14pt;
-            background: black;
-            color: white;
-            border: 1px solid #333;
+            background-color: white;
+            color: #333;
+            border: 1px solid;
+            border-color: #ccc;
             min-height: 6em;
             width: 100%;
         }
@@ -46,5 +47,18 @@ form {
     button {
         display: block;
         margin: 0 0 0 auto;
+    }
+}
+
+
+:host-context(.mat-dark-theme) {
+    form {
+        .text-container {
+            textarea {
+                background: black;
+                color: white;
+                border-color: #333;
+            }
+        }
     }
 }

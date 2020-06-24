@@ -1,4 +1,4 @@
-/// <reference path="../local-typings/twemoji.d.ts" />
+import "reflect-metadata";
 import 'twemoji';
 
 import { enableProdMode } from '@angular/core';

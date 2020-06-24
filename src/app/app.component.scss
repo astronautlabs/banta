@@ -7,14 +7,25 @@
 
 nav {
     a {
-        color: #aaa;
+        color: #777;
         text-decoration: none;
         display: block;
         padding: 1em;
 
         &.active {
             font-weight: bold;
-            color: white;
+            color: black;
+        }
+    }
+}
+
+:host-context(.mat-dark-theme) {
+    nav {
+        a {
+            color: #aaa;
+            &.active {
+                color: white;
+            }
         }
     }
 }
@@ -22,11 +33,17 @@ nav {
 footer {
     margin: 4em -1em 0 -1em;
     padding: 4em;
-    background: #111;
-    color: #aaa;
+    color: #666;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+:host-context(.mat-dark-theme) {
+    footer {
+        color: #aaa;
+    }
 }
 
 router-outlet {

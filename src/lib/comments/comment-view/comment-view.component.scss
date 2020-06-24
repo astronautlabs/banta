@@ -11,12 +11,19 @@
     overflow-y: auto;
     overflow-x: hidden;
     height: 10em;
-    color: white;
-    background: black;
+    color: black;
+    background: white;
     padding: 0.5em 1em 0.5em 0.5em;
 
     &.no-scroll {
         height: auto;
         overflow-y: visible;
+    }
+}
+
+:host-context(.mat-dark-theme) {
+    .message-container {   
+        color: white;
+        background: black;
     }
 }

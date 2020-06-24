@@ -1,3 +1,6 @@
+
+/// <reference path="../../../../local-typings/twemoji.d.ts" />
+
 import { Component, OnInit, Output } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';

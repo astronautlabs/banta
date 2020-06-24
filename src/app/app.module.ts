@@ -17,6 +17,9 @@ import { SourceComponent } from './source/source.component';
 import { TryComponent } from './try/try.component';
 import { DemoService } from './demo.service';
 import { DemoComponent } from './demo.component';
+import { MarkdownModule } from 'ngx-markdown';
+import { ChassisModule } from '@astronautlabs/chassis';
+import { PRODUCT } from './content';
 
 @NgModule({
   declarations: [
@@ -38,6 +41,8 @@ import { DemoComponent } from './demo.component';
     SaasModule,
     LibModule,
     FirebaseModule,
+    MarkdownModule.forRoot(),
+    ChassisModule.configure(PRODUCT)
   ],
   providers: [
     DemoService

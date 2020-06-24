@@ -65,9 +65,9 @@ form {
     }
 
     input[type=text] {
-        background: black;
-        color: white;
-        border: 1px solid #333;
+        background: white;
+        color: black;
+        border: 1px solid #ccc;
         width: 100%;
         height: 2.5em;
     }
@@ -79,5 +79,15 @@ form {
     button {
         display: block;
         margin: 0 0 0 auto;
+    }
+}
+
+:host-context(.mat-dark-theme) {
+    form {
+        input[type=text] {
+            background: black;
+            color: white;
+            border: 1px solid #333;
+        }
     }
 }
