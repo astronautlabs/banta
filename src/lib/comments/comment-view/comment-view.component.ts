@@ -95,7 +95,7 @@ export class CommentViewComponent {
     @Input()
     genericAvatarUrl : string;
     
-    @ViewChild('messageContainer', { static: false })
+    @ViewChild('messageContainer')
     messageContainer : ElementRef<HTMLElement>;
 
     @Input()

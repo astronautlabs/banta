@@ -76,7 +76,7 @@ export class ChatViewComponent {
     messages : ChatMessage[] = [];
     currentUser : User;
 
-    @ViewChild('messageContainer', { static: false })
+    @ViewChild('messageContainer')
     messageContainer : ElementRef<HTMLElement>;
 
     @Input()
