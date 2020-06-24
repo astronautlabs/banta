@@ -1,0 +1,45 @@
+<div>
+    <h1>Sign Up</h1>
+
+    <p>Already have an account? 
+        <a href="javascript:;" (click)="showSignIn()">Sign in</a>
+    </p>
+
+    <form (submit)="submit()">
+        <div class="alert" *ngIf="errorMessage">
+            {{errorMessage}}
+        </div>
+        <div>
+            <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput type="text" name="email" autocomplete="username" [(ngModel)]="email" />
+            </mat-form-field>
+        </div>
+        <div>
+            <mat-form-field appearance="outline">
+                <mat-label>Password</mat-label>
+                <input matInput type="password" name="password" autocomplete="new-password" [(ngModel)]="password" />
+            </mat-form-field>
+        </div>
+        <div>
+            <mat-form-field appearance="outline">
+                <mat-label>Repeat Password</mat-label>
+                <input matInput type="password" autocomplete="new-password" name="password2" [(ngModel)]="password2" />
+            </mat-form-field>
+        </div>
+        <div>
+            <mat-form-field appearance="outline">
+                <mat-label>Display Name</mat-label>
+                <input matInput type="text" name="displayName" [(ngModel)]="displayName" />
+            </mat-form-field>
+        </div>
+        <div>
+            <mat-form-field appearance="outline">
+                <mat-label>Username</mat-label>
+                <input matInput type="text" name="cun" autocomplete="off" [(ngModel)]="username" />
+            </mat-form-field>
+        </div>
+
+        <button mat-raised-button color="primary">Sign Up</button>
+    </form>
+</div>

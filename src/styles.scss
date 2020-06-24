@@ -24,9 +24,10 @@
 
 body {
     font-family: sans-serif;
-    padding: 0.5em 1em;
     color: #ddd;
     background: black;
+    margin: 0;
+    padding: 0;
 }
 
 .logo {
@@ -65,4 +66,13 @@ pre {
     font-family: 'Courier New', Courier, monospace;
     padding: 0.5em;
     background: black;
+}
+
+a {
+    color: #00ff89;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
 }

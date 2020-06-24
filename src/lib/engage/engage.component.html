@@ -9,11 +9,33 @@
     </ng-container>
     <button mat-menu-item>Help</button>
 </mat-menu>
-    
-<div class="firehose">
+
+<div class="tabs">
+    <div>
+        <a mat-button (click)="mobileFocus = 'firehose'">Firehose</a>
+        <a mat-button (click)="mobileFocus = 'points'">The Point</a>
+    </div>
+    <div class="spacer"></div>
+    <div>
+        <ng-container *ngIf="currentUser">
+            <button mat-button [matMenuTriggerFor]="userMenu">
+                @{{currentUser.username}}
+            </button>
+            <button mat-icon-button (click)="showNotifications()">
+                <mat-icon>notification_important</mat-icon>
+            </button>
+        </ng-container>
+        
+        <button mat-button *ngIf="!currentUser" (click)="showSignIn()">
+            Sign In
+        </button>
+    </div>
+</div>
+
+<div class="firehose" [class.focus]="mobileFocus === 'firehose'">
     <header>
         <div>
-            <label>Firehose</label>
+            <label (click)="mobileFocus = 'firehose'">Firehose</label>
             <div class="spacer"></div>
 
             <ng-container *ngIf="currentUser">
@@ -25,7 +47,7 @@
                 </button>
             </ng-container>
             
-            <button mat-button *ngIf="!currentUser" (click)="showSignInDialog()">
+            <button mat-button *ngIf="!currentUser" (click)="showSignIn()">
                 Sign In
             </button>
         </div>
@@ -33,13 +55,14 @@
     <engage-firehose 
         #firehose
         [source]="firehoseSource"
+        (signInSelected)="showSignIn()"
         (upvoted)="upvoteMessage($event)"
         (userSelected)="showProfile($event.user)"
         (reported)="reportMessage($event)"
         ></engage-firehose>
 </div>
 
-<div class="aux" [class.open]="auxOpen">
+<div class="aux" [class.focus]="mobileFocus === 'aux'" [class.open]="auxOpen">
     <header>
         <div>
             <label>{{auxTitle}}</label>
@@ -50,6 +73,18 @@
         </div>
     </header>
     <div class="aux-contents">
+        <ng-container *ngIf="auxMode === 'sign-in'">
+            <engage-sign-in 
+                (selectSignUp)="showSignUp()"
+                (closed)="closeAux()"
+                ></engage-sign-in>
+        </ng-container>
+        <ng-container *ngIf="auxMode === 'sign-up'">
+            <engage-sign-up 
+                (selectSignIn)="showSignIn()"
+                (closed)="closeAux()"
+                ></engage-sign-up>
+        </ng-container>
         <ng-container *ngIf="auxMode === 'profile'">
             <ng-container *ngIf="profileUser">
 
@@ -148,7 +183,7 @@
         </ng-container>
     </div>
 </div>
-<div class="points">
+<div class="points" [class.focus]="mobileFocus === 'points'">
     <header>
         <div>
             <label>The Point</label>
@@ -221,6 +256,7 @@
     <div class="points-section">
         <engage-comments
             [source]="pointSource"
+            (signInSelected)="showSignIn()"
             (upvoted)="upvoteMessage($event)"
             (reported)="reportMessage($event)"
             (selected)="goToMessage($event)"

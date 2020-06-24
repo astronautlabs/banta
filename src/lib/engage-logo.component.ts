@@ -2,7 +2,7 @@ import { Component } from "@angular/core";
 
 @Component({
     selector: 'engage-logo',
-    template: `engage`,
+    template: `banta`,
     styles: [
         `
         :host {

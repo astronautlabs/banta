@@ -1,0 +1,22 @@
+<h1>Try it out</h1>
+
+<ng-container *ngIf="!allowChangingTopic">
+    <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>Topic ID</mat-label>
+        <input readonly matInput type="text" name="newTopicID" [value]="topicID" />
+    </mat-form-field>
+</ng-container>
+<ng-container *ngIf="allowChangingTopic">
+    <form (submit)="changeTopic()">
+        <div>
+            <mat-form-field appearance="outline" floatLabel="always">
+                <mat-label>New Topic ID</mat-label>
+                <input matInput type="text" name="newTopicID" [(ngModel)]="newTopicID" />
+            </mat-form-field>
+            &nbsp;
+            <button mat-raised-button color="primary">Apply</button>
+        </div>
+    </form>
+</ng-container>
+
+<engage-chat [topicID]="topicID"></engage-chat>

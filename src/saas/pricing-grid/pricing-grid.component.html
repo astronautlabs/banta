@@ -1,0 +1,109 @@
+<div class="document">
+  <div class="mobile-features">
+    <div></div>
+    <div class="sku-header" *ngFor="let sku of skus">
+      {{sku.name}}
+    </div>
+
+    <ng-container *ngFor="let feature of features; index as i">
+      <div class="feature" [class.even]="i % 2 === 0">
+        <strong class="feature-name">
+          {{feature.name}}
+          <span *ngIf="feature.finePrint" class="asterisk">*</span>
+        </strong><br/><br/>
+        <div [innerHTML]="feature.summary"></div>
+        <em *ngIf="feature.finePrint" class="fine-print">
+          <span class="asterisk">*</span>
+          {{feature.finePrint}}
+        </em>
+      </div>
+      
+      <ng-container *ngIf="feature.skus">
+        <span class="sku" *ngFor="let sku of skus" 
+          [class.supported]="skuSupportsFeature(feature, sku.id)"
+          [class.even]="i % 2 === 0">
+          <mat-icon>check_circle</mat-icon> 
+          <label>{{sku.name}}</label>
+        </span>
+      </ng-container>
+      <ng-container *ngIf="!feature.skus && feature.skuContent">
+          <span class="sku" *ngFor="let sku of skus" [class.even]="i % 2 === 0">
+            {{feature.skuContent[sku.id]}}
+        </span>
+      </ng-container>
+    </ng-container>
+
+    <div class="feature pricing" [class.even]="features.length % 2 === 1">
+      <strong>Price</strong>
+    </div>
+
+    <span class="sku pricing" *ngFor="let sku of skus">
+      <div>
+        <ng-container *ngFor="let option of sku.priceOptions; index as i">
+          <div>
+            {{option}}
+          </div>
+          <ng-container *ngIf="i + 1 < sku.priceOptions.length">- or -</ng-container>
+        </ng-container>
+      </div>
+    </span>
+
+
+    <!-- 
+    <div class="feature">
+      <strong class="feature-name">Support</strong><br/><br/>
+      We want you to be successful. Overview provides support options
+      that help you make the most out of our product.
+      <div class="skus">
+        <span class="sku">
+          <mat-icon>check_circle</mat-icon> Free<br/><br/>
+          Community
+        </span>
+        <span class="sku supported">
+          <mat-icon>check_circle</mat-icon> Pro<br/><br/>
+          Email †<br/>
+          <small>
+            9AM-5PM PST<br/>
+            Mon-Fri
+          </small>
+        </span>
+        <span class="sku supported">
+          <mat-icon>check_circle</mat-icon> Enterprise<br/><br/>
+          24x7
+        </span>
+      </div>
+    </div>
+    <div class="feature">
+      <strong class="feature-name">Price</strong><br/><br/>
+      The Community Edition (web only) is free forever.
+      Upgrade to access features geared toward professional users.
+
+      <div class="skus price-list">
+        <span class="sku supported">
+          <mat-icon>check_circle</mat-icon>
+          <strong class="price-edition-name">Free</strong><br/><br/>
+          Free
+        </span>
+        <span class="sku supported" style="flex-shrink: 0;">
+          <mat-icon>check_circle</mat-icon>
+          <strong class="price-edition-name">Pro</strong><br/><br/>
+          $40/mo<br/>
+          <small>-or-</small><br/>
+          $400/yr &nbsp; 
+        </span>
+        <span class="sku supported" style="flex-shrink: 0;">
+          <mat-icon>check_circle</mat-icon>
+          <strong class="price-edition-name">Enterprise</strong><br/><br/>
+          Contact Us
+        </span>
+      </div>
+    </div> 
+    -->
+  </div>
+
+  <br/>
+
+  <small>
+      † Available 9AM-5PM PST Monday through Friday
+  </small>
+</div>

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { ChatBackendService, ChatSource, ChatMessage, User, UserAccount, Notification } from '../lib';
+import { ChatBackendService, ChatSource, ChatMessage, User, UserAccount, Notification, NewUserAccount, SignUpResult } from '../lib';
 import { DataStore } from './datastore';
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import * as firebase from 'firebase';
+import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class FirebaseChatBackend extends ChatBackendService {
@@ -64,6 +65,38 @@ export class FirebaseChatBackend extends ChatBackendService {
     async signOut() {
         await firebase.auth().signOut();
     }
+    
+    async signUp(user : Partial<NewUserAccount>): Promise<SignUpResult> {
+        if (!user.email || !user.password)
+            throw new Error(`Account is missing some fields`);
+
+        let result = await fetch(`${this.baseUrl}/accounts`, {
+            method: 'POST'
+        });
+
+        let body : any;
+        let failedToParseBody = null;
+
+        try {
+            body = await result.json();
+        } catch (error) {
+            failedToParseBody = error;
+            body = {};
+        }
+
+        if (result.status >= 400) {
+            throw new Error(
+                `Error result while creating user account: `
+                + `${result.status} ${result.statusText}: ` 
+                + `${body.message || '<no message>'} ` 
+                + `[code=${body.code || '<none>'}]`
+            );
+        }
+
+        if (failedToParseBody)
+            throw failedToParseBody;
+        return body;
+    }
 
     async signInWithPassword(email : string, password : string): Promise<UserAccount> {
 
@@ -97,7 +130,7 @@ export class FirebaseChatBackend extends ChatBackendService {
     }
 
     private get baseUrl() {
-        return 'http://192.168.1.2:3000';
+        return environment.engageServiceUrl;
     }
 
     watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void {

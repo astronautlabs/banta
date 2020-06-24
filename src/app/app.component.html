@@ -1,4 +1,21 @@
 <!--The content below is only a placeholder and can be replaced.-->
+<nav>
+  <a routerLink="/">
+    <engage-logo></engage-logo>
+  </a>
+  <a mat-button routerLink="/features" routerLinkActive="active">Features</a>
+  <a mat-button routerLink="/pricing" routerLinkActive="active">Pricing</a>
+  <a mat-button routerLink="/source" routerLinkActive="active">Source</a>
+  <a mat-button routerLink="/try" routerLinkActive="active">Try it out</a>
+  <div class="spacer"></div>
+  <a mat-button href="javascript:;" (click)="showSignIn()">
+    Sign In
+  </a>
+</nav>
 <main>
   <router-outlet></router-outlet>
 </main>
+
+<footer>
+  &copy; 2019 Banta
+</footer>

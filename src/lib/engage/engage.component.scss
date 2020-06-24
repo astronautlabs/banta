@@ -183,14 +183,26 @@ form {
 
 .aux {
     width: 0px;
+    min-width: 0px;
     overflow-x: hidden;
-    transition: 400ms width ease-out;
+    transition: 400ms width ease-out, 400ms min-width ease-out;
+    display: flex;
+    flex-direction: column;
+    
     &.open {
         width: 30em;
+        min-width: 18em;
     }
 
     .aux-contents {
         width: 30em;
+        min-width: 10em;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
     }
 }
 
@@ -210,4 +222,63 @@ form {
 
 .message.reply {
     padding: 1em;
+}
+
+.tabs {
+    display: none;
+}
+
+@media (max-width: 1015px) {
+    :host {
+        flex-direction: column;
+    }
+
+    .tabs {
+        display: flex;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 10;
+        backdrop-filter: blur(10px);
+        background: rgba(0,0,0,0.5);
+    }
+
+    .points {
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+    }
+
+    header {
+        display: none;
+    }
+    
+    :host.point-focus {
+        .points {
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+
+    .aux {
+        width: 100%;
+        min-width: initial;
+        max-width: 100%;
+    }
+
+    .points, .firehose, .aux {
+        position: absolute;
+        top: 2em;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 0;
+        background: black;
+
+        &.focus {
+            z-index: 2;
+        }
+    }
 }

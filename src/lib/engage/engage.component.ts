@@ -377,6 +377,7 @@ export class EngageComponent {
         // TODO
     }
     
+    mobileFocus : string = null;
 
     async sendPointSubMessage() {
         let text = (this.newPointSubMessage.message || '').trim();
@@ -429,11 +430,13 @@ export class EngageComponent {
                 this.pointSubChat.close();
                 this.pointSubChat = null;
             }
+            this.mobileFocus = 'points';
             this.pointOpen = message;
             this.pointSubChat = this.backend.getSourceForThread(message);
             this.pointOpen = await this.backend.refreshMessage(message);
             this.newPointSubMessage = {};
         } else if (viewType === 'chat') {
+            this.mobileFocus = 'firehose';
             this.firehose.jumpToMessage(message);
         }
     }
@@ -453,10 +456,15 @@ export class EngageComponent {
         this._subs.unsubscribe();
     }
 
-    showNotifications() {
+    showAux(title : string, mode : string) {
         this.auxOpen = true;
-        this.auxTitle = 'Notifications';
-        this.auxMode = 'notifications';
+        this.auxTitle = title;
+        this.auxMode = mode;
+        this.mobileFocus = 'aux';
+    }
+
+    showNotifications() {
+        this.showAux('Notifications', 'notifications');
     }
 
     @Input()
@@ -487,8 +495,12 @@ export class EngageComponent {
         this.pointSource = this.backend.getSourceForTopic(`${id}_thepoint`);
     }
 
-    showSignInDialog() {
-        this.matDialog.open(SignInDialogComponent);
+    showSignIn() {
+        this.showAux('Sign In', 'sign-in');
+    }
+
+    showSignUp() {
+        this.showAux('Sign Up', 'sign-up');
     }
 
     close() {
@@ -513,6 +525,11 @@ export class EngageComponent {
     pointOpen : ChatMessage = null;
     pointSubChat : ChatSource = null;
 
+    closeAux() {
+        this.auxOpen = false;
+        this.mobileFocus = 'firehose';
+    }
+
     getViewType(message : ChatMessage) {
         if (message.topicId.endsWith('_firehose'))
             return 'chat';
@@ -532,9 +549,7 @@ export class EngageComponent {
 
     showProfile(user : User) {
         this.profileUser = user;
-        this.auxMode = 'profile';
-        this.auxOpen = true;
-        this.auxTitle = `@${user.username}'s Profile`;
+        this.showAux(`@${user.username}'s Profile`, 'profile');
     }
 
     profileUser : User;
@@ -548,9 +563,7 @@ export class EngageComponent {
 
     reportMessage(message : ChatMessage) {
         this.reportedMessage = message;
-        this.auxMode = 'report';
-        this.auxOpen = true;
-        this.auxTitle = `Report message from @${message.user.username}`
+        this.showAux(`Report message from @${message.user.username}`, 'report');
     }
 
     currentUser : User;

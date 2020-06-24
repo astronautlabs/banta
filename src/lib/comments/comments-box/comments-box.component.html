@@ -11,7 +11,20 @@
             ></emoji-selector-button>
     </div>
     <div class="actions">
-        <button [disabled]="!newMessageText" mat-raised-button color="primary">Send</button>
+
+        <button 
+            *ngIf="!user" 
+            mat-raised-button 
+            color="primary"
+            type="button"
+            (click)="showSignIn()"
+            >Sign In</button>
+        <button 
+            *ngIf="user" 
+            mat-raised-button 
+            color="primary"
+            [disabled]="!newMessageText" 
+            >Send</button>
     </div>
 </form>
 

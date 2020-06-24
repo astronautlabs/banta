@@ -1,7 +1,9 @@
 import { ChatSource } from './chat-source';
 import { Observable, Subscription } from 'rxjs';
-import { UserAccount } from './user';
+import { UserAccount } from './user-account';
 import { ChatMessage } from './chat-message';
+import { NewUserAccount } from './new-user-account';
+import { SignUpResult } from './sign-up-result';
 
 export interface Notification {
     id : string;
@@ -35,7 +37,8 @@ export interface ChatBackend {
 
     signInWithPassword(email : string, password : string) : Promise<UserAccount>;
     signOut() : Promise<void>;
-
+    signUp(user : Partial<NewUserAccount>): Promise<SignUpResult>;
+    
     getSourceForTopic(topicId : string) : ChatSource;
     getSourceForThread(message : ChatMessage) : ChatSource;
     refreshMessage(message : ChatMessage): Promise<ChatMessage>;

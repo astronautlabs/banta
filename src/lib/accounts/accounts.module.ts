@@ -3,13 +3,20 @@ import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component
 import { MaterialModule } from 'src/material.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AccountsService } from './accounts.service';
+import { SignUpDialogComponent } from './sign-up-dialog/sign-up-dialog.component';
 
 @NgModule({
     declarations: [
-        SignInDialogComponent
+        SignInDialogComponent,
+        SignUpDialogComponent
     ],
     entryComponents: [
-        SignInDialogComponent
+        SignInDialogComponent,
+        SignUpDialogComponent
+    ],
+    providers: [
+        AccountsService
     ],
     imports: [
         CommonModule,
@@ -17,8 +24,15 @@ import { FormsModule } from '@angular/forms';
         MaterialModule
     ],
     exports: [
-        SignInDialogComponent
+        SignInDialogComponent,
+        SignUpDialogComponent
     ]
 })
 export class AccountsModule {
+    constructor(
+        accountsService : AccountsService
+    ) {
+        accountsService.signInDialogComponent = SignInDialogComponent;
+        accountsService.signUpDialogComponent = SignUpDialogComponent;
+    }
 }

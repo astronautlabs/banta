@@ -1,22 +1,27 @@
-<h1>Sign In</h1>
+<div>
+    <h1>Sign In</h1>
 
-<form (submit)="submit()">
+    <p>Need an account? 
+        <a href="javascript:;" (click)="showSignUp()">Sign up</a>
+    </p>
 
-    <div class="alert" *ngIf="errorMessage">
-        {{errorMessage}}
-    </div>
-    <div>
-        <mat-form-field appearance="outline">
-            <mat-label>Email</mat-label>
-            <input matInput type="text" name="password" [(ngModel)]="email" />
-        </mat-form-field>
-    </div>
-    <div>
-        <mat-form-field appearance="outline">
-            <mat-label>Password</mat-label>
-            <input matInput type="password" name="password" [(ngModel)]="password" />
-        </mat-form-field>
-    </div>
+    <form (submit)="submit()">
+        <div class="alert" *ngIf="errorMessage">
+            {{errorMessage}}
+        </div>
+        <div>
+            <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput type="text" name="password" [(ngModel)]="email" />
+            </mat-form-field>
+        </div>
+        <div>
+            <mat-form-field appearance="outline">
+                <mat-label>Password</mat-label>
+                <input matInput type="password" name="password" [(ngModel)]="password" />
+            </mat-form-field>
+        </div>
 
-    <button mat-raised-button color="primary">Sign In</button>
-</form>
+        <button mat-raised-button color="primary">Sign In</button>
+    </form>
+</div>

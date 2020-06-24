@@ -4,9 +4,3 @@ export interface User {
     username : string;
     avatarUrl? : string;
 }
-
-export interface UserAccount extends User {
-    email : string;
-    createdAt : number;
-    updatedAt : number;
-}

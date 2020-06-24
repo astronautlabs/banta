@@ -1,7 +1,8 @@
 import { Component, Input, Output } from '@angular/core';
-import { User, ChatSource, ChatMessage } from '../../model';
-import { Subject } from 'rxjs';
+import { User, ChatSource, ChatMessage, ChatBackendService } from '../../model';
+import { Subject, Observable } from 'rxjs';
 import { SubSink } from 'subsink';
+import { AccountsService } from '../../accounts';
 
 @Component({
     selector: 'engage-comments',
@@ -9,8 +10,10 @@ import { SubSink } from 'subsink';
     styleUrls: ['./comments-box.component.scss']
 })
 export class CommentsBoxComponent {
-    constructor() {
-        
+    constructor(
+        private backend : ChatBackendService,
+        private accounts : AccountsService
+    ) {
     }
 
     private _upvoted = new Subject<ChatMessage>();
@@ -19,33 +22,41 @@ export class CommentsBoxComponent {
     private _userSelected = new Subject<ChatMessage>();
     private _source : ChatSource;
 
+    private _subs = new SubSink();
+
+    ngOnInit() {
+        this._subs.add(     
+            this.backend.userChanged.subscribe(user => this.user = user)
+        )
+    }
+
+    ngOnDestroy() {
+        this._subs.unsubscribe();
+    }
+
     @Input()
     get source() : ChatSource {
         return this._source;
     }
 
-    set source(value) {
-        this._source = value;
-
-        if (this.sourceSink) {
-            this.sourceSink.unsubscribe();
-            this.sourceSink = null;
-        }
-
-        if (this._source) {
-            this.sourceSink = new SubSink();
-            this.sourceSink.add(
-                this._source.currentUserChanged
-                    .subscribe(user => this.currentUser = user)
-            );
-        }
+    showSignIn() {
+        this._signInSelected.next();
     }
 
-    private sourceSink : SubSink;
+    set source(value) {
+        this._source = value;
+    }
 
-    currentUser : User;
+    user : User;
     newMessageText : string;
 
+    private _signInSelected = new Subject<void>();
+
+    @Output()
+    get signInSelected(): Observable<void> {
+        return this._signInSelected;
+    }
+    
     @Output()
     get upvoted() {
         return this._upvoted;
@@ -83,7 +94,7 @@ export class CommentsBoxComponent {
             return;
 
         let message : ChatMessage = { 
-            user: this.currentUser,
+            user: this.user,
             sentAt: Date.now(),
             upvotes: 0,
             message: text

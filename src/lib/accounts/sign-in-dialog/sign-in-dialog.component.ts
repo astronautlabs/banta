@@ -1,23 +1,48 @@
-import { Component } from '@angular/core';
+import { Component, Output, Optional } from '@angular/core';
 import { ChatBackendService } from 'src/lib/model';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { AccountsService } from '../accounts.service';
+import { Observable, Subject } from 'rxjs';
 
 @Component({
+    selector: 'engage-sign-in',
     templateUrl: './sign-in-dialog.component.html',
     styleUrls: [`./sign-in-dialog.component.scss`]
 })
 export class SignInDialogComponent {
     constructor(
+        private accountsService : AccountsService,
         private backend : ChatBackendService,
+        @Optional()
         private dialogRef : MatDialogRef<SignInDialogComponent>
     ) {
-
     }
 
     email : string;
     password : string;
 
     errorMessage : string = null;
+
+    private _selectSignUp = new Subject<void>();
+    private _closed = new Subject<void>();
+    
+    @Output()
+    get closed(): Observable<void> {
+        return this._closed;
+    }
+    @Output()
+    get selectSignUp(): Observable<void> {
+        return this._selectSignUp;
+    }
+    
+    showSignUp() {
+        if (this.dialogRef) {
+            this.dialogRef.close();
+            this.accountsService.showSignUp();
+        } else {
+            this._selectSignUp.next();
+        }
+    }
 
     async submit() {
         try {
@@ -35,6 +60,14 @@ export class SignInDialogComponent {
             this.errorMessage = message;
             return;
         }
-        this.dialogRef.close();
+
+        this.close();
+    }
+
+    close() {
+        if (this.dialogRef)
+            this.dialogRef.close();
+        else
+            this._closed.next();
     }
 }

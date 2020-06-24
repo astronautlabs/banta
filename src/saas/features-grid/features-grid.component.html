@@ -1,0 +1,14 @@
+<div class="document">
+  <div class="feature" *ngFor="let feature of features">
+    <div class="image">
+      <img *ngIf="feature.iconUrl" src="{{feature.iconUrl}}" />
+      <mat-icon [inline]="true" *ngIf="feature.iconName">{{feature.iconName}}</mat-icon>
+    </div>
+    <div class="text">
+      <h2>{{feature.name}}</h2>
+      <div class="summary" [innerHTML]="feature.summary"></div>
+
+      <div class="description" [innerHTML]="feature.description"></div>
+    </div>
+  </div>
+</div>

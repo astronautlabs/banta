@@ -1,0 +1,143 @@
+.price-list {
+    .sku {
+        color: #888; 
+    }
+
+    .price-edition-name {
+        color: white;
+    }
+}
+
+small {
+    color: #898989;
+}
+
+.mobile-features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 2px;
+    column-gap: 2px;
+
+    .feature.pricing {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18pt;
+    }
+
+    .feature, .sku {
+        &.pricing {
+            background: black;
+        }
+    }
+
+    .feature {
+        grid-column: span 3;
+        padding: 1em;
+        color: #777;
+
+        strong {
+            color: white;
+        }
+
+        .skus {
+            border-top: 1px solid #333;
+            margin-top: 1em;
+            padding-top: 1em;
+            margin-bottom: 2em;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+    
+    .sku {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        grid-column: span 1;
+        //opacity: 0.5;
+        text-align: center;
+        padding: 1em;
+        margin-bottom: 1.5em;
+
+        mat-icon {
+            margin-right: 0.5em;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0 0 0 2em;
+        }
+
+        strong {
+            color: white;
+        }
+    }
+}
+
+table {
+    display: none;
+}
+
+.fine-print {
+    font-size: 80%;
+}
+
+.asterisk {
+    color: #7cbdff;
+}
+
+.sku-header {
+    display: none;
+}
+
+@media (min-width: 900px) {
+    .mobile-features {
+        display: grid;
+        grid-template-rows: auto;
+        grid-template-columns: repeat(4, 1fr);
+        row-gap: 2px;
+        column-gap: 2px;
+        
+        .sku-header {
+            display: initial;
+            text-align: center;
+            padding: 0.5em;
+            font-weight: bold;
+        }
+
+
+        .feature, .sku {
+            grid-column: span 1;
+            background: #333;
+            padding: 1em;
+            margin-bottom: 0;
+        }
+
+        .sku {
+            label {
+                display: none;
+            }
+        }
+
+        .sku {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            mat-icon {
+                opacity: 0;
+            }
+            &.supported {
+                mat-icon {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .even {
+            background: #222;
+        }
+    }
+
+}

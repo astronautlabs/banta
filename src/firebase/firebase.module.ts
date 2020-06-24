@@ -9,7 +9,8 @@ import { AngularFirestoreModule } from '@angular/fire/firestore';
 @NgModule({
     imports: [
         AngularFireModule.initializeApp(environment.firebase),
-        AngularFirestoreModule
+        AngularFirestoreModule,
+        
     ],
     providers: [
         DataStore,
@@ -17,5 +18,6 @@ import { AngularFirestoreModule } from '@angular/fire/firestore';
     ]
 })
 export class FirebaseModule {
-
+    constructor() {
+    }
 }

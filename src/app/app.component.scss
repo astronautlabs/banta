@@ -1,0 +1,56 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5em 1em 0 1em;
+    min-height: calc(100% - 0.5em);
+}
+
+nav {
+    a {
+        color: #aaa;
+        text-decoration: none;
+        display: block;
+        padding: 1em;
+
+        &.active {
+            font-weight: bold;
+            color: white;
+        }
+    }
+}
+
+footer {
+    margin: 4em -1em 0 -1em;
+    padding: 4em;
+    background: #111;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+router-outlet {
+    display: none !important;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+::ng-deep {
+    main > * {
+        flex-grow: 1;
+    }
+}
+
+:host.demo {
+    nav {
+        display: none;
+    }
+
+    footer {
+        display: none;
+    }
+}

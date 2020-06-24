@@ -22,6 +22,9 @@
     </div>
 
     <div class="actions">
-        <button [disabled]="!newMessage.message" mat-raised-button color="primary">Send</button>
+
+        <button type="button" *ngIf="!user" (click)="showSignIn()" mat-raised-button color="primary">Sign In</button>
+
+        <button *ngIf="user" [disabled]="!newMessage.message" mat-raised-button color="primary">Send</button>
     </div>
 </form>
