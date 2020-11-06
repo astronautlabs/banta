@@ -32,7 +32,11 @@ export class AppComponent {
   darkTheme = true;
 
   ngOnInit() {
-    this.backend.userChanged.subscribe(user => this.user = user);
+    this.backend.userChanged.subscribe(user => {
+      console.log('user changed:');
+      console.dir(user);
+      this.user = user
+    });
 
     this.router.events.subscribe(ev => {
       if (ev instanceof NavigationEnd) {

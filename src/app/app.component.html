@@ -8,13 +8,18 @@
   <a mat-button routerLink="/source" routerLinkActive="active">Source</a>
   <a mat-button routerLink="/try" routerLinkActive="active">Try it out</a>
   <div class="spacer"></div>
-  <a mat-button href="javascript:;" (click)="showSignIn()">
+  <a *ngIf="!user" mat-button href="javascript:;" (click)="showSignIn()">
     Sign In
+  </a>
+  <a *ngIf="user" mat-button href="javascript:;" (click)="showSignIn()">
+    {{user.displayName}}
   </a>
 </nav>
 <main>
   <router-outlet></router-outlet>
 </main>
+
+<pre>{{user | json }}</pre>
 
 <footer>
   <div>

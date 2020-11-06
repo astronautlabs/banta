@@ -3,6 +3,7 @@ import { FEATURES } from './features';
 import { SKUS } from './skus';
 
 export const PRODUCT : ProductInit = {
+    id: 'banta',
     name: 'Banta',
     logoUrl: '/assets/logo.svg',
     summary: 'Realtime chat and commenting',
