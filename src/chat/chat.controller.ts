@@ -1,4 +1,4 @@
-import { Controller, Post, Body, RouteEvent, PathParam, Response } from "@alterior/web-server";
+import { Controller, Post, Body, RouteEvent, PathParam, Response, Patch } from "@alterior/web-server";
 import { ChatMessage } from "./chat-message";
 import { User, NewUserAccount, AccountsService } from "../accounts";
 import * as jwt from 'jsonwebtoken';
@@ -35,8 +35,7 @@ export class ChatController {
         throw new HttpError(401, [], { message: 'Unauthorized' });
     }
 
-    @Post(`/topics/:topicID/messages`, {
-    })
+    @Post(`/topics/:topicID/messages`)
     async post(
         event : RouteEvent, 
         @PathParam('topicID') topicId : string, 
@@ -54,8 +53,48 @@ export class ChatController {
         };
     }
 
-    @Post(`/topics/:topicID/messages/:messageID/messages`, {
-    })
+    @Post(`/topics/:topicID/messages/:messageID/upvote`)
+    async upvoteMessage(
+        event : RouteEvent, 
+        @PathParam('topicID') topicID : string, 
+        @PathParam('messageID') messageID : string
+    ) {
+        let authorizedUser = await this.getAuthorizedUser(event);
+
+        let message = await this.chatService.getMessage(topicID, messageID);
+
+        await this.chatService.upvote(message, { 
+            id: authorizedUser.id,
+            user: authorizedUser,
+            createdAt: Date.now(),
+            ipAddress: event.request.ip
+        });
+
+        return { code: 'success', message: 'Success' };
+    }
+
+    @Post(`/topics/:topicID/messages/:parentMessageID/messages/:messageID/upvote`)
+    async upvoteSubMessage(
+        event : RouteEvent, 
+        @PathParam('topicID') topicID : string, 
+        @PathParam('parentMessageID') parentMessageID : string, 
+        @PathParam('messageID') messageID : string
+    ) {
+        let authorizedUser = await this.getAuthorizedUser(event);
+
+        let message = await this.chatService.getSubMessage(topicID, parentMessageID, messageID);
+
+        await this.chatService.upvote(message, { 
+            id: authorizedUser.id,
+            user: authorizedUser,
+            createdAt: Date.now(),
+            ipAddress: event.request.ip
+        });
+
+        return { code: 'success', message: 'Success' };
+    }
+
+    @Post(`/topics/:topicID/messages/:messageID/messages`)
     async subPost(
         event : RouteEvent, 
         @PathParam('topicID') topicID : string, 

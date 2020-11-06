@@ -3,7 +3,14 @@ import { ChatMessage } from "./chat-message";
 import { DataStore, Counter } from "../infrastructure";
 import { FieldValue } from "@google-cloud/firestore";
 import * as uuid from 'uuid/v4';
-import { AccountsService, MentionNotification, ReplyNotification } from "../accounts";
+import { AccountsService, MentionNotification, ReplyNotification, UpvoteNotification, User } from "../accounts";
+
+export interface Vote {
+    id : string;
+    createdAt : number;
+    user : User;
+    ipAddress : string;
+}
 
 @Injectable()
 export class ChatService {
@@ -49,6 +56,51 @@ export class ChatService {
         return finalMessage;
     }
 
+    async upvote(message : ChatMessage, vote : Vote) {
+        if (!message)
+            throw new Error(`Message cannot be null`);
+        
+        await this.datastore.transact(async txn => {
+
+            let path = `/topics/${message.topicId}/messages/${message.id}`;
+
+            if (message.parentMessageId) {
+                path = `/topics/${message.topicId}/messages/${message.parentMessageId}/messages/${message.id}`
+            }
+
+            let existingVote = await txn.read(`${path}/upvotes/${vote.id}`);
+
+            if (existingVote) {
+                console.log(`Vote already exists`);
+                return;
+            }
+
+            await Promise.all([
+                txn.set(
+                    `${path}/upvotes/${vote.id}`, 
+                    vote
+                ),
+                txn.update(
+                    `${path}/counters/upvotes`, 
+                    <Counter>{ value: <any>FieldValue.increment(1) }
+                ),
+                txn.update(
+                    `${path}`, 
+                    <Partial<ChatMessage>>{ upvotes: <any>FieldValue.increment(1) }
+                )
+            ]);
+        });
+
+        if (vote.user) {
+            await this.accounts.sendNotification(<UpvoteNotification>{
+                recipientId: message.user.id,
+                type: 'upvote',
+                message,
+                user: vote.user
+            })
+        }
+    }
+
     async post(message : ChatMessage) {
         if (!message.user || !message.user.id)
             throw new Error(`Message must include a valid user reference`);
@@ -62,6 +114,10 @@ export class ChatService {
 
     async getMessage(topicId : string, messageId : string) {
         return await this.datastore.read<ChatMessage>(`/topics/${topicId}/messages/${messageId}`);
+    }
+
+    async getSubMessage(topicId : string, parentMessageId : string, messageId : string) {
+        return await this.datastore.read<ChatMessage>(`/topics/${topicId}/messages/${parentMessageId}/messages/${messageId}`);
     }
     
     async postSubMessage(topicId : string, messageId : string, message : ChatMessage) {

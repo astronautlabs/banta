@@ -56,7 +56,13 @@ export class Transaction {
     async update<T extends Storable>(docPath : string, data : Partial<T>): Promise<void> {
         let firestore = this.store.firestore;
         let docRef = firestore.doc(docPath);
-        await this.txn.update(docRef, data);
+        await this.txn.set(docRef, data, { merge: true });
+    }
+
+    async updateExisting<T extends Storable>(docPath : string, data : Partial<T>): Promise<void> {
+        let firestore = this.store.firestore;
+        let docRef = firestore.doc(docPath);
+        await this.txn.set(docRef, data);
     }
 
     async set<T extends Storable>(docPath : string, data : T): Promise<void> {

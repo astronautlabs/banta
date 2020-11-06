@@ -36,6 +36,12 @@ export interface NoticeNotification extends Notification {
     actionLabel : string;
 }
 
+export interface UpvoteNotification extends Notification {
+    type : 'upvote',
+    message : ChatMessage;
+    user : User;
+}
+
 export interface MentionNotification extends Notification {
     type : 'mention';
     message : ChatMessage;
