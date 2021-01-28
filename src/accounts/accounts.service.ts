@@ -11,6 +11,7 @@ import { NewUserAccount } from "./new-user-account";
 import { Response } from "@alterior/web-server";
 import { Logger } from "@alterior/logging";
 import { UserAccount } from "./user-account";
+import { AuthenticationProvider } from "./authentication-provider";
 
 export const GOOGLE_IDENTITY = 
     'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit';
@@ -54,7 +55,6 @@ export interface SignUpResult {
 
 @Injectable()
 export class AccountsService {
-
     constructor(
         private datastore : DataStore,
         private logger : Logger
@@ -62,47 +62,32 @@ export class AccountsService {
 
     }
 
-    async validateToken(tokenStr : string): Promise<UserAccount> {
-        let decodedToken = await firebaseAdmin.auth().verifyIdToken(tokenStr);
+    authProvider : AuthenticationProvider;
 
-        if (decodedToken.u)
-            return decodedToken.u;
-        
-        return await this.datastore.read(`/users/${decodedToken.uid}`);
+    async validateToken(tokenStr : string): Promise<UserAccount> {
+        return await this.authProvider.validateToken(tokenStr);
     }
 
     async getUsersByUsernames(names : string[]): Promise<UserAccount[]> {
         if (names.length > 20) 
             throw new Error(`Lookup via this method is limited to 20`);
         
-        return await Promise.all(
-            names.map(name => this.getUserByUsername(name))
-        );
+        return await this.authProvider.getUsersByUsernames(names);
     }
 
     async getUsersByIds(ids : string[]): Promise<UserAccount[]> {
         if (ids.length > 20) 
             throw new Error(`Lookup via this method is limited to 20`);
         
-        return await Promise.all(
-            ids.map(id => this.getUserById(id))
-        );
+        return await this.authProvider.getUsersByIds(ids);
     }
 
     async getUserByUsername(username : string): Promise<UserAccount> {
-        return await this.datastore.read<UserAccount>(`/usernames/${username}`);
+        return await this.authProvider.getUserByUsername(username);
     }
 
     async getUserById(uid : string): Promise<UserAccount> {
         return await this.datastore.read<UserAccount>(`/users/${uid}`);
-    }
-
-    async updateUser(user : UserAccount) {
-        user.updatedAt = Date.now();
-        await this.datastore.multiUpdate([
-            `/users/${user.id}`,
-            `/usernames/${user.username}`
-        ], user);
     }
 
     async sendNotification(notification : Partial<Notification>) {
