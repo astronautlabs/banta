@@ -6,4 +6,4 @@ export * from './engage-logo.component';
 export * from './chat';
 export * from './live-message.component';
 
-export * from './lib.module';
+export * from './banta-sdk.module';

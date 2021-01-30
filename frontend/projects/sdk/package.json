@@ -1,0 +1,31 @@
+{
+  "name": "sdk",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^9.1.12",
+    "@angular/core": "^9.1.12",
+    
+    "@alterior/platform-angular": "^3.0.0-beta.73",
+    "@angular/animations": "~9.1.12",
+    "@angular/cdk": "^9.2.4",
+    "@angular/fire": "^6.0.4",
+    "@angular/forms": "^9.1.11",
+    "@angular/material": "^9.2.4",
+    "@angular/platform-browser": "~9.1.11",
+    "@angular/platform-browser-dynamic": "~9.1.11",
+    "@angular/router": "~9.1.11",
+    "@astronautlabs/datastore": "^2.0.0",
+    "@astronautlabs/datastore-firestore": "^2.0.2",
+    "@astronautlabs/licensing": "0.0.10",
+    "firebase": "^7.15.4",
+    "ngx-markdown": "^9.1.1",
+    "rxjs": "~6.5.5",
+    "subsink": "^1.0.1",
+    "tslib": "^1.10.0",
+    "twemoji": "^12.1.4",
+    "yaml": "^1.10.0"
+  },
+  "dependencies": {
+    "tslib": "^1.10.0"
+  }
+}

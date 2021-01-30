@@ -18,6 +18,12 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "sdk": [
+        "dist/sdk/sdk",
+        "dist/sdk"
+      ]
+    }
   }
 }
