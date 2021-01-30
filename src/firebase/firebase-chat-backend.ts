@@ -116,6 +116,12 @@ export class FirebaseChatBackend extends ChatBackendService {
         return result;
     }
     
+    async getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage> {
+        return await this.datastore.read<ChatMessage>(
+            `/topics/${topicId}/messages/${parentMessageId}/messages/${messageId}`
+        );
+    }
+
     async getMessage(topicId : string, messageId : string): Promise<ChatMessage> {
         return await this.datastore.read<ChatMessage>(
             `/topics/${topicId}/messages/${messageId}`
