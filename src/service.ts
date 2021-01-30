@@ -3,7 +3,7 @@ import { ChatModule } from './chat/chat.module';
 import { InfrastructureModule } from './infrastructure';
 import * as express from 'express';
 import { AccountsModule } from './accounts';
-import { FirebaseModule } from 'firebase/firebase.module';
+import { FirebaseModule } from './firebase/firebase.module';
 
 @WebService({
     imports: [
