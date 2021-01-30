@@ -3,9 +3,9 @@ import { Observable } from 'rxjs';
 import { User } from '../accounts';
 
 export interface ChatSource {
-    messageReceived : Observable<ChatMessage>;
-    messageSent : Observable<ChatMessage>;
-    messages : ChatMessage[];
-    currentUserChanged? : Observable<User>;
-    send?(message : ChatMessage);
+    readonly messageReceived : Observable<ChatMessage>;
+    readonly messageSent : Observable<ChatMessage>;
+    readonly messages : ChatMessage[];
+    readonly currentUserChanged? : Observable<User>;
+    send(message : ChatMessage);
 }

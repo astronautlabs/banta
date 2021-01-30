@@ -1,4 +1,4 @@
-import { Storable } from "infrastructure";
+import { Storable } from "../infrastructure";
 
 export interface User extends Storable {
     id : string;

@@ -1,6 +1,6 @@
 import { Injectable } from "injection-js";
 import * as firebaseAdmin from 'firebase-admin';
-import { FirebaseService } from "./firebase.service";
+import { FirebaseServiceX } from "./firebase.service";
 import { Storable } from "./storable";
 
 export class Transaction {
@@ -88,7 +88,7 @@ export class Transaction {
 @Injectable()
 export class DataStore {
     constructor(
-        private firebase : FirebaseService
+        private firebase : FirebaseServiceX
     ) {
     }
 

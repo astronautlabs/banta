@@ -1,22 +1,25 @@
 import { AuthenticationProvider, UserAccount } from "../accounts";
 import * as firebaseAdmin from 'firebase-admin';
 import { DataStore } from "@astronautlabs/datastore";
+import { FirebaseStoreRef } from "./firebase-store-ref";
+import { Injectable } from '@alterior/di';
 
+@Injectable()
 export class FirebaseAuthenticationProvider extends AuthenticationProvider {
     constructor(
-        private datastore : DataStore
+        private storeRef : FirebaseStoreRef
     ) {
         super();
     }
+
+    get datastore() {
+        return this.storeRef.store;
+    }
     
     async validateToken(tokenStr : string): Promise<UserAccount> {
-        console.log('validateToken()');
         let decodedToken = await firebaseAdmin.auth().verifyIdToken(tokenStr);
 
-        console.log(`validateToken with response`);
         if (decodedToken.u) {
-            console.log(`user in token:`);
-            console.dir(decodedToken.u);
             return decodedToken.u;
         }
         

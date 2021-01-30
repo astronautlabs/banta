@@ -5,7 +5,7 @@ import * as firebaseAdmin from "firebase-admin";
 import * as firebase from 'firebase';
 
 @Injectable()
-export class FirebaseService {
+export class FirebaseServiceX {
     constructor() {
         let firebaseOptions : firebaseAdmin.AppOptions = {
             projectId: GCP_PROJECT_ID,
@@ -16,10 +16,7 @@ export class FirebaseService {
             firebaseOptions.credential = firebaseAdmin.credential.cert(LOCAL_GCP_CREDENTIALS);
         
         firebaseAdmin.initializeApp(firebaseOptions);
-        firebase.initializeApp({
-            projectId: GCP_PROJECT_ID,
-            databaseURL: FIREBASE_FIRESTORE_URL
-        });
+        firebase.initializeApp(firebaseOptions);
     }
 
     get XfirebaseAdmin() {
