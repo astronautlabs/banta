@@ -3,8 +3,8 @@ import { ChatMessage, User, ChatSource, NewMessageForm, ChatBackendService, Noti
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import { SubSink } from 'subsink';
 import { MatDialog } from '@angular/material/dialog';
-import { SignInDialogComponent } from '../accounts';
 import { FirehoseChatComponent } from '../chat';
+import { BantaService } from '../common';
 
 const GENERIC_AVATAR_URL = 'https://gravatar.com/avatar/915c804e0be607a4ad766ddadea5c48a?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png';
 
@@ -346,6 +346,7 @@ export class MockSubpointSource implements ChatSource {
 })
 export class EngageComponent {
     constructor(
+        private banta : BantaService,
         private backend : ChatBackendService,
         private matDialog : MatDialog
     ) {
@@ -365,7 +366,7 @@ export class EngageComponent {
 
     ngOnInit() {
         this._subs.add(
-            this.backend.userChanged.subscribe(user => this.currentUser = user),
+            this.banta.userChanged.subscribe(user => this.currentUser = user),
             this.backend.notificationsChanged.subscribe(notifs => this.notifications = notifs),
             this.backend.newNotification.subscribe(notif => {
                 this.newNotifications = true;
@@ -432,7 +433,7 @@ export class EngageComponent {
             }
             this.mobileFocus = 'points';
             this.pointOpen = message;
-            this.pointSubChat = this.backend.getSourceForThread(message);
+            this.pointSubChat = await this.backend.getSourceForThread(message);
             this.pointOpen = await this.backend.refreshMessage(message);
             this.newPointSubMessage = {};
         } else if (viewType === 'chat') {
@@ -479,20 +480,9 @@ export class EngageComponent {
         this.connectToTopic(this._topicID);
     }
 
-    async signOut() {
-        try {
-            await this.backend.signOut();
-        } catch (e) {
-            console.error(`Caught error while trying to sign out:`);
-            console.error(e);
-
-            alert(`An error occurred while trying to sign out: ${e.message}`);
-        }
-    }
-
-    private connectToTopic(id : string) {
-        this.firehoseSource = this.backend.getSourceForTopic(`${id}_firehose`);
-        this.pointSource = this.backend.getSourceForTopic(`${id}_thepoint`);
+    private async connectToTopic(id : string) {
+        this.firehoseSource = await this.backend.getSourceForTopic(`${id}_firehose`);
+        this.pointSource = await this.backend.getSourceForTopic(`${id}_thepoint`);
     }
 
     showSignIn() {

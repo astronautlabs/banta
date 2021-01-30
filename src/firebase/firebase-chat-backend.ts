@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ChatBackendService, ChatSource, ChatMessage, User, UserAccount, Notification, NewUserAccount, SignUpResult } from '../lib';
+import { ChatBackendService, ChatSource, ChatMessage, User, UserAccount, Notification, NewUserAccount, SignUpResult, BantaService } from '../lib';
 import { DataStore } from './datastore';
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import * as firebase from 'firebase';
@@ -8,6 +8,7 @@ import { environment } from 'src/environments/environment';
 @Injectable()
 export class FirebaseChatBackend extends ChatBackendService {
     constructor(
+        private banta : BantaService,
         private datastore : DataStore
     ) {
         super();
@@ -26,7 +27,7 @@ export class FirebaseChatBackend extends ChatBackendService {
                 this.notifUnsubscribe = firebase.firestore()
                     .collection(`/users/${user.uid}/notifications`)
                     .orderBy('sentAt', 'desc')
-                    .limitToLast(20)
+                    .limitToLast(100)
                     .onSnapshot(result => {
                         let notifs = result.docs.map(x => <Notification>x.data());
                         this._notificationsChanged.next(notifs);
@@ -121,11 +122,11 @@ export class FirebaseChatBackend extends ChatBackendService {
         );
     }
 
-    getSourceForThread(message : ChatMessage) : ChatSource {
+    async getSourceForThread(message : ChatMessage) : Promise<ChatSource> {
         return this.getSourceForCollection(`/topics/${message.topicId}/messages/${message.id}/messages`);
     }
     
-    getSourceForTopic(topicId: string): ChatSource {
+    async getSourceForTopic(topicId: string): Promise<ChatSource> {
         return this.getSourceForCollection(`/topics/${topicId}/messages`)
     }
 
@@ -176,7 +177,7 @@ export class FirebaseChatBackend extends ChatBackendService {
         }
     }
 
-    private getSourceForCollection(collectionPath: string): ChatSource {
+    private async getSourceForCollection(collectionPath: string): Promise<ChatSource> {
         let maxCount = 200;
         let liveMessagesRef = this.datastore.firestore
             .collection(collectionPath)
@@ -193,13 +194,23 @@ export class FirebaseChatBackend extends ChatBackendService {
                 if (change.type === 'added') {
                     let message = <ChatMessage>change.doc.data();
     
+                    console.log(`MESSAGE ADDED:`);
+                    console.dir(message);
+
                     messages.push(message);
                     messageReceived.next(message);
 
                 } else if (change.type === 'modified') {
+                    console.log(`MESSAGE MODIFIED:`);
+                    console.dir(change.doc.data());
                     let message = <ChatMessage>change.doc.data();
                     let existingMessage = messages.find(x => x.id === message.id);
-                    Object.assign(existingMessage, message);
+
+                    if (existingMessage) {
+                        console.log(`EXISTING MESSAGE:`);
+                        console.dir(existingMessage);
+                        Object.assign(existingMessage, message);
+                    }
                 } else if (change.type === 'removed') {
                     let message = <ChatMessage>change.doc.data();
 
@@ -216,7 +227,7 @@ export class FirebaseChatBackend extends ChatBackendService {
         });
 
         let self = this;
-
+        
         return {
             messageReceived,
             messageSent,
@@ -241,7 +252,7 @@ export class FirebaseChatBackend extends ChatBackendService {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${
-                                await firebase.auth().currentUser.getIdToken()
+                                await self.banta.user.token
                             }`,
                             'Content-Type': 'application/json'
                         },

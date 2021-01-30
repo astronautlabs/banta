@@ -4,7 +4,7 @@ import { Subject, Observable } from 'rxjs';
 import { User, ChatSource, ChatMessage, NewMessageForm, ChatBackendService } from '../../model';
 import { SubSink } from 'subsink';
 import { ChatViewComponent } from '../chat-view/chat-view.component';
-import { AccountsService } from 'src/lib/accounts';
+import { BantaService } from '../../common';
 
 @Component({
     selector: 'engage-firehose',
@@ -13,8 +13,8 @@ import { AccountsService } from 'src/lib/accounts';
 })
 export class FirehoseChatComponent {
     constructor(
+        private banta : BantaService,
         private backend : ChatBackendService,
-        private accounts : AccountsService,
         private elementRef : ElementRef<HTMLElement>
     ) {
     }
@@ -25,7 +25,7 @@ export class FirehoseChatComponent {
 
     ngOnInit() {
         this._subs.add(
-            this.backend.userChanged.subscribe(user => this.user = user)
+            this.banta.userChanged.subscribe(user => this.user = user)
         );
     }
 

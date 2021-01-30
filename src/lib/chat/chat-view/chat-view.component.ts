@@ -62,6 +62,12 @@ export class ChatViewComponent {
             this._sourceSubs = new SubSink();
             this.messages = value.messages.slice();
 
+            console.log(`Source set:`);
+            console.dir(value);
+
+            console.log(`Messages loaded:`);
+            console.dir(this.messages);
+            
             this._sourceSubs.add(
                 this._source.messageReceived
                     .subscribe(msg => this.messageReceived(msg)),

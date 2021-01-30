@@ -33,16 +33,11 @@ export interface MentionNotification extends Notification {
 
 
 export interface ChatBackend {
-    readonly userChanged : Observable<UserAccount>;
-
-    signInWithPassword(email : string, password : string) : Promise<UserAccount>;
-    signOut() : Promise<void>;
-    signUp(user : Partial<NewUserAccount>): Promise<SignUpResult>;
-    
-    getSourceForTopic(topicId : string) : ChatSource;
-    getSourceForThread(message : ChatMessage) : ChatSource;
+    getSourceForTopic(topicId : string) : Promise<ChatSource>;
+    getSourceForThread(message : ChatMessage) : Promise<ChatSource>;
     refreshMessage(message : ChatMessage): Promise<ChatMessage>;
     getMessage(topicId : string, messageId : string): Promise<ChatMessage>;
+    getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
     upvoteMessage(topicId : string, messageId : string, submessageId? : string): Promise<void>;
     watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void;
 

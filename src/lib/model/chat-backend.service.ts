@@ -8,15 +8,11 @@ import { ChatMessage } from './chat-message';
 
 @Injectable()
 export abstract class ChatBackendService implements ChatBackend {
-    abstract get userChanged() : Observable<UserAccount>;
-    abstract getSourceForTopic(topicId : string) : ChatSource;
-    abstract signInWithPassword(email : string, password : string): Promise<UserAccount>;
-    abstract signUp(user : Partial<NewUserAccount>);
-
-    abstract signOut() : Promise<void>;
-    abstract getSourceForThread(message : ChatMessage) : ChatSource;
+    abstract getSourceForTopic(topicId : string) : Promise<ChatSource>;
+    abstract getSourceForThread(message : ChatMessage) : Promise<ChatSource>;
     abstract refreshMessage(message : ChatMessage): Promise<ChatMessage>;
     abstract getMessage(topicId : string, messageId : string): Promise<ChatMessage>;
+    abstract getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
     abstract upvoteMessage(topicId : string, messageId : string, submessageId? : string): Promise<void>;
     abstract watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void;
     

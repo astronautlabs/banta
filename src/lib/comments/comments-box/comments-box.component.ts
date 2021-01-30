@@ -2,7 +2,7 @@ import { Component, Input, Output } from '@angular/core';
 import { User, ChatSource, ChatMessage, ChatBackendService } from '../../model';
 import { Subject, Observable } from 'rxjs';
 import { SubSink } from 'subsink';
-import { AccountsService } from '../../accounts';
+import { BantaService } from '../../common';
 
 @Component({
     selector: 'engage-comments',
@@ -11,8 +11,8 @@ import { AccountsService } from '../../accounts';
 })
 export class CommentsBoxComponent {
     constructor(
-        private backend : ChatBackendService,
-        private accounts : AccountsService
+        private banta : BantaService,
+        private backend : ChatBackendService
     ) {
     }
 
@@ -25,8 +25,8 @@ export class CommentsBoxComponent {
     private _subs = new SubSink();
 
     ngOnInit() {
-        this._subs.add(     
-            this.backend.userChanged.subscribe(user => this.user = user)
+        this._subs.add(
+            this.banta.userChanged.subscribe(user => this.user = user)
         )
     }
 

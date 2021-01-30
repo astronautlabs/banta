@@ -7,6 +7,6 @@ export interface ChatSource {
     messageSent : Observable<ChatMessage>;
     messages : ChatMessage[];
     currentUserChanged? : Observable<User>;
-    send?(message : ChatMessage);
+    send(message : ChatMessage);
     close?();
 }

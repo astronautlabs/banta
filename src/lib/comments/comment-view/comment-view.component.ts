@@ -80,7 +80,6 @@ export class CommentViewComponent {
 
             this._sourceSubs = new SubSink();
             this.messages = messages.slice();
-
             this._sourceSubs.add(
                 this._source.messageReceived
                     .subscribe(msg => this.messageReceived(msg)),

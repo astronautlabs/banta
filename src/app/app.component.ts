@@ -1,10 +1,9 @@
 import { Component, HostBinding } from '@angular/core';
 import * as firebase from 'firebase';
-import { AccountsService } from 'src/lib/accounts';
-import { ChatBackendService, User } from '../lib';
+import { BantaService, ChatBackendService, User } from '../lib';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { AboutComponent, LoginComponent } from '@astronautlabs/chassis';
+import { AboutComponent, LoginComponent, AuthenticationService } from '@astronautlabs/chassis';
 
 @Component({
   selector: 'app-root',
@@ -13,10 +12,11 @@ import { AboutComponent, LoginComponent } from '@astronautlabs/chassis';
 })
 export class AppComponent {
   constructor(
-    private accounts : AccountsService,
+    private auth : AuthenticationService,
     private backend : ChatBackendService,
     private router : Router,
-    private matDialog : MatDialog
+    private matDialog : MatDialog,
+    private banta : BantaService
   ) {
     this.year = new Date().getFullYear();
   }
@@ -32,10 +32,21 @@ export class AppComponent {
   darkTheme = true;
 
   ngOnInit() {
-    this.backend.userChanged.subscribe(user => {
-      console.log('user changed:');
-      console.dir(user);
-      this.user = user
+    
+    this.auth.userChanged.subscribe(async user => {
+      if (user) {
+        let token = await user.account.getIdToken()
+        this.user = this.banta.user = {
+          id: user.account.uid,
+          displayName: user.profile.displayName,
+          username: 'bob', //user.profile.username
+          token
+        };
+
+      } else {
+        this.banta.user = null;
+        this.user = null;
+      }
     });
 
     this.router.events.subscribe(ev => {
@@ -54,7 +65,7 @@ export class AppComponent {
   }
 
   showSignUp() {
-    this.accounts.showSignUp();
+    this.matDialog.open(LoginComponent);
   }
 
   showSignIn() {
