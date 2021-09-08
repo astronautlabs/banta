@@ -1,4 +1,4 @@
-import { Notification } from "./accounts.service";
+import { Notification } from "./notification";
 import { Observable } from 'rxjs';
 
 export abstract class NotificationsProvider {

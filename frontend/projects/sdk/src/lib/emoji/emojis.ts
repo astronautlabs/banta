@@ -454,7 +454,7 @@ export const EMOJIS = {
     "char": "👍",
     "category": "people"
   },
-  "-1": {
+  "minus1": { // TODO: should be "-1", fix TS bug
     "keywords": ["thumbsdown", "no", "dislike", "hand"],
     "char": "👎",
     "category": "people"

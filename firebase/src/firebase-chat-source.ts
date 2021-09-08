@@ -1,14 +1,13 @@
-import { ChatMessage, ChatSource } from "../chat";
-import { Observable, Subject } from "rxjs";
-import { Injectable } from "@alterior/di";
+import { ChatMessage, ChatSource } from "@banta/common";
+import { Observable, Subject, Subscription } from "rxjs";
 import { DataStore } from "@astronautlabs/datastore";
 import { createDataStore } from "@astronautlabs/datastore-firestore";
-import { AuthenticationProvider, NotificationsProvider } from "../accounts";
-import { MentionNotification } from "../chat/chat-backend";
+import { AuthenticationProvider, NotificationsProvider } from "@banta/common";
+import { MentionNotification } from "@banta/common";
 import { v4 as uuid } from 'uuid';
-import { Counter } from "../infrastructure";
-import * as firebaseAdmin from "firebase-admin";
-import { lazyConnection } from "../common";
+import { Counter } from "@banta/common";
+import { lazyConnection } from "./lazy-connection";
+import * as firebase from 'firebase';
 
 export class FirebaseChatSource implements ChatSource {
     constructor(
@@ -18,50 +17,45 @@ export class FirebaseChatSource implements ChatSource {
     ) {
         this.datastore = createDataStore();
 
-        let unsubscribe : () => void;
+        let subscription : Subscription;
         this._messageReceived = lazyConnection({
             start: subject => {
-                let maxCount = 200;        
-                let liveMessagesRef = this.firestore
-                    .collection(`${collectionPath}/messages`)
-                    .orderBy('sentAt', 'asc')
-                    .limit(100) // todo limitToLast
-                ;
-
-                unsubscribe = liveMessagesRef.onSnapshot(observer => {
-                    for (let change of observer.docChanges()) {
-                        if (change.type === 'added') {
-                            let message = <ChatMessage>change.doc.data();
+                let maxCount = 200;
+                subscription = this.datastore
+                    .watchForChanges(`${collectionPath}/messages`, { order: { field: 'sentAt', direction: 'asc' }, limit: 100 })
+                    .subscribe(changes => {
+                        for (let change of changes) {
+                            if (change.type === 'added') {
+                                let message = <ChatMessage>change.document;
+                
+                                this.messages.push(message);
+                                subject.next(message);
             
-                            this.messages.push(message);
-                            subject.next(message);
-        
-                        } else if (change.type === 'modified') {
-                            let message = <ChatMessage>change.doc.data();
-                            let existingMessage = this.messages.find(x => x.id === message.id);
-                            Object.assign(existingMessage, message);
-                        } else if (change.type === 'removed') {
-                            let message = <ChatMessage>change.doc.data();
-        
-                            console.log('removed item: ');
-                            console.dir(message);
-        
-                            let index = this.messages.findIndex(x => x.id === message.id);
-                            this.messages.splice(index, 1);
+                            } else if (change.type === 'modified') {
+                                let message = <ChatMessage>change.document;
+                                let existingMessage = this.messages.find(x => x.id === message.id);
+                                Object.assign(existingMessage, message);
+                            } else if (change.type === 'removed') {
+                                let message = <ChatMessage>change.document;
+            
+                                console.log('removed item: ');
+                                console.dir(message);
+            
+                                let index = this.messages.findIndex(x => x.id === message.id);
+                                this.messages.splice(index, 1);
+                            }
                         }
-                    }
-        
-                    while (this.messages.length > maxCount)
-                        this.messages.shift();
-                });
-        
+            
+                        while (this.messages.length > maxCount)
+                            this.messages.shift();
+                    })
+                ;
             },
-            stop: () => unsubscribe()
+            stop: () => subscription.unsubscribe()
         });
         
     }
 
-    firestore : firebaseAdmin.firestore.Firestore;
     datastore : DataStore;
 
     _messageReceived : Observable<ChatMessage>;
@@ -153,7 +147,7 @@ export class FirebaseChatSource implements ChatSource {
             ),
             this.datastore.update<Counter>(
                 `${topicPath}/counters/messages`,
-                { value: <any>firebaseAdmin.firestore.FieldValue.increment(1) }
+                { value: <any>firebase.firestore.FieldValue.increment(1) }
             )
         ]);
 

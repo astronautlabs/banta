@@ -1,28 +1,26 @@
 import { Injectable } from "@alterior/di";
-import { Observable, Subject } from "rxjs";
-import { ChatSource, ChatMessage, Vote } from "../chat";
-import { ChatBackend, Notification } from "../chat/chat-backend";
-import * as firebaseAdmin from "firebase-admin";
+import { ChatSource, ChatMessage, Vote } from "@banta/common";
+import { ChatBackend, Notification } from "@banta/common";
+import * as firebase from "firebase";
 import { DataStore } from "@astronautlabs/datastore";
-import { createDataStore } from "@astronautlabs/datastore-firestore";
 import { FirebaseChatSource } from "./firebase-chat-source";
-import { AuthenticationProvider, NotificationsProvider, UpvoteNotification } from "../accounts";
-import { Counter } from "../infrastructure";
+import { AuthenticationProvider, NotificationsProvider, UpvoteNotification } from "@banta/common";
+import { Counter } from "@banta/common";
 import { FirebaseStoreRef } from "./firebase-store-ref";
 
 @Injectable()
 export class FirebaseChatBackend implements ChatBackend {
     constructor(
-        private auth : AuthenticationProvider,
-        private notif : NotificationsProvider,
-        private storeRef : FirebaseStoreRef
+        protected auth : AuthenticationProvider,
+        protected notif : NotificationsProvider,
+        protected storeRef : FirebaseStoreRef
     ) {
-        this.firestore = firebaseAdmin.app().firestore();
+        //this.firestore = firebaseAdmin.app().firestore();
         this.datastore = this.storeRef.store;
     }
 
-    private datastore : DataStore;
-    private firestore : firebaseAdmin.firestore.Firestore;
+    protected datastore : DataStore;
+    //private firestore : firebaseAdmin.firestore.Firestore;
 
     async getSourceForTopic(topicId: string): Promise<ChatSource> {
         return await this.getSourceForCollection(`/topics/${topicId}`);
@@ -32,27 +30,29 @@ export class FirebaseChatBackend implements ChatBackend {
         return await this.getSourceForCollection(`/topics/${topicId}/messages/${id}`);
     }
 
-    async getSourceForCollection(collectionPath : string): Promise<ChatSource> {
+    protected async getSourceForCollection(collectionPath : string): Promise<ChatSource> {
         return new FirebaseChatSource(this.auth, this.notif, collectionPath);
     }
 
     async refreshMessage(message: ChatMessage): Promise<ChatMessage> {
-        // TODO
-        return message;
+        let result = await this.datastore.read<ChatMessage>(`/topics/${message.topicId}/messages/${message.id}`);
+
+        if (!result)
+            return message;
+        
+        return result;
     }
 
-    async getSubMessage(topicId : string, parentMessageId : string, messageId : string) {
-        let snapshot = await this.firestore.doc(`/topics/${topicId}/messages/${parentMessageId}/messages/${messageId}`).get();
-        if (!snapshot.exists)
-            throw new Error(`No such message ${topicId}/${messageId}`);
-        return <ChatMessage> snapshot.data();
+    async getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage> {
+        return await this.datastore.read<ChatMessage>(
+            `/topics/${topicId}/messages/${parentMessageId}/messages/${messageId}`
+        );
     }
-    
-    async getMessage(topicId: string, messageId: string): Promise<ChatMessage> {
-        let snapshot = await this.firestore.doc(`/topics/${topicId}/messages/${messageId}`).get();
-        if (!snapshot.exists)
-            throw new Error(`No such message ${topicId}/${messageId}`);
-        return <ChatMessage> snapshot.data();
+
+    async getMessage(topicId : string, messageId : string): Promise<ChatMessage> {
+        return await this.datastore.read<ChatMessage>(
+            `/topics/${topicId}/messages/${messageId}`
+        );
     }
 
     async upvoteMessage(topicId: string, messageId: string, submessageId: string, vote : Vote): Promise<void> {
@@ -83,11 +83,11 @@ export class FirebaseChatBackend implements ChatBackend {
                 ),
                 txn.set(
                     `${path}/counters/upvotes`, 
-                    <Counter>{ value: <any>firebaseAdmin.firestore.FieldValue.increment(1) }
+                    <Counter>{ value: <any>firebase.firestore.FieldValue.increment(1) }
                 ),
                 txn.update(
                     `${path}`, 
-                    <Partial<ChatMessage>>{ upvotes: <any>firebaseAdmin.firestore.FieldValue.increment(1) }
+                    <Partial<ChatMessage>>{ upvotes: <any>firebase.firestore.FieldValue.increment(1) }
                 )
             ]);
         });
@@ -103,6 +103,16 @@ export class FirebaseChatBackend implements ChatBackend {
     }
 
     watchMessage(message: ChatMessage, handler: (message: ChatMessage) => void): () => void {
-        throw new Error("Method not implemented.");
+        if (!message || !message.id) {
+            return;
+        }
+
+        let path = `/topics/${message.topicId}/messages/${message.id}`;
+
+        if (message.parentMessageId)
+            path = `/topics/${message.topicId}/messages/${message.parentMessageId}/messages/${message.id}`;
+
+        let subscription = this.datastore.watch<ChatMessage>(path).subscribe(x => handler(x));
+        return () => subscription.unsubscribe();
     }
 }

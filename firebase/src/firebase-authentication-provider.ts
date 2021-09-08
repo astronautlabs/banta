@@ -1,8 +1,7 @@
-import { AuthenticationProvider, UserAccount } from "../accounts";
-import * as firebaseAdmin from 'firebase-admin';
-import { DataStore } from "@astronautlabs/datastore";
+import { AuthenticationProvider, UserAccount } from "@banta/common";
 import { FirebaseStoreRef } from "./firebase-store-ref";
 import { Injectable } from '@alterior/di';
+import { JWT } from "@astronautlabs/jwt";
 
 @Injectable()
 export class FirebaseAuthenticationProvider extends AuthenticationProvider {
@@ -17,23 +16,29 @@ export class FirebaseAuthenticationProvider extends AuthenticationProvider {
     }
     
     async validateToken(tokenStr : string): Promise<UserAccount> {
-        let decodedToken = await firebaseAdmin.auth().verifyIdToken(tokenStr);
+        let publicKeyUrl = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
+        let publicKeyResponse = await fetch(publicKeyUrl);
+        let publicKey = await publicKeyResponse.json();
+        let decodedToken = await JWT.validate(tokenStr, {
+            algorithm: 'RS256',
+            secretOrKey: publicKey
+        });
 
-        if (decodedToken.u) {
-            return decodedToken.u;
+        if (decodedToken.claims.u) {
+            return decodedToken.claims.u;
         }
         
-        let uid = decodedToken.uid;
-        let user = await firebaseAdmin.auth().getUser(uid);
+        let uid = decodedToken.claims.uid;
+        //let user = await firebaseAdmin.auth().getUser(uid);
         
         return {
             id: uid,
             uid,
             createdAt: null,
             updatedAt: null,
-            email: user.email,
-            displayName: user.displayName || null,
-            avatarUrl: user.photoURL || null,
+            email: decodedToken.claims.email,
+            displayName: null,
+            avatarUrl: null,
             username: 'bob' // TODO
         }
     }

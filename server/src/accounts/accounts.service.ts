@@ -1,57 +1,13 @@
 import { Injectable } from "@alterior/di";
-import { Storable, Counter } from "../infrastructure";
-import { ChatMessage } from "../chat";
-import { User } from "./user";
 import * as uuid from 'uuid/v4';
-import * as firebaseAdmin from 'firebase-admin';
-import * as jwt from 'jsonwebtoken';
 
-import { NewUserAccount } from "./new-user-account";
-import { Response } from "@alterior/web-server";
+import { Notification, NewUserAccount, UserAccount, SignUpResult, AuthenticationProvider, NotificationsProvider } from "@banta/common";
 import { Logger } from "@alterior/logging";
-import { UserAccount } from "./user-account";
-import { AuthenticationProvider } from "./authentication-provider";
-import { NotificationsProvider } from "./notifications-provider";
 
 export const GOOGLE_IDENTITY = 
     'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit';
 
 const SECRET = 'abcdefghijklmnopqrstuvwxyz';
-
-export interface Notification extends Storable {
-    recipientId : string;
-    sentAt : number;
-    type : string;
-}
-
-export interface ReplyNotification extends Notification {
-    type : 'reply';
-    originalMessage : ChatMessage;
-    replyMessage : ChatMessage;
-}
-
-export interface NoticeNotification extends Notification {
-    type : 'notice',
-    message : string;
-    actionUrl : string;
-    actionLabel : string;
-}
-
-export interface UpvoteNotification extends Notification {
-    type : 'upvote',
-    message : ChatMessage;
-    user : User;
-}
-
-export interface MentionNotification extends Notification {
-    type : 'mention';
-    message : ChatMessage;
-}
-
-export interface SignUpResult {
-    user : User;
-    token : string;
-}
 
 @Injectable()
 export class AccountsService {

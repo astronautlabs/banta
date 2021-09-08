@@ -1,7 +1,7 @@
 import { User } from './user';
-import { Storable } from 'src/firebase/datastore';
 
-export interface ChatMessage extends Storable {
+export interface ChatMessage {
+    id? : string;
     user : User;
     topicId? : string;
     parentMessageId? : string;

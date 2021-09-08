@@ -1,17 +1,6 @@
 import { Injectable } from "@alterior/di";
-import { ChatMessage } from "./chat-message";
-import { DataStore, Counter } from "../infrastructure";
-import { FieldValue } from "@google-cloud/firestore";
-import * as uuid from 'uuid/v4';
-import { AccountsService, MentionNotification, ReplyNotification, UpvoteNotification, User } from "../accounts";
-import { ChatBackend } from "./chat-backend";
-
-export interface Vote {
-    id : string;
-    createdAt : number;
-    user : User;
-    ipAddress : string;
-}
+import { ChatMessage } from "@banta/common";
+import { ChatBackend, Vote } from "@banta/common";
 
 @Injectable()
 export class ChatService {

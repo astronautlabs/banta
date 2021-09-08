@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
 import { EmojiSelectorPanelComponent } from './emoji-selector-panel/emoji-selector-panel.component';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../material.module';
 import { EmojiSelectorButtonComponent } from './emoji-selector-button.component';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 const COMPONENTS = [
     EmojiSelectorPanelComponent,
@@ -13,7 +14,8 @@ const COMPONENTS = [
     declarations: COMPONENTS,
     imports: [
         CommonModule,
-        MaterialModule
+        MatIconModule,
+        MatButtonModule
     ],
     exports: COMPONENTS
 })

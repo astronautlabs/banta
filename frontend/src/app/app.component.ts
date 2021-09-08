@@ -1,6 +1,6 @@
 import { Component, HostBinding } from '@angular/core';
 import * as firebase from 'firebase';
-import { BantaService, ChatBackendService, User } from '../lib';
+import { BantaService, ChatBackendService, User } from '@banta/sdk';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { AboutComponent, LoginComponent, AuthenticationService } from '@astronautlabs/chassis';

@@ -1,7 +1,6 @@
 import { Controller, Post, Body, Response, Get } from "@alterior/web-server";
-import { NewUserAccount } from "./new-user-account";
-import { SignInRequest } from "../chat";
-import { AccountsService, SignUpResult, NoticeNotification } from "./accounts.service";
+import { NewUserAccount, SignUpResult, NoticeNotification } from "@banta/common";
+import { AccountsService } from "./accounts.service";
 import * as bodyParser from 'body-parser';
 
 @Controller('/accounts', {

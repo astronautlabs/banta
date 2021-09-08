@@ -1,11 +1,9 @@
 import { Controller, Post, Body, RouteEvent, PathParam, Response, Patch } from "@alterior/web-server";
-import { ChatMessage } from "./chat-message";
-import { User, NewUserAccount, AccountsService } from "../accounts";
-import * as jwt from 'jsonwebtoken';
+import { ChatMessage, User } from "@banta/common";
+import { AccountsService } from "../accounts";
 import { ChatService } from "./chat.service";
 import * as bodyParser from 'body-parser';
 import { HttpError } from "@alterior/common";
-import * as fbc from 'firebase';
 
 export interface SignInRequest {
     email : string;

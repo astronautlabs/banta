@@ -4,9 +4,10 @@ import { ChatViewComponent } from './chat-view/chat-view.component';
 import { FirehoseChatComponent } from './firehose-chat/firehose-chat.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MaterialModule } from '../../material.module';
 import { EmojiModule } from '../emoji';
 import { LiveChatMessageComponent } from './live-chat-message.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 const COMPONENTS = [
     ChatMessageComponent,
@@ -20,7 +21,8 @@ const COMPONENTS = [
     imports: [
         CommonModule,
         FormsModule,
-        MaterialModule,
+        MatIconModule,
+        MatButtonModule,
         EmojiModule
     ],
     exports: COMPONENTS

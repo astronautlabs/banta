@@ -1,0 +1,17 @@
+{
+  "name": "@banta/common",
+  "version": "0.0.10",
+  "description": "",
+  "private": false,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Astronaut Labs, LLC",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.1.3"
+  }
+}

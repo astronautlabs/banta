@@ -1,11 +1,9 @@
 import { Observable, Subject } from "rxjs";
-import { Notification, NotificationsProvider } from "../accounts";
-import { DataStore } from "@astronautlabs/datastore";
+import { Notification, NotificationsProvider, Counter } from "@banta/common";
 import { FirebaseStoreRef } from "./firebase-store-ref";
 import { v4 as uuid } from 'uuid';
-import { Counter } from "../infrastructure";
-import { FieldValue } from "@google-cloud/firestore";
 import { Injectable } from '@alterior/di';
+import * as firebase from 'firebase';
 
 @Injectable()
 export class FirebaseNotificationsProvider extends NotificationsProvider {
@@ -43,7 +41,7 @@ export class FirebaseNotificationsProvider extends NotificationsProvider {
             ),
             this.datastore.update<Counter>(
                 `/users/${notification.recipientId}/counters/notifications`,
-                { value: <any>FieldValue.increment(1) }
+                { value: <any>firebase.firestore.FieldValue.increment(1) }
             )
         ]);
 

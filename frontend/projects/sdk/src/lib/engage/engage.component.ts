@@ -332,7 +332,7 @@ export class MockSubpointSource implements ChatSource {
         return this._currentUserChanged;
     }
 
-    send?(message: ChatMessage) {
+    send(message: ChatMessage) {
         //throw new Error("Method not implemented.");
     }
 

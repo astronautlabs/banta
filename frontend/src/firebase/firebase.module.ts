@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { ChatBackendService } from 'src/lib';
+import { ChatBackendService } from '@banta/sdk';
 import { FirebaseChatBackend } from './firebase-chat-backend';
 import { DataStore } from './datastore';
 import { AngularFireModule } from '@angular/fire';

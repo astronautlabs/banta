@@ -1,32 +1,7 @@
 import { ChatSource } from './chat-source';
 import { Observable, Subscription } from 'rxjs';
 import { ChatMessage } from './chat-message';
-import { Vote } from './chat.service';
-
-export interface Notification {
-    id : string;
-    recipientId : string;
-    sentAt : number;
-    type : string;
-}
-
-export interface ReplyNotification extends Notification {
-    type : 'reply';
-    originalMessage : ChatMessage;
-    replyMessage : ChatMessage;
-}
-
-export interface NoticeNotification extends Notification {
-    type : 'notice',
-    message : string;
-    actionUrl : string;
-    actionLabel : string;
-}
-
-export interface MentionNotification extends Notification {
-    type : 'mention';
-    message : ChatMessage;
-}
+import { Vote } from './vote';
 
 export abstract class ChatBackend {
     abstract getSourceForTopic(topicId : string) : Promise<ChatSource>;

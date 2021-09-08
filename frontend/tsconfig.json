@@ -10,6 +10,7 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "importHelpers": true,
     "target": "es2015",
     "typeRoots": [
@@ -20,7 +21,7 @@
       "dom"
     ],
     "paths": {
-      "sdk": [
+      "@banta/sdk": [
         "dist/sdk/sdk",
         "dist/sdk"
       ]

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { ChatBackendService, ChatSource, ChatMessage, User, UserAccount, Notification, NewUserAccount, SignUpResult, BantaService } from '../lib';
+import { ChatBackendService, ChatSource, ChatMessage, User, UserAccount, Notification, NewUserAccount, 
+    SignUpResult, BantaService } from '@banta/sdk';
 import { DataStore } from './datastore';
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import * as firebase from 'firebase';

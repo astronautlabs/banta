@@ -1,5 +1,6 @@
-
-/// <reference path="../../../../local-typings/twemoji.d.ts" />
+declare var twemoji: {
+    parse(str: string, options?: { folder: string, ext: string }): string;
+}
 
 import { Component, OnInit, Output } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
