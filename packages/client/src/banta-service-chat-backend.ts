@@ -53,11 +53,10 @@ export class BantaServiceChatSource implements ChatSource {
     }
 }
 
-export class BantaServiceChatBackend extends ChatBackend {
+export class BantaServiceChatBackend implements ChatBackend {
     constructor(
         private underlyingChatBackend : ChatBackend
     ) {
-        super();
     }
 
     async getSourceForTopic(topicId: string): Promise<ChatSource> {

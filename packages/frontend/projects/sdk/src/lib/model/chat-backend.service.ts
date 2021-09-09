@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ChatSource } from './chat-source';
-import { ChatBackend, Notification } from './chat-backend';
+import { ChatBackend, Notification } from '@banta/common';
 import { Observable } from 'rxjs';
 import { UserAccount } from './user-account';
 import { NewUserAccount } from './new-user-account';
@@ -9,7 +9,7 @@ import { ChatMessage } from './chat-message';
 @Injectable()
 export abstract class ChatBackendService implements ChatBackend {
     abstract getSourceForTopic(topicId : string) : Promise<ChatSource>;
-    abstract getSourceForThread(message : ChatMessage) : Promise<ChatSource>;
+    abstract getSourceForThread(topicId : string, messageId : string) : Promise<ChatSource>;
     abstract refreshMessage(message : ChatMessage): Promise<ChatMessage>;
     abstract getMessage(topicId : string, messageId : string): Promise<ChatMessage>;
     abstract getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
