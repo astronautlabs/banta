@@ -1,7 +1,8 @@
 import { ChatSource } from './chat-source';
-import { Observable, Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ChatMessage } from './chat-message';
 import { Vote } from './vote';
+import { Notification } from './notification';
 
 export interface ChatBackend {
     getSourceForTopic(topicId : string) : Promise<ChatSource>;
