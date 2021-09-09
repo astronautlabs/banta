@@ -19,5 +19,5 @@
     "@astronautlabs/datastore-firestore": "^3.1.0",
     "@banta/common": "^0.0.12"
   },
-  "gitHead": "1f29dc8ccc30e92fdce95ddf8e4ec3f380a45afb"
+  "gitHead": "11c174d389c311ad866d8871d7be74d70da0116e"
 }

@@ -1,4 +1,4 @@
-import { ChatSource, ChatMessage, ChatBackend } from '@banta/common';
+import { ChatSource, ChatMessage, ChatBackend, Notification } from '@banta/common';
 import { Observable } from 'rxjs';
 
 export class BantaServiceChatSource implements ChatSource {
