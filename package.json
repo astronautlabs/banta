@@ -1,6 +1,6 @@
 {
   "name": "@banta/workspace",
-  "version": "1.0.0",
+  "version": "0.0.9",
   "description": "This is the Banta project, an effort to create an open framework for chatting/comments on the web.",
   "main": "index.js",
   "scripts": {
