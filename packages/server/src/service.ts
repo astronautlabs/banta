@@ -1,12 +1,10 @@
 import { WebService, Get, Controller, Mount } from '@alterior/web-server';
 import { ChatModule } from './chat/chat.module';
-import { InfrastructureModule } from './infrastructure';
 import * as express from 'express';
 import { AccountsModule } from './accounts';
 
 @WebService({
     imports: [
-        InfrastructureModule,
         AccountsModule,
         ChatModule
     ],
