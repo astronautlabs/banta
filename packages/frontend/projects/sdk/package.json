@@ -1,6 +1,6 @@
 {
   "name": "@banta/sdk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -11,11 +11,9 @@
   "peerDependencies": {
     "@angular/common": "^9.1.12",
     "@angular/core": "^9.1.12",
-    
     "@alterior/platform-angular": "^3.0.0-beta.73",
     "@angular/animations": "~9.1.12",
     "@angular/cdk": "^9.2.4",
-    "@angular/fire": "^6.0.4",
     "@angular/forms": "^9.1.11",
     "@angular/material": "^9.2.4",
     "@angular/platform-browser": "~9.1.11",
