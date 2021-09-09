@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
-import { ChatSource } from './chat-source';
-import { ChatBackend, Notification } from '@banta/common';
+import { ChatBackend, Notification, ChatSource, ChatMessage } from '@banta/common';
 import { Observable } from 'rxjs';
-import { UserAccount } from './user-account';
-import { NewUserAccount } from './new-user-account';
-import { ChatMessage } from './chat-message';
 
 @Injectable()
 export abstract class ChatBackendService implements ChatBackend {

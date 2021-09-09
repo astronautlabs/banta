@@ -1,10 +1,11 @@
 import { Component, Input, ViewChild, ElementRef, HostBinding } from "@angular/core";
-import { ChatMessage, User, ChatSource, NewMessageForm, ChatBackendService, Notification } from '../model';
+import { NewMessageForm, ChatMessage, User, ChatSource, Notification } from '@banta/common';
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import { SubSink } from 'subsink';
 import { MatDialog } from '@angular/material/dialog';
 import { FirehoseChatComponent } from '../chat';
 import { BantaService } from '../common';
+import { ChatBackendService } from "../chat-backend.service";
 
 const GENERIC_AVATAR_URL = 'https://gravatar.com/avatar/915c804e0be607a4ad766ddadea5c48a?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png';
 
@@ -433,7 +434,7 @@ export class EngageComponent {
             }
             this.mobileFocus = 'points';
             this.pointOpen = message;
-            this.pointSubChat = await this.backend.getSourceForThread(message);
+            this.pointSubChat = await this.backend.getSourceForThread(message.topicId, message.id);
             this.pointOpen = await this.backend.refreshMessage(message);
             this.newPointSubMessage = {};
         } else if (viewType === 'chat') {
