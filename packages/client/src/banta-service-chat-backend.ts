@@ -59,6 +59,14 @@ export class BantaServiceChatBackend implements ChatBackend {
     ) {
     }
 
+    get notificationsChanged(): Observable<Notification[]> {
+        return this.underlyingChatBackend.notificationsChanged;
+    }
+
+    get newNotification(): Observable<Notification> {
+        return this.underlyingChatBackend.newNotification;
+    }
+
     async getSourceForTopic(topicId: string): Promise<ChatSource> {
         return new BantaServiceChatSource(
             await this.underlyingChatBackend.getSourceForTopic(topicId),
