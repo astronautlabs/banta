@@ -20,7 +20,6 @@
     "@angular/router": "~9.1.11",
     "@astronautlabs/datastore": "^2.0.0",
     "@astronautlabs/datastore-firestore": "^2.0.2",
-    "@astronautlabs/licensing": "0.0.10",
     "firebase": "^7.15.4",
     "ngx-markdown": "^9.1.1",
     "rxjs": "~6.5.5",
