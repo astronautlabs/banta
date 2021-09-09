@@ -1,7 +1,6 @@
 {
   "packages": [
-    "packages/*",
-    "packages/frontend/dist/sdk"
+    "packages/*"
   ],
   "version": "0.0.10"
 }
