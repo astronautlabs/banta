@@ -1,5 +1,5 @@
 import { Component, Input, Output } from "@angular/core";
-import { User, ChatMessage } from '../../model';
+import { User, ChatMessage } from '@banta/common';
 import { Subject } from 'rxjs';
 
 @Component({

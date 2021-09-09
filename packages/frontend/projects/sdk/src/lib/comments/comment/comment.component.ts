@@ -1,6 +1,6 @@
 import { Component, Output, Input } from "@angular/core";
 import { Subject } from 'rxjs';
-import { ChatMessage, User } from '../../model';
+import { ChatMessage, User } from '@banta/common';
 
 @Component({
     selector: 'engage-comment',

@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
-import { User, ChatMessage, ChatSource } from '../../model';
+import { User, ChatMessage, ChatSource } from '@banta/common';
 import { SubSink } from 'subsink';
 import { Subject } from 'rxjs';
 

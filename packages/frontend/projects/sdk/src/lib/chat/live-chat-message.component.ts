@@ -1,6 +1,7 @@
 import { Component, Input, Output } from '@angular/core';
-import { ChatMessage, ChatBackendService } from '../model';
+import { ChatMessage } from '@banta/common';
 import { Subject, Observable } from 'rxjs';
+import { ChatBackendService } from '../chat-backend.service';
 
 @Component({
     selector: 'engage-live-chat-message',

@@ -1,7 +1,8 @@
 import { Component, Input, Output } from '@angular/core';
-import { User, ChatSource, ChatMessage, ChatBackendService } from '../../model';
+import { User, ChatSource, ChatMessage } from '@banta/common';
 import { Subject, Observable } from 'rxjs';
 import { SubSink } from 'subsink';
+import { ChatBackendService } from '../../chat-backend.service';
 import { BantaService } from '../../common';
 
 @Component({

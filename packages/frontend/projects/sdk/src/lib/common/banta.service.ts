@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { User } from '../model';
+import { User } from '@banta/common';
 
 @Injectable()
 export class BantaService {
