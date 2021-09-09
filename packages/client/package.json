@@ -3,6 +3,10 @@
   "version": "0.0.4",
   "description": "",
   "main": "dist/index.js",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p .",
     "prepublishOnly": "npm run build",
