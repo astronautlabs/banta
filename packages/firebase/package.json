@@ -1,6 +1,6 @@
 {
   "name": "@banta/firebase",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "",
   "main": "dist/index.js",
   "private": false,
@@ -18,7 +18,7 @@
     "@astronautlabs/datastore": "^3.1.0",
     "@astronautlabs/datastore-firestore": "^3.1.0",
     "@astronautlabs/jwt": "0.0.8",
-    "@banta/common": "^0.0.13"
+    "@banta/common": "^0.0.14"
   },
   "gitHead": "11c174d389c311ad866d8871d7be74d70da0116e"
 }
