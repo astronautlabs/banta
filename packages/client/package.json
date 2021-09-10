@@ -1,6 +1,6 @@
 {
   "name": "@banta/client",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "",
   "main": "dist/index.js",
   "private": false,
@@ -17,7 +17,7 @@
   "dependencies": {
     "@astronautlabs/datastore": "^3.1.0",
     "@astronautlabs/datastore-firestore": "^3.1.0",
-    "@banta/common": "^0.0.14",
+    "@banta/common": "^0.0.15",
     "rxjs": "^6.6.7"
   },
   "gitHead": "11c174d389c311ad866d8871d7be74d70da0116e"
