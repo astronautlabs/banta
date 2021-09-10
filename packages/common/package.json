@@ -15,7 +15,7 @@
     "typescript": "^4.1.3"
   },
   "peerDependencies": {
-    "rxjs": "~6.5.5"
+    "rxjs": "^6.5.5"
   },
   "gitHead": "fdb4cbfbecf45359830c488651e4cbac625346fd"
 }
