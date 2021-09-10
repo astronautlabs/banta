@@ -33,5 +33,5 @@
     "@types/jsonwebtoken": "^8.3.5",
     "typescript": "^3.7.2"
   },
-  "gitHead": "11c174d389c311ad866d8871d7be74d70da0116e"
+  "gitHead": "fdb4cbfbecf45359830c488651e4cbac625346fd"
 }

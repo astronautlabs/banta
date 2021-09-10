@@ -21,7 +21,7 @@
     "@banta/common": "0.0.10",
     "firebase": "^7.15.4",
     "ngx-markdown": "^9.1.1",
-    "rxjs": "~6.6.7",
+    "rxjs": "~6.5.5",
     "subsink": "^1.0.1",
     "tslib": "^1.10.0",
     "twemoji": "^12.1.4",
