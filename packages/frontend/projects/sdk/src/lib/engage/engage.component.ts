@@ -429,7 +429,8 @@ export class EngageComponent {
 
         if (viewType === 'comment') {
             if (this.pointSubChat) {
-                this.pointSubChat.close();
+                if (this.pointSubChat.close)
+                    this.pointSubChat.close();
                 this.pointSubChat = null;
             }
             this.mobileFocus = 'points';
@@ -449,7 +450,8 @@ export class EngageComponent {
     pointUnfocus() {
         this.pointOpen = null;
         if (this.pointSubChat) {
-            this.pointSubChat.close();
+            if (this.pointSubChat.close)
+                this.pointSubChat.close();
             this.pointSubChat = null;
         }
     }

@@ -49,7 +49,8 @@ export class BantaServiceChatSource implements ChatSource {
     }
     
     close() {
-        this.underlyingChatSource.close();
+        if (this.underlyingChatSource.close)
+            this.underlyingChatSource.close();
     }
 }
 

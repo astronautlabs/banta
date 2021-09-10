@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
-import { ChatBackendService, ChatSource, ChatMessage, User, UserAccount, Notification, NewUserAccount, 
-    SignUpResult, BantaService } from '@banta/sdk';
+import { ChatBackendService, BantaService } from '@banta/sdk';
+import { ChatSource, ChatMessage, User, UserAccount, Notification, NewUserAccount, 
+    SignUpResult } from '@banta/common';
 import { DataStore } from './datastore';
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import * as firebase from 'firebase';
 import { environment } from 'src/environments/environment';
 
 @Injectable()
-export class FirebaseChatBackend extends ChatBackendService {
+export class FirebaseChatBackendX extends ChatBackendService {
     constructor(
         private banta : BantaService,
         private datastore : DataStore
@@ -47,7 +48,7 @@ export class FirebaseChatBackend extends ChatBackendService {
 
     private notifUnsubscribe : Function;
 
-    private _userChanged = new BehaviorSubject<UserAccount>(null);
+    private _userChanged = new BehaviorSubject<User>(null);
 
     private _notificationsChanged = new BehaviorSubject<Notification[]>([]);
     private _newNotification = new Subject<Notification>();
@@ -129,8 +130,8 @@ export class FirebaseChatBackend extends ChatBackendService {
         );
     }
 
-    async getSourceForThread(message : ChatMessage) : Promise<ChatSource> {
-        return this.getSourceForCollection(`/topics/${message.topicId}/messages/${message.id}/messages`);
+    async getSourceForThread(topicId : string, messageId : string) : Promise<ChatSource> {
+        return this.getSourceForCollection(`/topics/${topicId}/messages/${messageId}/messages`);
     }
     
     async getSourceForTopic(topicId: string): Promise<ChatSource> {

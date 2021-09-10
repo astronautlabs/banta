@@ -7,7 +7,7 @@ import { FirebaseChatSource } from "./firebase-chat-source";
 import { AuthenticationProvider, NotificationsProvider, UpvoteNotification } from "@banta/common";
 import { Counter } from "@banta/common";
 import { FirebaseStoreRef } from "./firebase-store-ref";
-import { Subject, ReplaySubject } from "rxjs";
+import { Observable, Subject, ReplaySubject } from "rxjs";
 
 @Injectable()
 export class FirebaseChatBackend implements ChatBackend {
@@ -18,15 +18,22 @@ export class FirebaseChatBackend implements ChatBackend {
     ) {
         this.datastore = this.storeRef.store;
 
-        this.notificationsChanged.next(this.notif.current);
+        this._notificationsChanged.next(this.notif.current);
         this.notif.received.subscribe(notif => {
-            this.newNotification.next(notif);
-            this.notificationsChanged.next(this.notif.current);
+            this._newNotification.next(notif);
+            this._notificationsChanged.next(this.notif.current);
         });
     }
 
-    notificationsChanged = new ReplaySubject<Notification[]>(1);
-    newNotification = new Subject<Notification>();
+    private _notificationsChanged = new ReplaySubject<Notification[]>(1);
+    private _newNotification = new Subject<Notification>();
+
+    get notificationsChanged() : Observable<Notification[]> {
+        return this._notificationsChanged;
+    }
+    get newNotification() : Observable<Notification> {
+        return this._newNotification;
+    }
 
     protected datastore : DataStore;
     //private firestore : firebaseAdmin.firestore.Firestore;

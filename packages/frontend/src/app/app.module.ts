@@ -11,7 +11,7 @@ import { BantaServiceChatBackend } from "@banta/client";
 
 import { MaterialModule } from '../material.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BantaSdkModule } from '@banta/sdk';
+import { BantaSdkModule, ChatBackendService } from '@banta/sdk';
 import { FirebaseModule } from 'src/firebase/firebase.module';
 import { FeaturesComponent } from './features/features.component';
 import { PricingComponent } from './pricing/pricing.component';
@@ -33,7 +33,7 @@ import { Module } from '@alterior/di';
     { provide: AuthenticationProvider, useClass: FirebaseAuthenticationProvider },
     FirebaseChatBackend,
     { 
-      provide: ChatBackend, 
+      provide: ChatBackendService, 
       useFactory: (firebase : FirebaseChatBackend) => new BantaServiceChatBackend(firebase), 
       deps: [FirebaseChatBackend] 
     },
