@@ -66,16 +66,22 @@ export class ChatViewComponent {
             console.dir(value);
 
             console.log(`Messages loaded:`);
-            console.dir(this.messages);
+            console.dir(this.messages); 
             
             this._sourceSubs.add(
                 this._source.messageReceived
                     .subscribe(msg => this.messageReceived(msg)),
                 this._source.messageSent
-                    .subscribe(msg => this.messageSent(msg)),
-                this._source.currentUserChanged
-                    .subscribe(user => this.currentUser = user)
+                    .subscribe(msg => this.messageSent(msg))
             );
+
+            
+            if (this._source.currentUserChanged) {
+                this._sourceSubs.add(
+                    this._source.currentUserChanged
+                        .subscribe(user => this.currentUser = user)
+                );
+            }
         }
     }
 
