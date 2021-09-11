@@ -57,7 +57,7 @@ export class FirebaseNotificationsProvider extends NotificationsProvider {
         if (!this.user)
             return;
 
-        let path = `/banta/users/${this.user.id}/notifications`;
+        let path = `/bantaUsers/${this.user.id}/notifications`;
 
         this._notificationsSubscription = this.datastore
             .watchAll<Notification>(path, { limit: 50 })
@@ -77,14 +77,14 @@ export class FirebaseNotificationsProvider extends NotificationsProvider {
 
         await Promise.all([
             this.datastore.update<Notification>(
-                `/users/${notification.recipientId}/notifications/:id`,
+                `/bantaUsers/${notification.recipientId}/notifications/:id`,
                 finalNotification = <Notification>Object.assign({}, notification, <Partial<Notification>>{
                     id: uuid(),
                     sentAt: Date.now()
                 })
             ),
             this.datastore.update<Counter>(
-                `/users/${notification.recipientId}/counters/notifications`,
+                `/bantaUsers/${notification.recipientId}/counters/notifications`,
                 { value: <any>firebase.firestore.FieldValue.increment(1) }
             )
         ]);

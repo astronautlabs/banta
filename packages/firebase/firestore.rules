@@ -28,28 +28,20 @@ service cloud.firestore {
     ;
   }
     
-  match /databases/{database}/documents/banta {
-    match /users/{userId} {
+  match /databases/{database}/documents {
+    match /bantaUsers/{userId} {
       allow read: if canAccessUser(userId);
     }
     
-    match /users/{userId}/notifications/{notifId} {
+    match /bantaUsers/{userId}/notifications/{notifId} {
       allow read: if canAccessUser(userId);
     }
     
-    match /topics/{topicID}/messages/{messageID} {
+    match /bantaTopics/{topicID}/messages/{messageID} {
       allow read;
     }    
     
-    match /topics/{topicID}/messages/{messageID}/messages/{submessageID} {
-      allow read;
-    }
-    
-    match /demos/{demoID} {
-      allow read;
-    }
-    
-    match /settings/{settingID} {
+    match /bantaTopics/{topicID}/messages/{messageID}/messages/{submessageID} {
       allow read;
     }
   }

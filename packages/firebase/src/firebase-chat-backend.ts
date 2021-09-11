@@ -39,11 +39,11 @@ export class FirebaseChatBackend implements ChatBackend {
     //private firestore : firebaseAdmin.firestore.Firestore;
 
     async getSourceForTopic(topicId: string): Promise<ChatSource> {
-        return await this.getSourceForCollection(`/banta/topics/${topicId}`);
+        return await this.getSourceForCollection(`/bantaTopics/${topicId}`);
     }
 
     async getSourceForThread(topicId : string, id : string): Promise<ChatSource> {
-        return await this.getSourceForCollection(`/banta/topics/${topicId}/messages/${id}`);
+        return await this.getSourceForCollection(`/bantaTopics/${topicId}/messages/${id}`);
     }
 
     protected async getSourceForCollection(collectionPath : string): Promise<ChatSource> {
@@ -51,7 +51,7 @@ export class FirebaseChatBackend implements ChatBackend {
     }
 
     async refreshMessage(message: ChatMessage): Promise<ChatMessage> {
-        let result = await this.datastore.read<ChatMessage>(`/banta/topics/${message.topicId}/messages/${message.id}`);
+        let result = await this.datastore.read<ChatMessage>(`/bantaTopics/${message.topicId}/messages/${message.id}`);
 
         if (!result)
             return message;
@@ -61,13 +61,13 @@ export class FirebaseChatBackend implements ChatBackend {
 
     async getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage> {
         return await this.datastore.read<ChatMessage>(
-            `/banta/topics/${topicId}/messages/${parentMessageId}/messages/${messageId}`
+            `/bantaTopics/${topicId}/messages/${parentMessageId}/messages/${messageId}`
         );
     }
 
     async getMessage(topicId : string, messageId : string): Promise<ChatMessage> {
         return await this.datastore.read<ChatMessage>(
-            `/banta/topics/${topicId}/messages/${messageId}`
+            `/bantaTopics/${topicId}/messages/${messageId}`
         );
     }
 
@@ -80,9 +80,9 @@ export class FirebaseChatBackend implements ChatBackend {
 
         await this.datastore.transact(async txn => {
 
-            let path = `/banta/topics/${topicId}/messages/${messageId}`;
+            let path = `/bantaTopics/${topicId}/messages/${messageId}`;
             if (submessageId) {
-                path = `/banta/topics/${topicId}/messages/${messageId}/messages/${submessageId}`
+                path = `/bantaTopics/${topicId}/messages/${messageId}/messages/${submessageId}`
             }
 
             let existingVote = await txn.read(`${path}/upvotes/${vote.id}`);
@@ -123,10 +123,10 @@ export class FirebaseChatBackend implements ChatBackend {
             return;
         }
 
-        let path = `/banta/topics/${message.topicId}/messages/${message.id}`;
+        let path = `/bantaTopics/${message.topicId}/messages/${message.id}`;
 
         if (message.parentMessageId)
-            path = `/banta/topics/${message.topicId}/messages/${message.parentMessageId}/messages/${message.id}`;
+            path = `/bantaTopics/${message.topicId}/messages/${message.parentMessageId}/messages/${message.id}`;
 
         let subscription = this.datastore.watch<ChatMessage>(path).subscribe(x => handler(x));
         return () => subscription.unsubscribe();
