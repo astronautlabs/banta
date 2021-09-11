@@ -6,6 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { FirehoseChatComponent } from '../chat';
 import { BantaService } from '../common';
 import { ChatBackendService } from "../chat-backend.service";
+import { Output } from "@angular/core";
 
 const GENERIC_AVATAR_URL = 'https://gravatar.com/avatar/915c804e0be607a4ad766ddadea5c48a?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png';
 
@@ -488,12 +489,15 @@ export class EngageComponent {
         this.pointSource = await this.backend.getSourceForTopic(`${id}_thepoint`);
     }
 
-    showSignIn() {
-        this.showAux('Sign In', 'sign-in');
+    private _signInSelected = new Subject<void>();
+
+    @Output()
+    get signInSelected(): Observable<void> {
+        return this._signInSelected;
     }
 
-    showSignUp() {
-        this.showAux('Sign Up', 'sign-up');
+    showSignIn() {
+        this._signInSelected.next();
     }
 
     close() {

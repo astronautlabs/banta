@@ -73,18 +73,6 @@
         </div>
     </header>
     <div class="aux-contents">
-        <ng-container *ngIf="auxMode === 'sign-in'">
-            <engage-sign-in 
-                (selectSignUp)="showSignUp()"
-                (closed)="closeAux()"
-                ></engage-sign-in>
-        </ng-container>
-        <ng-container *ngIf="auxMode === 'sign-up'">
-            <engage-sign-up 
-                (selectSignIn)="showSignIn()"
-                (closed)="closeAux()"
-                ></engage-sign-up>
-        </ng-container>
         <ng-container *ngIf="auxMode === 'profile'">
             <ng-container *ngIf="profileUser">
 
