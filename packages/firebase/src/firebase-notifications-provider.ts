@@ -1,9 +1,10 @@
 import { Observable, Subject } from "rxjs";
-import { Notification, NotificationsProvider, Counter } from "@banta/common";
+import { Notification, NotificationsProvider, Counter, User } from "@banta/common";
 import { FirebaseStoreRef } from "./firebase-store-ref";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from '@alterior/di';
 import * as firebase from 'firebase';
+import { Subscription } from "rxjs";
 
 @Injectable()
 export class FirebaseNotificationsProvider extends NotificationsProvider {
@@ -11,6 +12,17 @@ export class FirebaseNotificationsProvider extends NotificationsProvider {
         private storeRef : FirebaseStoreRef
     ) {
         super();
+    }
+
+    private _user : User;
+
+    get user() {
+        return this._user;
+    }
+
+    set user(value) {
+        this._user = value;
+        this.subscribeToUser();
     }
 
     get datastore() {
@@ -26,6 +38,38 @@ export class FirebaseNotificationsProvider extends NotificationsProvider {
 
     get current(): Notification[] {
         return this._current;
+    }
+
+    private _notificationsSubscription : Subscription;
+    private _newNotificationSubscription : Subscription;
+
+    private subscribeToUser() {
+        if (this._notificationsSubscription) {
+            this._notificationsSubscription.unsubscribe();
+            this._notificationsSubscription = null;
+        }
+
+        if (this._newNotificationSubscription) {
+            this._newNotificationSubscription.unsubscribe();
+            this._newNotificationSubscription = null;
+        }
+        
+        if (!this.user)
+            return;
+
+        let path = `/banta/users/${this.user.id}/notifications`;
+
+        this._notificationsSubscription = this.datastore
+            .watchAll<Notification>(path, { limit: 50 })
+            .subscribe(notifs => this._current = notifs)
+        ;
+
+        this._newNotificationSubscription = this.datastore
+            .watchForChanges<Notification>(path)
+            .subscribe(c => c.filter(x => x.type === 'added')
+                .forEach(n => this._received.next(n.document))
+            )
+        ;
     }
 
     async send(notification : Partial<Notification>) {
