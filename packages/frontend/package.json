@@ -13,7 +13,7 @@
   },
   "private": true,
   "dependencies": {
-    "@alterior/platform-angular": "^3.0.0-beta.75",
+    "@alterior/platform-angular": "^3.0.0-beta.98",
     "@angular/animations": "~9.1.13",
     "@angular/cdk": "^9.2.4",
     "@angular/common": "~9.1.13",

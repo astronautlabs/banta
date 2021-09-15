@@ -2,7 +2,7 @@
   "name": "@banta/server",
   "version": "0.0.20",
   "description": "",
-  "main": "dist/main.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc -p .",
     "start": "npm run build && node dist/main",
@@ -11,9 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@alterior/runtime": "^3.0.0-beta.55",
-    "@alterior/tasks": "^3.0.0-beta.55",
-    "@alterior/web-server": "^3.0.0-beta.59",
+    "@alterior/runtime": "^3.0.0-beta.98",
+    "@alterior/tasks": "^3.0.0-beta.98",
+    "@alterior/web-server": "^3.0.0-beta.98",
     "@astronautlabs/datastore": "^2.0.0",
     "@astronautlabs/datastore-firestore": "^2.0.2",
     "@banta/common": "^0.0.20",
@@ -24,14 +24,14 @@
     "firebase": "^7.5.0",
     "firebase-admin": "^9.4.2",
     "jsonwebtoken": "^8.5.1",
+    "rxjs": "^6.5.5",
     "sharp": "^0.23.3",
     "uuid": "^3.3.3",
-    "zone.js": "^0.10.2"
+    "zone.js": "^0.11.4"
   },
   "devDependencies": {
     "@types/express": "^4.17.2",
-    "@types/jsonwebtoken": "^8.3.5",
-    "typescript": "^3.7.2"
+    "@types/jsonwebtoken": "^8.3.5"
   },
   "gitHead": "fdb4cbfbecf45359830c488651e4cbac625346fd"
 }

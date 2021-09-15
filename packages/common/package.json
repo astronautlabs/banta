@@ -11,9 +11,6 @@
   },
   "author": "Astronaut Labs, LLC",
   "license": "MIT",
-  "devDependencies": {
-    "typescript": "^4.1.3"
-  },
   "peerDependencies": {
     "rxjs": "^6.5.5"
   },

@@ -17,10 +17,10 @@
   },
   "homepage": "https://github.com/astronautlabs/banta#readme",
   "dependencies": {
-    "@alterior/di": "^3.0.0-beta.75",
-    "@alterior/runtime": "^3.0.0-beta.75",
-    "@alterior/tasks": "^3.0.0-beta.55",
-    "@alterior/web-server": "^3.0.0-beta.59",
+    "@alterior/di": "^3.0.0-beta.98",
+    "@alterior/runtime": "^3.0.0-beta.98",
+    "@alterior/tasks": "^3.0.0-beta.98",
+    "@alterior/web-server": "^3.0.0-beta.98",
     "@astronautlabs/datastore": "^2.0.0",
     "@astronautlabs/datastore-firestore": "^2.0.2",
     "@banta/firebase": "0.0.1",
@@ -30,11 +30,13 @@
     "aws-sdk": "^2.579.0",
     "firebase": "^7.5.0",
     "jsonwebtoken": "^8.5.1",
+    "rxjs": "^6.5.5",
     "sharp": "^0.23.3",
     "uuid": "^3.3.3",
-    "zone.js": "^0.10.2"
+    "zone.js": "^0.11.4"
   },
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "lerna": "^4.0.0",
+    "typescript": "^4.4.3"
   }
 }

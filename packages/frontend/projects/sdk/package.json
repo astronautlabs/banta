@@ -1,6 +1,6 @@
 {
   "name": "@banta/sdk",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -8,7 +8,7 @@
   "peerDependencies": {
     "@angular/common": "^9.1.12",
     "@angular/core": "^9.1.12",
-    "@alterior/platform-angular": "^3.0.0-beta.73",
+    "@alterior/platform-angular": "^3.0.0-beta.98",
     "@angular/animations": "~9.1.12",
     "@angular/cdk": "^9.2.4",
     "@angular/forms": "^9.1.11",
