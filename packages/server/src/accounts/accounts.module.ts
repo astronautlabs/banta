@@ -9,8 +9,7 @@ import { AccountsService } from "./accounts.service";
     ],
     providers: [
         AccountsService
-    ],
-    controllers: [ AccountsController ]
+    ]
 })
 export class AccountsModule {
 }

@@ -1,4 +1,4 @@
-import { Injectable } from "injection-js";
+import { Injectable } from "@alterior/di";
 import { EnvironmentVariables } from "./environment-variables";
 import * as process from 'process';
 

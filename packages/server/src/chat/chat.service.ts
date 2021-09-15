@@ -1,11 +1,12 @@
 import { Injectable } from "@alterior/di";
 import { ChatMessage } from "@banta/common";
 import { ChatBackend, Vote } from "@banta/common";
+import { ChatBackendService } from "../chat-backend-service";
 
 @Injectable()
 export class ChatService {
     constructor(
-        private chatBackend : ChatBackend
+        private chatBackend : ChatBackendService
     ) {
 
     }
@@ -15,9 +16,9 @@ export class ChatService {
             throw new Error(`Message cannot be null`);
         
         if (message.parentMessageId)
-            await this.chatBackend.upvoteMessage(message.topicId, message.parentMessageId, message.id, vote);
+            await this.chatBackend.upvoteMessage(message.topicId, message.parentMessageId, message.id);
         else
-            await this.chatBackend.upvoteMessage(message.topicId, message.id, undefined, vote);
+            await this.chatBackend.upvoteMessage(message.topicId, message.id, undefined);
     }
 
     async post(message : ChatMessage) {

@@ -1,5 +1,5 @@
 import { Injectable } from "@alterior/di";
-import * as uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 
 import { Notification, NewUserAccount, UserAccount, SignUpResult, AuthenticationProvider, NotificationsProvider } from "@banta/common";
 import { Logger } from "@alterior/logging";

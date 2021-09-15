@@ -9,8 +9,7 @@ import { LoggingModule } from "@alterior/logging";
     ],
     providers: [
         ChatService
-    ],
-    controllers: [ ChatController ]
+    ]
 })
 export class ChatModule {
 }
