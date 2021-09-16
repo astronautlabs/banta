@@ -56,8 +56,10 @@ export class BantaServiceChatSource implements ChatSource {
 
 export class BantaServiceChatBackend implements ChatBackend {
     constructor(
-        private _underlyingChatBackend : ChatBackend
+        private _underlyingChatBackend : ChatBackend,
+        baseUrl : string
     ) {
+        this.baseUrl = baseUrl;
     }
 
     get underlyingChatBackend() {
