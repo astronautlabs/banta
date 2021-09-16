@@ -99,11 +99,11 @@ export class FirebaseChatBackend implements ChatBackend {
                 ),
                 txn.set(
                     `${path}/counters/upvotes`, 
-                    <Counter>{ value: <any>firebase.firestore.FieldValue.increment(1) }
+                    <Counter>{ value: this.datastore.sentinels.increment(1) }
                 ),
                 txn.update(
                     `${path}`, 
-                    <Partial<ChatMessage>>{ upvotes: <any>firebase.firestore.FieldValue.increment(1) }
+                    <Partial<ChatMessage>>{ upvotes: this.datastore.sentinels.increment(1) }
                 )
             ]);
         });
