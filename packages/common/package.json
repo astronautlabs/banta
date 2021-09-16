@@ -12,7 +12,7 @@
   "author": "Astronaut Labs, LLC",
   "license": "MIT",
   "peerDependencies": {
-    "rxjs": "^6.5.5"
+    "rxjs": "^6.6.7"
   },
-  "gitHead": "fdb4cbfbecf45359830c488651e4cbac625346fd"
+  "gitHead": "20d0f4617cf5766d151950e9e96dbeaf4f8dea71"
 }
