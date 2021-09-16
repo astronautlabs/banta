@@ -1,4 +1,4 @@
-import { Controller, Mount } from "@alterior/web-server";
+import { Controller, Get, Mount } from "@alterior/web-server";
 import { AccountsController } from "./accounts";
 import { ChatController } from "./chat";
 
@@ -9,4 +9,11 @@ import { ChatController } from "./chat";
 export class BantaBackendController {
     @Mount() chat : ChatController;
     @Mount() accounts : AccountsController;
+
+    @Get('/')
+    info() {
+        return {
+            service: '@banta/server'
+        }
+    }
 }
