@@ -15,7 +15,7 @@ export class AccountsController {
 
     }
     
-    @Post()
+    @Post('/accounts')
     async signup(@Body() user : Partial<NewUserAccount>) {
         if (!user.email || !user.password)
             return Response.badRequest({ message: 'Bad request, please check all fields and try again' });
