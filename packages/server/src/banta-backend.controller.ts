@@ -10,7 +10,7 @@ export class BantaBackendController {
     @Mount() chat : ChatController;
     @Mount() accounts : AccountsController;
 
-    @Get('/')
+    @Get()
     info() {
         return {
             service: '@banta/server'
