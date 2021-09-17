@@ -36,5 +36,5 @@
     "@types/express": "^4.17.13",
     "@types/jsonwebtoken": "^8.3.5"
   },
-  "gitHead": "20d0f4617cf5766d151950e9e96dbeaf4f8dea71"
+  "gitHead": "52ea1c4d016bf238eae68625483d14eef8f54541"
 }
