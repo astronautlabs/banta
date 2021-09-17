@@ -85,7 +85,7 @@ export class FirebaseNotificationsProvider extends NotificationsProvider {
             ),
             this.datastore.update<Counter>(
                 `/bantaUsers/${notification.recipientId}/counters/notifications`,
-                { value: <any>firebase.firestore.FieldValue.increment(1) }
+                { value: <any>this.datastore.sentinels.increment(1) }
             )
         ]);
 
