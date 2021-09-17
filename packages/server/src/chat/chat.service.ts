@@ -16,9 +16,9 @@ export class ChatService {
             throw new Error(`Message cannot be null`);
         
         if (message.parentMessageId)
-            await this.chatBackend.upvoteMessage(message.topicId, message.parentMessageId, message.id);
+            await this.chatBackend.upvoteMessage(message.topicId, message.parentMessageId, message.id, vote);
         else
-            await this.chatBackend.upvoteMessage(message.topicId, message.id, undefined);
+            await this.chatBackend.upvoteMessage(message.topicId, message.id, undefined, vote);
     }
 
     async post(message : ChatMessage) {

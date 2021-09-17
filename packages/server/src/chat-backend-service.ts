@@ -1,5 +1,5 @@
 import { Injectable } from '@alterior/di';
-import { ChatBackend, Notification, ChatSource, ChatMessage } from '@banta/common';
+import { ChatBackend, Notification, ChatSource, ChatMessage, Vote } from '@banta/common';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -9,7 +9,7 @@ export abstract class ChatBackendService implements ChatBackend {
     abstract refreshMessage(message : ChatMessage): Promise<ChatMessage>;
     abstract getMessage(topicId : string, messageId : string): Promise<ChatMessage>;
     abstract getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
-    abstract upvoteMessage(topicId : string, messageId : string, submessageId? : string): Promise<void>;
+    abstract upvoteMessage(topicId : string, messageId : string, submessageId? : string, vote? : Vote): Promise<void>;
     abstract watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void;
     
     abstract get notificationsChanged() : Observable<Notification[]>;
