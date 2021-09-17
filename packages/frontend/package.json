@@ -34,7 +34,7 @@
     "@banta/firebase": "^0.0.32",
     "firebase": "^7.15.4",
     "ngx-markdown": "^9.1.1",
-    "rxjs": "^6.5.5",
+    "rxjs": "^6.6.7",
     "subsink": "^1.0.1",
     "tslib": "^1.10.0",
     "twemoji": "^12.1.6",
