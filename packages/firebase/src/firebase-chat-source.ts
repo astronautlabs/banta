@@ -147,7 +147,7 @@ export class FirebaseChatSource implements ChatSource {
             ),
             this.datastore.update<Counter>(
                 `${topicPath}/counters/messages`,
-                { value: <any>firebase.firestore.FieldValue.increment(1) }
+                { value: <any>this.datastore.sentinels.increment(1) }
             )
         ]);
 
