@@ -23,8 +23,12 @@
 
     <div class="actions">
 
-        <button type="button" *ngIf="!user" (click)="showSignIn()" mat-raised-button color="primary">Sign In</button>
-
-        <button *ngIf="user" [disabled]="!newMessage.message" mat-raised-button color="primary">Send</button>
+        <ng-container *ngIf="!user">
+            <button type="button" (click)="showSignIn()" mat-raised-button color="primary">{{signInLabel}}</button>
+        </ng-container>
+        <ng-container *ngIf="user">
+            <button *ngIf="canChat" [disabled]="!newMessage.message" mat-raised-button color="primary">{{sendLabel}}</button>
+            <button *ngIf="!canChat" type="button" (click)="sendPermissionError()" mat-raised-button color="primary">{{permissionDeniedLabel}}</button>
+        </ng-container>
     </div>
 </form>

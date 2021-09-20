@@ -12,19 +12,29 @@
     </div>
     <div class="actions">
 
-        <button 
-            *ngIf="!user" 
-            mat-raised-button 
-            color="primary"
-            type="button"
-            (click)="showSignIn()"
-            >Sign In</button>
-        <button 
-            *ngIf="user" 
-            mat-raised-button 
-            color="primary"
-            [disabled]="!newMessageText" 
-            >Send</button>
+        <ng-container *ngIf="!user">
+            <button 
+                mat-raised-button 
+                color="primary"
+                type="button"
+                (click)="showSignIn()"
+                >{{signInLabel}}</button>
+        </ng-container>
+        <ng-container *ngIf="user">
+            <button 
+                *ngIf="canComment"
+                mat-raised-button 
+                color="primary"
+                [disabled]="!newMessageText" 
+                >{{sendLabel}}</button>
+            <button 
+                *ngIf="!canComment"
+                type="button"
+                (click)="showPermissionDenied()"
+                mat-raised-button 
+                color="primary"
+                >{{permissionDeniedLabel}</button>
+        </ng-container>
     </div>
 </form>
 

@@ -1,5 +1,5 @@
 import { Component, Input, Output } from '@angular/core';
-import { User, ChatSource, ChatMessage } from '@banta/common';
+import { User, ChatSource, ChatMessage, UserAccount } from '@banta/common';
 import { Subject, Observable } from 'rxjs';
 import { SubSink } from 'subsink';
 import { ChatBackendService } from '../../chat-backend.service';
@@ -48,16 +48,37 @@ export class CommentsBoxComponent {
         this._source = value;
     }
 
-    user : User;
+    user : UserAccount;
     newMessageText : string;
 
+    @Input() signInLabel = 'Sign In';
+    @Input() sendLabel = 'Send';
+    @Input() permissionDeniedLabel = 'Send';
+
     private _signInSelected = new Subject<void>();
+    private _permissionDeniedError = new Subject<void>();
 
     @Output()
     get signInSelected(): Observable<void> {
         return this._signInSelected;
     }
+
+    @Output()
+    get permissionDeniedError(): Observable<void> {
+        return this._permissionDeniedError;
+    }
+
+    showPermissionDenied() {
+        this._permissionDeniedError.next();
+    }
     
+    get canComment() {
+        if (!this.user.permissions)
+            return true;
+        
+        return this.user.permissions?.canComment(this.source);
+    }
+
     @Output()
     get upvoted() {
         return this._upvoted;

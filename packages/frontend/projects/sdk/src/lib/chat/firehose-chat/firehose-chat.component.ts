@@ -1,7 +1,7 @@
 import { Component, Input, Output, ElementRef, ViewChild } from "@angular/core";
 import { Subject, Observable } from 'rxjs';
 
-import { User, ChatSource, ChatMessage, NewMessageForm } from '@banta/common';
+import { User, ChatSource, ChatMessage, NewMessageForm, UserAccount } from '@banta/common';
 import { SubSink } from 'subsink';
 import { ChatViewComponent } from '../chat-view/chat-view.component';
 import { BantaService } from '../../common';
@@ -22,7 +22,7 @@ export class FirehoseChatComponent {
 
     private _source : ChatSource;
     private _subs = new SubSink();
-    user : User = null;
+    user : UserAccount = null;
 
     ngOnInit() {
         this._subs.add(
@@ -43,21 +43,35 @@ export class FirehoseChatComponent {
         this._source = value;
     }
     
+    @Input() signInLabel = 'Sign In';
+    @Input() sendLabel = 'Send';
+    @Input() permissionDeniedLabel = 'Send';
+
     private _selected = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _upvoted = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
     private _signInSelected = new Subject<void>();
+    private _permissionDeniedError = new Subject<void>();
 
     @Output()
     get signInSelected(): Observable<void> {
         return this._signInSelected;
     }
 
+    @Output()
+    get permissionDeniedError(): Observable<void> {
+        return this._permissionDeniedError;
+    }
+
     showEmojiPanel = false;
 
     showSignIn() {
         this._signInSelected.next();
+    }
+
+    sendPermissionError() {
+        this._permissionDeniedError.next();
     }
 
     insertEmoji(emoji) {
@@ -112,6 +126,13 @@ export class FirehoseChatComponent {
     @Output()
     get userSelected() {
         return this._userSelected;
+    }
+
+    get canChat() {
+        if (!this.user.permissions)
+            return true;
+        
+        return this.user.permissions?.canChat(this.source);
     }
 
     newMessage : NewMessageForm = {};
