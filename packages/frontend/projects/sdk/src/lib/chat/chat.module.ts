@@ -9,20 +9,23 @@ import { LiveChatMessageComponent } from './live-chat-message.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
+const COMPONENTS = [
+    ChatMessageComponent,
+    LiveChatMessageComponent,
+    ChatViewComponent,
+    BantaChatComponent
+];
+
 @NgModule({
-    declarations: [
-        ChatMessageComponent,
-        LiveChatMessageComponent,
-        ChatViewComponent,
-        BantaChatComponent
-    ],
+    declarations: COMPONENTS,
     imports: [
         CommonModule,
         FormsModule,
         MatIconModule,
         MatButtonModule,
         EmojiModule
-    ]
+    ],
+    exports: COMPONENTS
 })
 export class ChatModule {
 }

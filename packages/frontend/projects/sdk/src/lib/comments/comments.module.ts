@@ -11,13 +11,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 
+const COMPONENTS = [
+    CommentComponent,
+    CommentViewComponent,
+    BantaCommentsComponent,
+    LiveCommentComponent
+];
+
 @NgModule({
-    declarations: [
-        CommentComponent,
-        CommentViewComponent,
-        BantaCommentsComponent,
-        LiveCommentComponent
-    ],
+    declarations: COMPONENTS,
     imports: [
         CommonModule,
         FormsModule,
@@ -26,7 +28,8 @@ import { MatMenuModule } from '@angular/material/menu';
         MatMenuModule,
         BantaCommonModule,
         EmojiModule
-    ]
+    ],
+    exports: COMPONENTS
 })
 export class CommentsModule {
 }

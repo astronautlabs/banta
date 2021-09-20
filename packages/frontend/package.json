@@ -13,7 +13,6 @@
   },
   "private": true,
   "dependencies": {
-    "@alterior/platform-angular": "^3.0.0-beta.98",
     "@angular/animations": "~9.1.13",
     "@angular/cdk": "^9.2.4",
     "@angular/common": "~9.1.13",
@@ -25,10 +24,8 @@
     "@angular/platform-browser": "~9.1.13",
     "@angular/platform-browser-dynamic": "~9.1.13",
     "@angular/router": "~9.1.13",
-    "@astronautlabs/chassis": "^1.0.22",
     "@astronautlabs/datastore": "^3.1.2",
     "@astronautlabs/datastore-firestore": "^3.1.2",
-    "@astronautlabs/licensing": "0.0.10",
     "@banta/client": "^0.0.35",
     "@banta/common": "^0.0.35",
     "@banta/firebase": "^0.0.35",

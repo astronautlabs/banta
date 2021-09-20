@@ -3,7 +3,6 @@ import { BantaService, ChatBackendService } from '@banta/sdk';
 import { User } from '@banta/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { AboutComponent, LoginComponent, AuthenticationService } from '@astronautlabs/chassis';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +11,6 @@ import { AboutComponent, LoginComponent, AuthenticationService } from '@astronau
 })
 export class AppComponent {
   constructor(
-    private auth : AuthenticationService,
     private backend : ChatBackendService,
     private router : Router,
     private matDialog : MatDialog,
@@ -32,23 +30,6 @@ export class AppComponent {
   darkTheme = true;
 
   ngOnInit() {
-    
-    this.auth.userChanged.subscribe(async user => {
-      if (user) {
-        let token = await user.account.getIdToken()
-        this.user = this.banta.user = {
-          id: user.account.uid,
-          displayName: user.profile.displayName,
-          username: 'bob', //user.profile.username
-          token
-        };
-
-      } else {
-        this.banta.user = null;
-        this.user = null;
-      }
-    });
-
     this.router.events.subscribe(ev => {
       if (ev instanceof NavigationEnd) {
         if (ev.url.startsWith('/demo/')) {
@@ -65,14 +46,14 @@ export class AppComponent {
   }
 
   showSignUp() {
-    this.matDialog.open(LoginComponent);
+    //this.matDialog.open(LoginComponent);
   }
 
   showSignIn() {
-    this.matDialog.open(LoginComponent);
+    //this.matDialog.open(LoginComponent);
   }
 
   showAbout() {
-    this.matDialog.open(AboutComponent);
+    //this.matDialog.open(AboutComponent);
   }
 }

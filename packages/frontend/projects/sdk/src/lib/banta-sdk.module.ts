@@ -42,8 +42,8 @@ import { MatInputModule } from "@angular/material/input";
         BantaComponent,
         BantaLogoComponent,
         LiveMessageComponent,
-        BantaChatComponent,
-        BantaCommentsComponent
+        ChatModule,
+        CommentsModule
     ]
 })
 export class BantaSdkModule {

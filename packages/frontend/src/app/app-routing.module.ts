@@ -5,12 +5,9 @@ import { NotFoundComponent } from './not-found.component';
 import { SourceComponent } from './source/source.component';
 import { TryComponent } from './try/try.component';
 import { DemoComponent } from './demo.component';
-import { FeaturesComponent, PricingComponent } from '@astronautlabs/chassis';
 
 const routes: Routes = [
   { path: '',             component: HomeComponent },
-  { path: 'features',     component: FeaturesComponent },
-  { path: 'pricing',      component: PricingComponent },
   { path: 'demo/:name',   component: DemoComponent },
   { path: 'source',       component: SourceComponent },
   { path: 'try',          component: TryComponent },
