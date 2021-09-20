@@ -77,6 +77,7 @@ export class BantaServiceChatBackend implements ChatBackend {
 
     async getSourceForTopic(topicId: string): Promise<ChatSource> {
         return new BantaServiceChatSource(
+            topicId,
             await this._underlyingChatBackend.getSourceForTopic(topicId),
             this,
             `/topics/${topicId}/messages`
@@ -85,6 +86,7 @@ export class BantaServiceChatBackend implements ChatBackend {
 
     async getSourceForThread(topicId: string, messageId: string): Promise<ChatSource> {
         return new BantaServiceChatSource(
+            topicId,
             await this._underlyingChatBackend.getSourceForThread(topicId, messageId),
             this,
             `/topics/${topicId}/messages/${messageId}`
