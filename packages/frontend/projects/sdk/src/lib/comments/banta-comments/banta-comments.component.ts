@@ -6,11 +6,11 @@ import { ChatBackendService } from '../../chat-backend.service';
 import { BantaService } from '../../common';
 
 @Component({
-    selector: 'engage-comments',
-    templateUrl: './comments-box.component.html',
-    styleUrls: ['./comments-box.component.scss']
+    selector: 'banta-comments',
+    templateUrl: './banta-comments.component.html',
+    styleUrls: ['./banta-comments.component.scss']
 })
-export class CommentsBoxComponent {
+export class BantaCommentsComponent {
     constructor(
         private banta : BantaService,
         private backend : ChatBackendService
