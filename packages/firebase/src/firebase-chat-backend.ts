@@ -1,5 +1,4 @@
-import { Injectable } from "@alterior/di";
-import { ChatSource, ChatMessage, Vote } from "@banta/common";
+import { ChatSource, ChatMessage, Vote, Injectable } from "@banta/common";
 import { ChatBackend, Notification } from "@banta/common";
 import * as firebase from "firebase";
 import { DataStore } from "@astronautlabs/datastore";

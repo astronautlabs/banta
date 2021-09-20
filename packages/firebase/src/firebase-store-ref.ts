@@ -1,5 +1,5 @@
 import { createDataStore, DataStore } from "@astronautlabs/datastore-firestore";
-import { Injectable } from "@alterior/di";
+import { Injectable } from "@banta/common";
 
 @Injectable()
 export class FirebaseStoreRef {

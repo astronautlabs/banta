@@ -11,3 +11,4 @@ export * from './sign-up-result';
 export * from './user-account';
 export * from './user';
 export * from './vote';
+export * from './injectable';

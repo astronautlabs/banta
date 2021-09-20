@@ -1,6 +1,5 @@
-import { AuthenticationProvider, UserAccount } from "@banta/common";
+import { AuthenticationProvider, UserAccount, Injectable } from "@banta/common";
 import { FirebaseStoreRef } from "./firebase-store-ref";
-import { Injectable } from '@alterior/di';
 import { JWT } from "@astronautlabs/jwt";
 
 @Injectable()
