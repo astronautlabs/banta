@@ -348,11 +348,11 @@ export class MockSubpointSource implements ChatSource {
 }
 
 @Component({
-    selector: `engage-chat`,
-    templateUrl: './engage.component.html',
-    styleUrls: [ './engage.component.scss' ]
+    selector: `banta`,
+    templateUrl: './banta.component.html',
+    styleUrls: [ './banta.component.scss' ]
 })
-export class EngageComponent {
+export class BantaComponent {
     constructor(
         private banta : BantaService,
         private backend : ChatBackendService,

@@ -1,6 +1,6 @@
 export * from './common';
 export * from './emoji';
-export * from './engage/engage.component';
+export * from './banta/banta.component';
 export * from './engage-logo.component';
 export * from './chat';
 export * from './live-message.component';

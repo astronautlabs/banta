@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommentsModule } from './comments';
 import { ChatModule } from './chat';
 import { EmojiModule } from './emoji';
-import { EngageComponent } from './engage/engage.component';
+import { BantaComponent } from './banta/banta.component';
 import { EngageLogoComponent } from './engage-logo.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +17,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 
 const COMPONENTS = [
-    EngageComponent,
+    BantaComponent,
     EngageLogoComponent,
     LiveMessageComponent
 ];
