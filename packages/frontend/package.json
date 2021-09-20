@@ -1,6 +1,6 @@
 {
   "name": "@banta/frontend",
-  "version": "0.0.35",
+  "version": "0.0.36",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -26,9 +26,9 @@
     "@angular/router": "~9.1.13",
     "@astronautlabs/datastore": "^3.1.2",
     "@astronautlabs/datastore-firestore": "^3.1.2",
-    "@banta/client": "^0.0.35",
-    "@banta/common": "^0.0.35",
-    "@banta/firebase": "^0.0.35",
+    "@banta/client": "^0.0.36",
+    "@banta/common": "^0.0.36",
+    "@banta/firebase": "^0.0.36",
     "firebase": "^7.15.4",
     "ngx-markdown": "^9.1.1",
     "rxjs": "^6.6.7",
