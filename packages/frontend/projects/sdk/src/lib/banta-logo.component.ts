@@ -1,7 +1,7 @@
 import { Component } from "@angular/core";
 
 @Component({
-    selector: 'engage-logo',
+    selector: 'banta-logo',
     template: `banta`,
     styles: [
         `
@@ -16,6 +16,6 @@ import { Component } from "@angular/core";
         `
     ]
 })
-export class EngageLogoComponent {
+export class BantaLogoComponent {
 
 }

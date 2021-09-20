@@ -3,7 +3,7 @@ import { CommentsModule } from './comments';
 import { ChatModule } from './chat';
 import { EmojiModule } from './emoji';
 import { BantaComponent } from './banta/banta.component';
-import { EngageLogoComponent } from './engage-logo.component';
+import { BantaLogoComponent } from './banta-logo.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EngageCommonModule } from './common/common.module';
@@ -35,12 +35,12 @@ import { MatInputModule } from "@angular/material/input";
     ],
     declarations: [
         BantaComponent,
-        EngageLogoComponent,
+        BantaLogoComponent,
         LiveMessageComponent
     ],
     exports: [
         BantaComponent,
-        EngageLogoComponent,
+        BantaLogoComponent,
         LiveMessageComponent,
         ChatModule,
         CommentsModule
