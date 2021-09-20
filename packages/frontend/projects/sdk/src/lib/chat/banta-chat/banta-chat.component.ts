@@ -45,7 +45,23 @@ export class BantaChatComponent {
     set source(value) {
         this._source = value;
     }
-    
+
+    @Input()
+    get topicID() : string {
+        return this._source.identifier;
+    }
+
+    set topicID(value) {
+        this.setSourceFromTopicID(value);
+    }
+
+    private async setSourceFromTopicID(topicID : string) {
+        if (this._source.close)
+            this._source.close();
+        this._source = null;
+        this._source = await this.backend.getSourceForTopic(topicID);
+    }
+
     @Input() signInLabel = 'Sign In';
     @Input() sendLabel = 'Send';
     @Input() permissionDeniedLabel = 'Send';

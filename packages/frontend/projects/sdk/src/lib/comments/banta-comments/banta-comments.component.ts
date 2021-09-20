@@ -43,12 +43,28 @@ export class BantaCommentsComponent {
         return this._source;
     }
 
-    showSignIn() {
-        this._signInSelected.next();
-    }
-
     set source(value) {
         this._source = value;
+    }
+
+    @Input()
+    get topicID() : string {
+        return this._source.identifier;
+    }
+
+    set topicID(value) {
+        this.setSourceFromTopicID(value);
+    }
+
+    private async setSourceFromTopicID(topicID : string) {
+        if (this._source.close)
+            this._source.close();
+        this._source = null;
+        this._source = await this.backend.getSourceForTopic(topicID);
+    }
+
+    showSignIn() {
+        this._signInSelected.next();
     }
 
     user : UserAccount;
