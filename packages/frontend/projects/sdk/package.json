@@ -17,7 +17,7 @@
     "@angular/router": "~9.1.11",
     "@astronautlabs/datastore": "^3.1.2",
     "@astronautlabs/datastore-firestore": "^3.1.2",
-    "@banta/common": "0.0.35",
+    "@banta/common": "0.0.37",
     "firebase": "^7.15.4",
     "ngx-markdown": "^9.1.1",
     "rxjs": "^6.5.5",
