@@ -5,6 +5,9 @@ import { SubSink } from 'subsink';
 import { ChatBackendService } from '../../chat-backend.service';
 import { BantaService } from '../../common';
 
+/**
+ * Comments component
+ */
 @Component({
     selector: 'banta-comments',
     templateUrl: './banta-comments.component.html',

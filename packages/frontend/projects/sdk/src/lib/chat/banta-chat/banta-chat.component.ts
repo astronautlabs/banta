@@ -7,6 +7,9 @@ import { ChatViewComponent } from '../chat-view/chat-view.component';
 import { BantaService } from '../../common';
 import { ChatBackendService } from "../../chat-backend.service";
 
+/**
+ * Chat component
+ */
 @Component({
     selector: 'banta-chat',
     templateUrl: './banta-chat.component.html',

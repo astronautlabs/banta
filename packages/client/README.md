@@ -1,3 +1,3 @@
 # @banta/client
 
-A library for connecting to a Banta backend. This code is shared by the various frontend SDKs.
+Implements the client side of `@banta/server` as a `ChatBackend` implementation that uses `@banta/server` as the backend.

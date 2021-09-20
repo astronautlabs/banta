@@ -8,6 +8,9 @@ import { BantaService } from '../common';
 import { ChatBackendService } from "../chat-backend.service";
 import { Output } from "@angular/core";
 
+/**
+ * Unified chat and comments component
+ */
 @Component({
     selector: `banta`,
     templateUrl: './banta.component.html',
