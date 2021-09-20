@@ -16,12 +16,6 @@ import { MatDialogModule } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 
-const COMPONENTS = [
-    BantaComponent,
-    EngageLogoComponent,
-    LiveMessageComponent
-];
-
 @NgModule({
     imports: [
         CommonModule,
@@ -39,8 +33,18 @@ const COMPONENTS = [
         MatFormFieldModule,
         MatInputModule
     ],
-    declarations: COMPONENTS,
-    exports: COMPONENTS
+    declarations: [
+        BantaComponent,
+        EngageLogoComponent,
+        LiveMessageComponent
+    ],
+    exports: [
+        BantaComponent,
+        EngageLogoComponent,
+        LiveMessageComponent,
+        ChatModule,
+        CommentsModule
+    ]
 })
 export class BantaSdkModule {
 

@@ -8,11 +8,11 @@ import { BantaService } from '../../common';
 import { ChatBackendService } from "../../chat-backend.service";
 
 @Component({
-    selector: 'engage-firehose',
-    templateUrl: './firehose-chat.component.html',
-    styleUrls: ['./firehose-chat.component.scss']
+    selector: 'banta-chat',
+    templateUrl: './banta-chat.component.html',
+    styleUrls: ['./banta-chat.component.scss']
 })
-export class FirehoseChatComponent {
+export class BantaChatComponent {
     constructor(
         private banta : BantaService,
         private backend : ChatBackendService,
