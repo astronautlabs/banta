@@ -39,15 +39,15 @@ export class FirebaseChatBackend implements ChatBackend {
     //private firestore : firebaseAdmin.firestore.Firestore;
 
     async getSourceForTopic(topicId: string): Promise<ChatSource> {
-        return await this.getSourceForCollection(`/bantaTopics/${topicId}`);
+        return await this.getSourceForCollection(topicId, `/bantaTopics/${topicId}`);
     }
 
     async getSourceForThread(topicId : string, id : string): Promise<ChatSource> {
-        return await this.getSourceForCollection(`/bantaTopics/${topicId}/messages/${id}`);
+        return await this.getSourceForCollection(topicId, `/bantaTopics/${topicId}/messages/${id}`);
     }
 
-    protected async getSourceForCollection(collectionPath : string): Promise<ChatSource> {
-        return new FirebaseChatSource(this.auth, this.notif, collectionPath);
+    protected async getSourceForCollection(identifier : string, collectionPath : string): Promise<ChatSource> {
+        return new FirebaseChatSource(identifier, this.auth, this.notif, collectionPath);
     }
 
     async refreshMessage(message: ChatMessage): Promise<ChatMessage> {

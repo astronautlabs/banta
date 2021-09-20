@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 
 export class BantaServiceChatSource implements ChatSource {
     constructor(
+        readonly identifier : string,
         private underlyingChatSource : ChatSource,
         private backend : BantaServiceChatBackend,
         private collectionPath : string

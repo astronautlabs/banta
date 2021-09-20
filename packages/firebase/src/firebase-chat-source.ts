@@ -11,6 +11,7 @@ import * as firebase from 'firebase';
 
 export class FirebaseChatSource implements ChatSource {
     constructor(
+        readonly identifier : string,
         private auth : AuthenticationProvider,
         private notif : NotificationsProvider,
         private collectionPath : string
