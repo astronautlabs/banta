@@ -156,6 +156,8 @@ export class MockFirehoseSource implements ChatSource {
         this._currentUserChanged.next(this.currentUser);
     }
 
+    identifier = 'mock';
+
     close() {
         // TODO
     }
@@ -266,6 +268,8 @@ export class MockPointSource implements ChatSource {
         this._currentUserChanged.next(this.currentUser);
     }
 
+    identifier = 'mock-point';
+
     currentUser : User = {
         id: 'z',
         username: 'liam',
@@ -312,6 +316,8 @@ export class MockSubpointSource implements ChatSource {
         this._currentUserChanged = parentSource.currentUserChanged;
         this._messages = message.submessages;
     }
+
+    identifier = 'mock-subpoint';
 
     private _messages : ChatMessage[] = [];
     private _messageReceived = new Subject<ChatMessage>();
