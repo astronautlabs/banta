@@ -1,11 +1,11 @@
-<engage-chat-view 
+<banta-chat-view 
     #chatView
     [source]="source"
     (upvoted)="upvote($event)"
     (reported)="report($event)"
     (selected)="select($event)"
     (userSelected)="selectUser($event)"
-    ></engage-chat-view>
+    ></banta-chat-view>
 
 <form class="new-message" (submit)="sendMessage()">
     

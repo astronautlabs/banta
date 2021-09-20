@@ -5,11 +5,11 @@ import { Component } from '@angular/core';
 @Component({
     template: `
 
-        <engage-chat [topicID]="demo.roomId"></engage-chat>
+        <banta [topicID]="demo.roomId"></banta>
 
         <div class="demo-bar">
             <div>
-                <engage-logo></engage-logo>
+                <banta-logo></banta-logo>
                 <ng-container *ngIf="demo.name">
                     {{demo.name}}
                 </ng-container>
@@ -44,7 +44,7 @@ import { Component } from '@angular/core';
                 color: #666;
             }
 
-            engage-chat {
+            banta {
                 flex-grow: 1;
             }
             .demo-bar {
@@ -59,7 +59,7 @@ import { Component } from '@angular/core';
                 align-items: flex-end;
             }
 
-            .demo-bar engage-logo {
+            .demo-bar banta-logo {
                 position: relative;
                 top: 10px;
             }

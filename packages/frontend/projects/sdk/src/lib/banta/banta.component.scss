@@ -91,7 +91,7 @@ header {
     }
 }
 
-engage-comments {
+banta-comments {
     flex-grow: 1;
 }
 
@@ -172,11 +172,11 @@ form {
 
 .subcomments {
     ::ng-deep {
-        engage-comment {
+        banta-comment {
             font-size: 10pt;
         }
 
-        engage-comment.focused-comment {
+        banta-comment.focused-comment {
             background: #001321;
             color: white;
             font-size: 12pt;
@@ -214,7 +214,7 @@ form {
         border-bottom: 1px solid #333;
         padding: 1em;
 
-        engage-timestamp {
+        banta-timestamp {
             display: block;
             text-align: right;
             font-size: 9pt;

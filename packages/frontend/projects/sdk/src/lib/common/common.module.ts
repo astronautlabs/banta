@@ -14,10 +14,10 @@ const COMPONENTS = [
     ],
     exports: COMPONENTS
 })
-export class EngageCommonModule {
-    static forRoot(): ModuleWithProviders<EngageCommonModule> {
+export class BantaCommonModule {
+    static forRoot(): ModuleWithProviders<BantaCommonModule> {
         return {
-            ngModule: EngageCommonModule,
+            ngModule: BantaCommonModule,
             providers: [
                 BantaService
             ]

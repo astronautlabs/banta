@@ -3,7 +3,7 @@ import { User, ChatMessage } from '@banta/common';
 import { Subject } from 'rxjs';
 
 @Component({
-    selector: 'engage-chat-message',
+    selector: 'banta-chat-message',
     templateUrl: './chat-message.component.html',
     styleUrls: ['./chat-message.component.scss']
 })

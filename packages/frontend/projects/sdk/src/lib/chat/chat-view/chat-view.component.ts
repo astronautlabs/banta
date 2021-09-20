@@ -4,7 +4,7 @@ import { SubSink } from 'subsink';
 import { Subject } from 'rxjs';
 
 @Component({
-    selector: 'engage-chat-view',
+    selector: 'banta-chat-view',
     templateUrl: './chat-view.component.html',
     styleUrls: ['./chat-view.component.scss']
 })
@@ -140,7 +140,7 @@ export class ChatViewComponent {
 
     jumpTo(message : ChatMessage) {
         let element = this.elementRef.nativeElement;
-        let messageElement = element.querySelector(`engage-chat-message[data-id="${message.id}"]`)
+        let messageElement = element.querySelector(`banta-chat-message[data-id="${message.id}"]`)
 
         if (!messageElement) {
             alert(`could not find message ${message.id}`);

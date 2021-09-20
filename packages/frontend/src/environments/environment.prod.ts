@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  engageServiceUrl: 'https://platform.bantachat.com',
+  bantaServiceUrl: 'https://platform.bantachat.com',
   firebase: {
     apiKey: "AIzaSyAJ1OjZCWrP5VQl29v_2GJmQq2O_kXyYj4",
     authDomain: "engagechat-prod.firebaseapp.com",

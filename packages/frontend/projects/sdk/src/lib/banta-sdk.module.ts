@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
-import { CommentsModule } from './comments';
-import { ChatModule } from './chat';
+import { BantaCommentsComponent, CommentsModule } from './comments';
+import { BantaChatComponent, ChatModule } from './chat';
 import { EmojiModule } from './emoji';
 import { BantaComponent } from './banta/banta.component';
 import { BantaLogoComponent } from './banta-logo.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EngageCommonModule } from './common/common.module';
+import { BantaCommonModule } from './common/common.module';
 import { LiveMessageComponent } from './live-message.component';
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -20,7 +20,7 @@ import { MatInputModule } from "@angular/material/input";
     imports: [
         CommonModule,
         FormsModule,
-        EngageCommonModule.forRoot(),
+        BantaCommonModule.forRoot(),
         CommentsModule,
         ChatModule,
         EmojiModule,
@@ -42,8 +42,8 @@ import { MatInputModule } from "@angular/material/input";
         BantaComponent,
         BantaLogoComponent,
         LiveMessageComponent,
-        ChatModule,
-        CommentsModule
+        BantaChatComponent,
+        BantaCommentsComponent
     ]
 })
 export class BantaSdkModule {

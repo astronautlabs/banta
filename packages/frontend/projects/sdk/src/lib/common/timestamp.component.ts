@@ -1,7 +1,7 @@
 import { Component, Input } from "@angular/core";
 
 @Component({
-    selector: 'engage-timestamp',
+    selector: 'banta-timestamp',
     template: `
         <span *ngIf="showAbsolute" [title]="value | date : 'short'">
             {{value | date : 'shortDate'}}

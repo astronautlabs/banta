@@ -4,7 +4,7 @@ import { CommentViewComponent } from './comment-view/comment-view.component';
 import { BantaCommentsComponent } from './banta-comments/banta-comments.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EngageCommonModule } from '../common/common.module';
+import { BantaCommonModule } from '../common/common.module';
 import { LiveCommentComponent } from './live-comment.component';
 import { EmojiModule } from '../emoji';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,11 +24,8 @@ import { MatMenuModule } from '@angular/material/menu';
         MatIconModule,
         MatButtonModule,
         MatMenuModule,
-        EngageCommonModule,
+        BantaCommonModule,
         EmojiModule
-    ],
-    exports: [
-        BantaCommentsComponent
     ]
 })
 export class CommentsModule {

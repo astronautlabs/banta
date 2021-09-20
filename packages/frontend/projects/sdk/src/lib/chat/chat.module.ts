@@ -22,9 +22,6 @@ import { MatIconModule } from '@angular/material/icon';
         MatIconModule,
         MatButtonModule,
         EmojiModule
-    ],
-    exports: [
-        BantaChatComponent
     ]
 })
 export class ChatModule {

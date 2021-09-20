@@ -3,24 +3,24 @@ import { ChatMessage } from '@banta/common';
 import { Subject, Observable } from 'rxjs';
 
 @Component({
-    selector: 'engage-live-message',
+    selector: 'banta-live-message',
     template: `
         <ng-container *ngIf="message">
-            <engage-live-chat-message
+            <banta-live-chat-message
                 *ngIf="viewType === 'chat'"
                 [message]="message"
                 (upvoted)="upvote(message)"
                 (reported)="report(message)"
                 (selected)="select(message)">
-            </engage-live-chat-message>
+            </banta-live-chat-message>
 
-            <engage-live-comment 
+            <banta-live-comment 
                 *ngIf="viewType === 'comment'"
                 [message]="message"
                 (upvoted)="upvote(message)"
                 (reported)="report(message)"
                 (selected)="select(message)">
-            </engage-live-comment>
+            </banta-live-comment>
         </ng-container>
     `,
     styles: [``]

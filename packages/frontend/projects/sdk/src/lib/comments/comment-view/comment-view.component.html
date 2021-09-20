@@ -1,6 +1,6 @@
 <div class="message-container">
     <ng-content select="[data-before]"></ng-content>
-    <engage-comment 
+    <banta-comment 
         *ngFor="let message of messages"
         class="abbreviated"
         [message]="message"
@@ -9,6 +9,6 @@
         (upvoted)="upvoteMessage(message)"
         (reported)="reportMessage(message)"
         (selected)="selectMessage(message)"
-        ></engage-comment>
+        ></banta-comment>
     <ng-content select=":not([data-before])"></ng-content>
 </div>

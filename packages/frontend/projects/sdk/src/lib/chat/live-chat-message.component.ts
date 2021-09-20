@@ -4,15 +4,15 @@ import { Subject, Observable } from 'rxjs';
 import { ChatBackendService } from '../chat-backend.service';
 
 @Component({
-    selector: 'engage-live-chat-message',
+    selector: 'banta-live-chat-message',
     template: `
-        <engage-chat-message 
+        <banta-chat-message 
             *ngIf="message"
             [message]="message"
             (upvoted)="upvote()"
             (reported)="report()"
             (selected)="select()"
-            ></engage-chat-message>
+            ></banta-chat-message>
     `,
     styles: [``]
 })

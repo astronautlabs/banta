@@ -1,6 +1,6 @@
 <div class="message-container" #messageContainer>
     <ng-content select="[data-before]"></ng-content>
-    <engage-chat-message 
+    <banta-chat-message 
         *ngFor="let message of messages"
         [message]="message"
         [class.highlight]="mentionsMe(message)" 
@@ -11,6 +11,6 @@
         (userSelected)="selectMessageUser(message)"
         [attr.data-id]="message.id"
         >
-        </engage-chat-message>
+        </banta-chat-message>
     <ng-content select=":not([data-before])"></ng-content>
 </div>

@@ -4,7 +4,7 @@ import { SubSink } from 'subsink';
 import { Subject } from 'rxjs';
 
 @Component({
-    selector: 'engage-comment-view',
+    selector: 'banta-comment-view',
     templateUrl: './comment-view.component.html',
     styleUrls: ['./comment-view.component.scss']
 })

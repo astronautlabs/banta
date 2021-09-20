@@ -52,14 +52,14 @@
             </button>
         </div>
     </header>
-    <engage-firehose 
+    <banta-chat 
         #firehose
         [source]="firehoseSource"
         (signInSelected)="showSignIn()"
         (upvoted)="upvoteMessage($event)"
         (userSelected)="showProfile($event.user)"
         (reported)="reportMessage($event)"
-        ></engage-firehose>
+        ></banta-chat>
 </div>
 
 <div class="aux" [class.focus]="mobileFocus === 'aux'" [class.open]="auxOpen">
@@ -104,7 +104,7 @@
         <ng-container *ngIf="auxMode === 'report'">
             <p>Are you sure you want to report this message?</p>
 
-            <engage-live-message [message]="reportedMessage"></engage-live-message>
+            <banta-live-message [message]="reportedMessage"></banta-live-message>
 
             <div style="text-align: center;">
                 <button mat-raised-button color="primary" (click)="sendReport(reportedMessage)">Yes, Report</button>
@@ -126,12 +126,12 @@
                         <ng-container *ngIf="notif.type === 'upvote'">
                             @{{notif.message?.user?.username}} upvoted your post
                             
-                            <engage-live-message
+                            <banta-live-message
                                 [message]="notif.message"
                                 (upvoted)="upvoteMessage(notif.message)"
                                 (reported)="reportMessage(notif.message)"
                                 (selected)="goToMessage(notif.message)">
-                            </engage-live-message>
+                            </banta-live-message>
 
                         </ng-container>
                         <ng-container *ngIf="notif.type === 'notice'">
@@ -145,27 +145,27 @@
                         <ng-container *ngIf="notif.type === 'mention'">
                             You were mentioned by @{{notif.message?.user?.username}}
 
-                            <engage-live-message
+                            <banta-live-message
                                 [message]="notif.message"
                                 (upvoted)="upvoteMessage(notif.message)"
                                 (reported)="reportMessage(notif.message)"
                                 (selected)="goToMessage(notif.message)">
-                            </engage-live-message>
+                            </banta-live-message>
 
                         </ng-container>
                         <ng-container *ngIf="notif.type === 'reply'">
                             @{{notif.replyMessage?.user?.username}} replied to your post
                             
-                            <engage-live-message
+                            <banta-live-message
                                 [message]="notif.replyMessage"
                                 (upvoted)="upvoteMessage(notif.replyMessage)"
                                 (reported)="reportMessage(notif.replyMessage)"
                                 (selected)="goToMessage(notif.replyMessage)">
-                            </engage-live-message>
+                            </banta-live-message>
                         </ng-container>
                     </div>
 
-                    <engage-timestamp [value]="notif.sentAt"></engage-timestamp>
+                    <banta-timestamp [value]="notif.sentAt"></banta-timestamp>
                 </div>
             </div>
         </ng-container>
@@ -203,7 +203,7 @@
             Error: No subchat
         </div>
         
-        <engage-comment-view
+        <banta-comment-view
             class="subcomments"
             *ngIf="pointSubChat"
             [newestLast]="true"
@@ -214,7 +214,7 @@
             (userSelected)="showProfile($event.user)"
             >
             
-            <engage-comment
+            <banta-comment
                 class="focused-comment"
                 data-before
                 *ngIf="pointOpen"
@@ -223,7 +223,7 @@
                 (reported)="reportMessage(pointOpen)"
                 [showReplyAction]="false"
                 [message]="pointOpen"
-                ></engage-comment>
+                ></banta-comment>
         
             <div class="message reply">
                 Reply:
@@ -239,16 +239,16 @@
                     </div>
                 </form>
             </div>
-        </engage-comment-view>
+        </banta-comment-view>
     </div>
     <div class="points-section">
-        <engage-comments
+        <banta-comments
             [source]="pointSource"
             (signInSelected)="showSignIn()"
             (upvoted)="upvoteMessage($event)"
             (reported)="reportMessage($event)"
             (selected)="goToMessage($event)"
             (userSelected)="showProfile($event.user)"
-            ></engage-comments>
+            ></banta-comments>
     </div>
 </div>

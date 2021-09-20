@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  engageServiceUrl: 'http://localhost:3000',
+  bantaServiceUrl: 'http://localhost:3000',
   firebase: {
     // apiKey: "AIzaSyAyLVhVnAhSblJJ7aRNFrHr9-E8MrvJbN4",
     // authDomain: "engagechat-dev.firebaseapp.com",

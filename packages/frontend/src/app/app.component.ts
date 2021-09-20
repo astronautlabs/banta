@@ -22,7 +22,7 @@ export class AppComponent {
   }
 
   year = 2020;
-  title = 'engage';
+  title = 'Banta';
   user : User;
 
   @HostBinding('class.demo')
