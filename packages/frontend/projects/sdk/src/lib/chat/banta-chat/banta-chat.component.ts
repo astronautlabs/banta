@@ -56,7 +56,7 @@ export class BantaChatComponent {
     }
 
     private async setSourceFromTopicID(topicID : string) {
-        if (this._source.close)
+        if (this._source && this._source.close)
             this._source.close();
         this._source = null;
         this._source = await this.backend.getSourceForTopic(topicID);
