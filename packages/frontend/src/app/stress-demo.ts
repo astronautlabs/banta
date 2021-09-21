@@ -1,203 +1,119 @@
-import { ChatMessage, ChatSource, User, ChatBackend, Notification, Vote } from "@banta/common";
+import { ChatMessage, ChatSource, User } from "@banta/common";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
-import { v4 as uuid } from 'uuid';
 
-const GENERIC_AVATAR_URL = 'https://gravatar.com/avatar/example?s=512&d=retro';
-
-export class MockQuietSource implements ChatSource {
-    constructor(
-        readonly backend : MockBackend,
-        readonly identifier: string
-    ) {
-    }
-
-    messageReceived = new Subject<ChatMessage>();
-    messageSent = new Subject<ChatMessage>();
-    messages: ChatMessage[] = [];
-    currentUserChanged = new Subject<User>();
-
-    send(message: ChatMessage) {
-        message.id = uuid();
-        this.backend.messages.set(message.id, message);
-        this.messages.push(message);
-        this.messageReceived.next(message);
-    }
-
-    close() {
-    }
-}
-
-export class MockBackend implements ChatBackend {
-    messages = new Map<string,ChatMessage>();
-    userAvatars = new Map<string,string>();
-
-    private sources = new Map<string,ChatSource>();
-
-    private getSourceForId(id : string) {
-        
-        if (this.sources.has(id))
-            return this.sources.get(id);
-
-        let source : ChatSource;
-
-        if (id.endsWith('_thepoint'))
-            source = new MockPointSource(this, id);
-        else
-            source = new MockFirehoseSource(this, id);
-
-        this.sources.set(id, source);
-        
-        return source;
-    }
-
-    async getSourceForTopic(topicId: string): Promise<ChatSource> {
-        return this.getSourceForId(topicId);
-    }
-
-    async getSourceForThread(topicId: string, messageId: string): Promise<ChatSource> {
-        return this.getSourceForId(topicId);
-    }
-
-    async refreshMessage(message: ChatMessage): Promise<ChatMessage> {
-        return message;
-    }
-
-    async getMessage(topicId: string, messageId: string): Promise<ChatMessage> {
-        return this.messages.get(messageId);
-    }
-
-    async getSubMessage(topicId: string, parentMessageId: string, messageId: string): Promise<ChatMessage> {
-        return this.messages.get(messageId);
-    }
-
-    async upvoteMessage(topicId: string, messageId: string, submessageId: string, vote: Vote): Promise<void> {
-        // TODO
-    }
-
-    watchMessage(message: ChatMessage, handler: (message: ChatMessage) => void): () => void {
-        // TODO
-        return () => {};
-    }
-
-    notificationsChanged = new Subject<Notification[]>();
-    newNotification = new Subject<Notification>();
-
-}
+const GENERIC_AVATAR_URL = 'https://gravatar.com/avatar/915c804e0be607a4ad766ddadea5c48a?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png';
 
 const MOCK_USERS = [
     { 
         id: 'a',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Tom`, 
         username: `tom` 
     }, { 
         id: 'b',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Dick`, 
         username: `dick` 
     }, { 
         id: 'c',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Harry`, 
         username: `harry` 
     }, { 
         id: 'd',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `John`, 
         username: `john` 
     }, { 
         id: 'e',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Wayne`, 
         username: `wayne` 
     }, { 
         id: 'f',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Heather`, 
         username: `heather` 
     }, { 
         id: 'g',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Mary`, 
         username: `mary` 
     }, { 
         id: 'h',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Jennifer`, 
         username: `jennifer` 
     }, { 
         id: 'i',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Kyle`, 
         username: `kyle` 
     }, { 
         id: 'j',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Wanda`, 
         username: `wanda` 
     }, { 
         id: 'k',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Josh`, 
         username: `josh` 
     }, { 
         id: 'l',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Jane`, 
         username: `jane` 
     }, { 
         id: 'm',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Joy`, 
         username: `joy` 
     }, { 
         id: 'n',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Jesus`, 
         username: `jesus` 
     }, { 
         id: 'o',
-        avatarUrl: null, 
-        displayName: `John Johnson`, 
+        avatarUrl: GENERIC_AVATAR_URL, 
+        displayName: `I bathe in Bernie's tears of joy`, 
         username: `landem` 
     }, { 
         id: 'p',
-        avatarUrl: null, 
-        displayName: `Fantasmo`, 
+        avatarUrl: GENERIC_AVATAR_URL, 
+        displayName: `The thing about socialism is that its the best`, 
         username: `mangahead` 
     }, { 
         id: 'q',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `If only I knew the first thing about this stuff`, 
         username: `redstripe` 
     }, { 
         id: 'r',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Time is not something that should be treated unfairly`, 
         username: `fantom` 
     }, { 
         id: 's',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `What is the meaning of this capitalism?`, 
         username: `ganjaking` 
     }, { 
         id: 't',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `The world is not ready for us`, 
         username: `leggo` 
     }, { 
         id: 'u',
-        avatarUrl: null, 
+        avatarUrl: GENERIC_AVATAR_URL, 
         displayName: `Make or break, now is our time`, 
         username: `mako` 
     }
 ];
 
 export class MockFirehoseSource implements ChatSource {
-    constructor(
-        readonly backend : MockBackend,
-        readonly identifier : string
-    ) {
+    constructor() {
         let randomMessages = [
             `Whoa!`,
             `Cool!`,
@@ -208,18 +124,15 @@ export class MockFirehoseSource implements ChatSource {
             `Wunderbar!`,
             `Lasagna!`,
             `Tacos!`,
-            `@liam, Life is a box of chocolates, you never know which one...`,
-            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET!`,
-            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET!`,
-            `Delicious!`
+            `@liam, Life is a box of chocolates, you never know which one... oh fuck it`,
+            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI!`,
+            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI!`,
+            `The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such.`
         ];
 
         setInterval(() => {
             let messageText = randomMessages[Math.floor(randomMessages.length * Math.random())];
             let user = MOCK_USERS[Math.floor(MOCK_USERS.length * Math.random())];
- 
-            if (!user.avatarUrl)
-                user.avatarUrl = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
             let message : ChatMessage = {
                 user,
@@ -231,10 +144,12 @@ export class MockFirehoseSource implements ChatSource {
 
             this.addMessage(message);
             this.messageReceived.next(message);
-        }, 3000);
+        }, 1000);
 
         this._currentUserChanged.next(this.currentUser);
     }
+
+    identifier = 'mock';
 
     close() {
         // TODO
@@ -252,8 +167,6 @@ export class MockFirehoseSource implements ChatSource {
     }
 
     send(message : ChatMessage) {
-        message.id = uuid();
-        this.backend.messages.set(message.id, message);
         this.addMessage(message);
         this._messageSent.next(message);
     }
@@ -281,26 +194,21 @@ export class MockFirehoseSource implements ChatSource {
 }
 
 export class MockPointSource implements ChatSource {
-    constructor(
-        readonly backend : MockBackend,
-        readonly identifier : string
-    ) {
+    constructor() {
         let randomPoints = [
-            `This is a great article but I have some feedback for the author.`,
+            `I think that Trump has a specific form of braindead called
+            "Trumpitis".`,
             `Other things that could be said will be said`,
             `If only things were as simple as they appear`,
             `Life is a box of chocolates, you never know which one... oh fuck it`,
             `More things that are done tomorrow may not be done today`,
             `Google is a useful tool to find things`,
-            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET! Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET!`
+            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET GDI!`
         ];
 
         setInterval(() => {
             let messageText = randomPoints[Math.floor(randomPoints.length * Math.random())];
             let user = MOCK_USERS[Math.floor(MOCK_USERS.length * Math.random())];
-
-            if (!user.avatarUrl)
-                user.avatarUrl = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
             let message : ChatMessage = {
                 user,
@@ -317,7 +225,7 @@ export class MockPointSource implements ChatSource {
                     {
                         user: { 
                             id: 'aa',
-                            avatarUrl: null, 
+                            avatarUrl: GENERIC_AVATAR_URL, 
                             displayName: 'FunnilyGuy', 
                             username: 'funnyguy' 
                         },
@@ -353,6 +261,8 @@ export class MockPointSource implements ChatSource {
         this._currentUserChanged.next(this.currentUser);
     }
 
+    identifier = 'mock-point';
+
     currentUser : User = {
         id: 'z',
         username: 'liam',
@@ -386,9 +296,46 @@ export class MockPointSource implements ChatSource {
     }
 
     send(message : ChatMessage) {
-        message.id = uuid();
-        this.backend.messages.set(message.id, message);
         this.addMessage(message);
         this._messageSent.next(message);
     }
+}
+
+export class MockSubpointSource implements ChatSource {
+    constructor(
+        readonly parentSource : ChatSource,
+        readonly message : ChatMessage
+    ) {
+        this._currentUserChanged = parentSource.currentUserChanged;
+        this._messages = message.submessages;
+    }
+
+    identifier = 'mock-subpoint';
+
+    private _messages : ChatMessage[] = [];
+    private _messageReceived = new Subject<ChatMessage>();
+    private _messageSent = new Subject<ChatMessage>();
+    private _currentUserChanged: Observable<User>;
+
+    get messages() {
+        return this._messages;
+    }
+
+    get messageReceived() {
+        return this._messageReceived;
+    }
+
+    get messageSent() {
+        return this._messageSent;
+    }
+
+    get currentUserChanged() {
+        return this._currentUserChanged;
+    }
+
+    send(message: ChatMessage) {
+        //throw new Error("Method not implemented.");
+    }
+
+
 }

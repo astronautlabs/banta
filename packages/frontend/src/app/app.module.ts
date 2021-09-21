@@ -20,6 +20,7 @@ import { DemoService } from './demo.service';
 import { DemoComponent } from './demo.component';
 import { MarkdownModule } from 'ngx-markdown';
 import { environment } from '../environments/environment';
+import { MockBackend } from './mock-backend';
 
 
 @NgModule({
@@ -44,23 +45,25 @@ import { environment } from '../environments/environment';
   providers: [
     DemoService,
 
-    FirebaseStoreRef,
-    { 
-      provide: AuthenticationProvider, 
-      useClass: FirebaseAuthenticationProvider, 
-      deps: [ FirebaseStoreRef ] 
-    },
-    { 
-      provide: FirebaseChatBackend, 
-      useClass: FirebaseChatBackend, 
-      deps: [ AuthenticationProvider, NotificationsProvider, FirebaseStoreRef ] 
-    },
-    { 
-      provide: ChatBackendService, 
-      useFactory: (firebase : FirebaseChatBackend) => new BantaServiceChatBackend(firebase, environment.bantaServiceUrl), 
-      deps: [FirebaseChatBackend] 
-    },
-    { provide: NotificationsProvider, useClass: FirebaseNotificationsProvider, deps: [ FirebaseStoreRef ] }
+    // FirebaseStoreRef,
+    // { 
+    //   provide: AuthenticationProvider, 
+    //   useClass: FirebaseAuthenticationProvider, 
+    //   deps: [ FirebaseStoreRef ] 
+    // },
+    // { 
+    //   provide: FirebaseChatBackend, 
+    //   useClass: FirebaseChatBackend, 
+    //   deps: [ AuthenticationProvider, NotificationsProvider, FirebaseStoreRef ] 
+    // },
+    // { 
+    //   provide: ChatBackendService, 
+    //   useFactory: (firebase : FirebaseChatBackend) => new BantaServiceChatBackend(firebase, environment.bantaServiceUrl), 
+    //   deps: [FirebaseChatBackend] 
+    // },
+    // { provide: NotificationsProvider, useClass: FirebaseNotificationsProvider, deps: [ FirebaseStoreRef ] }
+
+    { provide: ChatBackendService, useClass: MockBackend }
   ],
   bootstrap: [AppComponent]
 })

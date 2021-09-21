@@ -12,8 +12,8 @@
 
 <div class="tabs">
     <div>
-        <a mat-button (click)="mobileFocus = 'firehose'">Firehose</a>
-        <a mat-button (click)="mobileFocus = 'points'">The Point</a>
+        <a mat-button (click)="mobileFocus = 'chat'">{{chatLabel}}</a>
+        <a mat-button (click)="mobileFocus = 'comments'">{{commentsLabel}}</a>
     </div>
     <div class="spacer"></div>
     <div>
@@ -32,10 +32,10 @@
     </div>
 </div>
 
-<div class="firehose" [class.focus]="mobileFocus === 'firehose'">
+<div class="firehose" [class.focus]="mobileFocus === 'chat'">
     <header>
         <div>
-            <label (click)="mobileFocus = 'firehose'">Firehose</label>
+            <label (click)="mobileFocus = 'chat'">{{chatLabel}}</label>
             <div class="spacer"></div>
 
             <ng-container *ngIf="currentUser">
@@ -174,7 +174,7 @@
 <div class="points" [class.focus]="mobileFocus === 'points'">
     <header>
         <div>
-            <label>The Point</label>
+            <label>{{commentsLabel}}</label>
         </div>
     </header>
     <div class="point-focus">

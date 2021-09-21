@@ -147,6 +147,9 @@ export class BantaComponent {
         return this._topicID;
     }
 
+    @Input() chatLabel = 'Chat';
+    @Input() commentsLabel = 'Comments';
+
     set topicID(value) {
         this._topicID = value;
 

@@ -30,6 +30,14 @@ export class AppComponent {
   darkTheme = true;
 
   ngOnInit() {
+    this.banta.user = {
+      username: 'me',
+      displayName: 'Me',
+      email: 'me@example.com',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      avatarUrl: `https://gravatar.com/avatar/example?s=${Date.now().toString(16)}&d=robohash`
+    };
     this.router.events.subscribe(ev => {
       if (ev instanceof NavigationEnd) {
         if (ev.url.startsWith('/demo/')) {
