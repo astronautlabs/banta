@@ -1,6 +1,7 @@
 import { ChatMessage, ChatSource, User, ChatBackend, Notification, Vote } from "@banta/common";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
+import { Injectable } from "@angular/core";
 
 const GENERIC_AVATAR_URL = 'https://gravatar.com/avatar/example?s=512&d=retro';
 
@@ -27,6 +28,7 @@ export class MockQuietSource implements ChatSource {
     }
 }
 
+@Injectable()
 export class MockBackend implements ChatBackend {
     messages = new Map<string,ChatMessage>();
     userAvatars = new Map<string,string>();
