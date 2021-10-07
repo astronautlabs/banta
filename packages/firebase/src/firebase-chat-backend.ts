@@ -1,6 +1,5 @@
 import { ChatSource, ChatMessage, Vote, Injectable } from "@banta/common";
 import { ChatBackend, Notification } from "@banta/common";
-import * as firebase from "firebase";
 import { DataStore } from "@astronautlabs/datastore";
 import { FirebaseChatSource } from "./firebase-chat-source";
 import { AuthenticationProvider, NotificationsProvider, UpvoteNotification } from "@banta/common";

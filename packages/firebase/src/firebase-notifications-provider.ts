@@ -2,7 +2,6 @@ import { Observable, Subject } from "rxjs";
 import { Notification, NotificationsProvider, Counter, User, Injectable } from "@banta/common";
 import { FirebaseStoreRef } from "./firebase-store-ref";
 import { v4 as uuid } from 'uuid';
-import * as firebase from 'firebase';
 import { Subscription } from "rxjs";
 
 @Injectable()

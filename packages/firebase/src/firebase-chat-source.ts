@@ -7,7 +7,6 @@ import { MentionNotification } from "@banta/common";
 import { v4 as uuid } from 'uuid';
 import { Counter } from "@banta/common";
 import { lazyConnection } from "./lazy-connection";
-import * as firebase from 'firebase';
 
 export class FirebaseChatSource implements ChatSource {
     constructor(
