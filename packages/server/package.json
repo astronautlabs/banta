@@ -4,6 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build:cjs": "tsc -b",
     "build:esm": "tsc -b tsconfig.esm.json",

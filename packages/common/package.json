@@ -4,6 +4,9 @@
   "description": "",
   "private": false,
   "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p .",
     "prepublishOnly": "npm run build",
