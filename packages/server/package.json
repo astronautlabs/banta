@@ -3,8 +3,11 @@
   "version": "0.0.38",
   "description": "",
   "main": "dist/index.js",
+  "module": "dist.esm/index.js",
   "scripts": {
-    "build": "tsc -b",
+    "build:cjs": "tsc -b",
+    "build:esm": "tsc -b tsconfig.esm.json",
+    "build": "npm run build:cjs && npm run build:esm",
     "start": "npm run build && node dist/main",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublishOnly": "npm run build"
