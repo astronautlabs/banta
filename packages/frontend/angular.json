@@ -68,7 +68,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "engage:build"
+            "browserTarget": "engage:build",
+            "port": 4202
           },
           "configurations": {
             "production": {
