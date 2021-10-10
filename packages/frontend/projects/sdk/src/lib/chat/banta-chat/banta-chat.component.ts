@@ -156,7 +156,7 @@ export class BantaChatComponent {
 
     newMessage : NewMessageForm = {};
 
-    sendMessage() {
+    async sendMessage() {
         if (!this.source)
             return;
 
@@ -173,6 +173,11 @@ export class BantaChatComponent {
             message: text
         };
 
-        this.source.send(message);
+        try {
+            await this.source.send(message);
+        } catch (e) {
+            console.error(`Failed to send message: `, message);
+            console.error(e);
+        }
     }
 }
