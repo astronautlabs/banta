@@ -70,10 +70,9 @@ export class FirebaseChatSource implements ChatSource {
 
     messages : ChatMessage[] = [];
 
-    async send(message : ChatMessage): Promise<ChatMessage> {
+    async send(message : ChatMessage) {
         let finalMessage = await this.recordMessage(this.collectionPath, message);
         await this.sendMentionNotifications(finalMessage);
-        return finalMessage;
     }
 
     private extractMentions(message : string): string[] {
