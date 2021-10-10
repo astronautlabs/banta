@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@alterior/di": "*",
-    "@alterior/logging": "*",
     "@alterior/platform-nodejs": "*",
     "@alterior/runtime": "*",
     "@alterior/web-server": "*",
