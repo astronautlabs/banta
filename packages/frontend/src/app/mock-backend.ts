@@ -17,7 +17,7 @@ export class MockQuietSource implements ChatSource {
     messages: ChatMessage[] = [];
     currentUserChanged = new Subject<User>();
 
-    send(message: ChatMessage) {
+    async send(message: ChatMessage) {
         message.id = uuid();
         this.backend.messages.set(message.id, message);
         this.messages.push(message);
