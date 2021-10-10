@@ -4,11 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
-
-import { NotificationsProvider, AuthenticationProvider } from "@banta/common";
-import { FirebaseAuthenticationProvider, FirebaseNotificationsProvider, FirebaseChatBackend, FirebaseStoreRef } from "@banta/firebase";
-import { BantaServiceChatBackend } from "@banta/client"; 
-
 import { MaterialModule } from '../material.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BantaSdkModule, ChatBackendService } from '@banta/sdk';
@@ -19,8 +14,8 @@ import { TryComponent } from './try/try.component';
 import { DemoService } from './demo.service';
 import { DemoComponent } from './demo.component';
 import { MarkdownModule } from 'ngx-markdown';
-import { environment } from '../environments/environment';
 import { MockBackend } from './mock-backend';
+import { DevComponent } from './dev/dev.component';
 
 
 @NgModule({
@@ -30,7 +25,8 @@ import { MockBackend } from './mock-backend';
     NotFoundComponent,
     SourceComponent,
     TryComponent,
-    DemoComponent
+    DemoComponent,
+    DevComponent
   ],
   imports: [
     BrowserModule,

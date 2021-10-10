@@ -3,6 +3,7 @@ import { BantaService, ChatBackendService } from '@banta/sdk';
 import { User } from '@banta/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,10 @@ export class AppComponent {
 
   @HostBinding('class.mat-dark-theme')
   darkTheme = true;
+
+  get showDevTools() {
+    return !environment.production;
+  }
 
   ngOnInit() {
     this.banta.user = {
