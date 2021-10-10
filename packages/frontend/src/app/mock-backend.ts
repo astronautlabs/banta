@@ -253,7 +253,7 @@ export class MockFirehoseSource implements ChatSource {
         this._messages.push(message);
     }
 
-    send(message : ChatMessage) {
+    async send(message : ChatMessage) {
         message.id = uuid();
         this.backend.messages.set(message.id, message);
         this.addMessage(message);
@@ -387,7 +387,7 @@ export class MockPointSource implements ChatSource {
         return this._messageSent;
     }
 
-    send(message : ChatMessage) {
+    async send(message : ChatMessage) {
         message.id = uuid();
         this.backend.messages.set(message.id, message);
         this.addMessage(message);
