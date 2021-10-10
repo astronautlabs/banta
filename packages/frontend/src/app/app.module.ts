@@ -14,8 +14,12 @@ import { TryComponent } from './try/try.component';
 import { DemoService } from './demo.service';
 import { DemoComponent } from './demo.component';
 import { MarkdownModule } from 'ngx-markdown';
-import { MockBackend } from './mock-backend';
 import { DevComponent } from './dev/dev.component';
+
+// KEEP [see below]
+import { MockBackend } from './mock-backend';
+import { FirebaseAuthenticationProvider, FirebaseChatBackend, FirebaseNotificationsProvider, FirebaseStoreRef } from '@banta/firebase';
+import { BantaServiceChatBackend } from '@banta/client';
 
 
 @NgModule({
@@ -41,25 +45,27 @@ import { DevComponent } from './dev/dev.component';
   providers: [
     DemoService,
 
-    // FirebaseStoreRef,
-    // { 
-    //   provide: AuthenticationProvider, 
-    //   useClass: FirebaseAuthenticationProvider, 
-    //   deps: [ FirebaseStoreRef ] 
-    // },
-    // { 
-    //   provide: FirebaseChatBackend, 
-    //   useClass: FirebaseChatBackend, 
-    //   deps: [ AuthenticationProvider, NotificationsProvider, FirebaseStoreRef ] 
-    // },
-    // { 
-    //   provide: ChatBackendService, 
-    //   useFactory: (firebase : FirebaseChatBackend) => new BantaServiceChatBackend(firebase, environment.bantaServiceUrl), 
-    //   deps: [FirebaseChatBackend] 
-    // },
-    // { provide: NotificationsProvider, useClass: FirebaseNotificationsProvider, deps: [ FirebaseStoreRef ] }
-
+    /** <-- Add another slash to configure for Firebase
+    FirebaseStoreRef,
+    {
+        provide: FirebaseNotificationsProvider,
+        deps: [ FirebaseStoreRef ],
+        useFactory: storeRef => new FirebaseNotificationsProvider(storeRef)
+    },
+    {
+        provide: FirebaseChatBackend,
+        deps: [ FirebaseAuthenticationProvider, FirebaseNotificationsProvider, FirebaseStoreRef ],
+        useFactory: (auth, notifs, storeRef) => new FirebaseChatBackend(auth, notifs, storeRef)
+    },
+    {
+        provide: ChatBackendService, 
+        deps: [ FirebaseChatBackend ],
+        useFactory: (firebaseBackend) => 
+            new BantaServiceChatBackend(firebaseBackend, 'localhost:3001')
+    }
+    /*/
     { provide: ChatBackendService, useClass: MockBackend }
+    // */
   ],
   bootstrap: [AppComponent]
 })
