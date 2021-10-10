@@ -124,7 +124,7 @@ export class BantaCommentsComponent {
         this.newMessageText += text;
     }
 
-    sendMessage() {
+    async sendMessage() {
         if (!this.source)
             return;
         
@@ -141,7 +141,12 @@ export class BantaCommentsComponent {
             message: text
         };
 
-        this.source.send(message);
+        try {
+            await this.source.send(message);
+        } catch (e) {
+            console.error(`Failed to send message: `, message);
+            console.error(e);
+        }
     }
 
     upvoteMessage(message : ChatMessage) {
