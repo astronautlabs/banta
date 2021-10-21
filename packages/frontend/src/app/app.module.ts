@@ -39,7 +39,7 @@ import { BantaServiceChatBackend } from '@banta/client';
     MaterialModule,
     BrowserAnimationsModule,
     SaasModule,
-    BantaSdkModule,
+    BantaSdkModule.forRoot(),
     MarkdownModule.forRoot()
   ],
   providers: [
