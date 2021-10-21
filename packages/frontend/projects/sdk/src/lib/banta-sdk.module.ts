@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { ModuleWithProviders, NgModule } from '@angular/core';
 import { BantaCommentsComponent, CommentsModule } from './comments';
 import { BantaChatComponent, ChatModule } from './chat';
 import { EmojiModule } from './emoji';
@@ -15,12 +15,13 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
+import { BantaService } from './common';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
-        BantaCommonModule.forRoot(),
+        BantaCommonModule,
         CommentsModule,
         ChatModule,
         EmojiModule,
@@ -47,5 +48,12 @@ import { MatInputModule } from "@angular/material/input";
     ]
 })
 export class BantaSdkModule {
-
+    static forRoot(): ModuleWithProviders<BantaSdkModule> {
+        return {
+            ngModule: BantaSdkModule,
+            providers: [
+                BantaService
+            ]
+        }
+    }
 }
