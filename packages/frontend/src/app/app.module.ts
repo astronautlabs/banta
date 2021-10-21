@@ -53,6 +53,11 @@ import { BantaServiceChatBackend } from '@banta/client';
         useFactory: storeRef => new FirebaseNotificationsProvider(storeRef)
     },
     {
+      provide: FirebaseAuthenticationProvider,
+      deps: [ FirebaseStoreRef ],
+      useFactory: storeRef => new FirebaseNotificationsProvider(storeRef)
+    },
+    {
         provide: FirebaseChatBackend,
         deps: [ FirebaseAuthenticationProvider, FirebaseNotificationsProvider, FirebaseStoreRef ],
         useFactory: (auth, notifs, storeRef) => new FirebaseChatBackend(auth, notifs, storeRef)
@@ -61,7 +66,7 @@ import { BantaServiceChatBackend } from '@banta/client';
         provide: ChatBackendService, 
         deps: [ FirebaseChatBackend ],
         useFactory: (firebaseBackend) => 
-            new BantaServiceChatBackend(firebaseBackend, 'localhost:3001')
+            new BantaServiceChatBackend(firebaseBackend, 'http://localhost:3422')
     }
     /*/
     { provide: ChatBackendService, useClass: MockBackend }
