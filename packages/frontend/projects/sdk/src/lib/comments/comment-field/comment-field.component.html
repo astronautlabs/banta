@@ -7,18 +7,39 @@
             ></a>
     </div>
     <div class="text-container">
-        <mat-form-field appearance="outline" floatLabel="always">
-            <mat-label>{{label}}</mat-label>
-            <textarea 
-                name="message" 
-                placeholder="Type your comment"
-                matInput
-                cdkTextareaAutosize 
-                (keydown)="onKeyDown($event)"
-                [disabled]="sending"
-                [(ngModel)]="text"></textarea>
-        </mat-form-field>
-        
+        <div class="field-container">
+            <mat-form-field appearance="outline" floatLabel="always">
+                <mat-label>{{label}}</mat-label>
+                <textarea 
+                    #textarea
+                    name="message" 
+                    placeholder="Type your comment"
+                    matInput
+                    cdkTextareaAutosize 
+                    (keydown)="onKeyDown($event)"
+                    (blur)="onBlur()"
+                    [disabled]="sending"
+                    [(ngModel)]="text"></textarea>
+            </mat-form-field>
+            <div #autocompleteContainer class="autocomplete-container">
+                <div #autocomplete class="autocomplete" [class.visible]="autocompleteVisible">
+
+                    <div>
+                        <strong>{{completionPrefix}}</strong>...
+                    </div>
+
+                    <a 
+                        mat-button 
+                        *ngFor="let option of autocompleteOptions; index as index" 
+                        (click)="activateAutoComplete(option)"
+                        [class.active]="autoCompleteSelected === index" 
+                        >
+                        {{option.label}}
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <mat-spinner *ngIf="sending" class="icon loading" diameter="18" strokeWidth="2"></mat-spinner>
         <div *ngIf="sendError" class="error-message" [class.expanded]="expandError">
             <mat-icon *ngIf="sendError">error</mat-icon>

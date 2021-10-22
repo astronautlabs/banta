@@ -22,8 +22,6 @@ export class BantaComponent {
         private backend : ChatBackendService,
         private matDialog : MatDialog
     ) {
-        // this.firehoseSource = new MockFirehoseSource();
-        // this.pointSource = new MockPointSource();
     }
 
     firehoseSource : ChatSource;

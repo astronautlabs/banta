@@ -1,6 +1,22 @@
+@keyframes comment-field-appear {
+    from {
+        transform: translate(0, 128px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+}
+
 :host {
     margin: 0 2em 0 0;
     display: block;
+    animation-name: comment-field-appear;
+    animation-duration: 800ms;
+    animation-delay: 400ms;
+    animation-fill-mode: both;
 }
 
 .avatar-container {
@@ -101,8 +117,14 @@ form.new-message {
     display: flex;
     align-items: flex-start;
 
-    mat-form-field {
+    .field-container {
         flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    mat-form-field {
+        width: 100%;
     }
 
     button {
@@ -116,4 +138,36 @@ button.send {
 
 textarea {
     max-height: 7em;
+}
+
+.autocomplete-container {
+    width: calc(100% - 2em);
+    position: relative;
+    pointer-events: none;
+    top: -2em;
+}
+
+.autocomplete {
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+    background: #333;
+    padding: 0.5em;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+
+    &.visible {
+        visibility: visible;
+        pointer-events: initial;
+    }
+
+    a {
+        width: 100%;
+        text-align: left;
+
+        &.active {
+            background: #555;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-@keyframes appear {
+@keyframes comment-appear {
     from {
         transform: translate(100vw, 0);
     }
@@ -13,9 +13,18 @@
     flex-direction: column;
     position: relative;
     padding: 0.5em;
-    animation-name: appear;
-    animation-duration: 400ms;
-    animation-fill-mode: both;
+    visibility: hidden;
+
+    &.new {
+        visibility: visible;
+        animation-name: comment-appear;
+        animation-duration: 400ms;
+        animation-fill-mode: both;
+    }
+
+    &.visible {
+        visibility: visible;
+    }
 
     &:hover {
         background: #eee;
@@ -60,7 +69,7 @@
     display: flex;
     align-items: center;
 
-    label {
+    .display-name, .username {
         z-index: 1;
         position: relative;
         padding: 0 0 0 1em;
@@ -120,7 +129,7 @@
     }
 
     .user {
-        label {
+        .display-name, .username {
             color: white;
         }
     }

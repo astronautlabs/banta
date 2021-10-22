@@ -25,7 +25,7 @@ export class CommentViewComponent {
 
     @Input()
     showEmptyState = true;
-    
+
     @Input() 
     allowReplies = true;
 
@@ -130,7 +130,7 @@ export class CommentViewComponent {
     newMessages : ChatMessage[] = [];
     olderMessages : ChatMessage[] = [];
 
-    messageIdentity(chatMessage : ChatMessage) {
+    messageIdentity(index : number, chatMessage : ChatMessage) {
         return chatMessage.id;
     }
 

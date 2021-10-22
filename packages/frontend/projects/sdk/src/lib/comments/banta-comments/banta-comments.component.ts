@@ -1,5 +1,6 @@
-import { Component, Input, Output } from '@angular/core';
+import { Component, ElementRef, Input, Output } from '@angular/core';
 import { User, ChatSource, ChatMessage, UserAccount } from '@banta/common';
+import { HashTag } from '../comment-field/comment-field.component';
 import { Subject, Observable } from 'rxjs';
 import { SubSink } from 'subsink';
 import { ChatBackendService } from '../../common';
@@ -16,7 +17,8 @@ import { BantaService } from '../../common';
 export class BantaCommentsComponent {
     constructor(
         private banta : BantaService,
-        private backend : ChatBackendService
+        private backend : ChatBackendService,
+        private elementRef : ElementRef<HTMLElement>
     ) {
     }
 
@@ -27,6 +29,14 @@ export class BantaCommentsComponent {
     private _source : ChatSource;
 
     private _subs = new SubSink();
+
+    @Input() hashtags : HashTag[] = [
+        { hashtag: 'error', description: 'Cause an error' },
+        { hashtag: 'timeout', description: 'Cause a slow timeout error' },
+        { hashtag: 'slow', description: 'Be slow when this message is posted' },
+    ];
+
+    @Input() participants : User[] = [];
 
     ngOnInit() {
         this._subs.add(
@@ -66,6 +76,20 @@ export class BantaCommentsComponent {
             this._source.close();
         this._source = null;
         this._source = await this.backend.getSourceForTopic(topicID);
+
+        this._source.messageReceived.subscribe(m => this.addParticipant(m));
+        this._source.messageSent.subscribe(m => this.addParticipant(m));
+        this._source.messages.forEach(m => this.addParticipant(m));
+    }
+
+    private addParticipant(message : ChatMessage) {
+        if (!message || !message.user || !message.user.id)
+            return;
+
+        let existing = this.participants.find(x => x.id === message.user.id);
+        if (existing)
+            return;
+        this.participants.push(message.user);
     }
 
     showSignIn() {
@@ -207,8 +231,9 @@ export class BantaCommentsComponent {
         }
     }
 
-    upvoteMessage(message : ChatMessage) {
+    async upvoteMessage(message : ChatMessage) {
         this._upvoted.next(message);
+        await this.backend.upvoteMessage(message.topicId, message.parentMessageId ? message.parentMessageId : message.id, message.parentMessageId ? message.id : undefined);
     }
 
     reportMessage(message : ChatMessage) {
@@ -221,6 +246,8 @@ export class BantaCommentsComponent {
     replyMessage : string;
 
     async unselectMessage() {
+        let message = this.selectedMessage;
+        
         this._selected.next(null);
         this.selectedMessage = null;
         if (this.selectedMessageThread) {
@@ -228,6 +255,9 @@ export class BantaCommentsComponent {
                 this.selectedMessageThread.close();
             this.selectedMessageThread = null;
         }
+
+        if (message)
+            setTimeout(() => this.scrollToMessage(message));
     }
 
     selectedMessageVisible = false;
@@ -257,5 +287,12 @@ export class BantaCommentsComponent {
             updatedAt: Date.now()
         })
         this.replyMessage = '';
+    }
+
+    scrollToMessage(message : ChatMessage) {
+        let el = this.elementRef.nativeElement.querySelector(`[data-comment-id="${message.id}"]`);
+        if (!el)
+            return;
+        el.scrollIntoView({ block: 'center', inline: 'start' });
     }
 }

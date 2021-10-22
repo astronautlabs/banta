@@ -61,10 +61,17 @@
 }
 
 a.nav {
-    padding: 2em;
     text-align: center;
     text-transform: uppercase;
     width: 100%;
+    opacity: 0;
+    transition: 400ms opacity ease-in-out;
+    pointer-events: none;
+
+    &.visible {
+        opacity: 1;
+        pointer-events: initial;
+    }
 }
 
 .loading-more {

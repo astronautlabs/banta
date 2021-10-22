@@ -1,7 +1,7 @@
 <div class="message-container">
     <ng-content select="[data-before]"></ng-content>
     
-    <a mat-button class="nav" *ngIf="isViewingMore" href="javascript:;" (click)="showNew()">
+    <a mat-button class="nav" [class.visible]="isViewingMore" href="javascript:;" (click)="showNew()">
         Show 
         <ng-container *ngIf="newMessages.length === 1">
             {{newMessages.length}} new message
@@ -23,6 +23,7 @@
         *ngFor="let message of messages; trackBy: messageIdentity"
         class="abbreviated"
         [message]="message"
+        (click)="isViewingMore = true"
         [showReplyAction]="allowReplies"
         (userSelected)="selectMessageUser(message)"
         (upvoted)="upvoteMessage(message)"
@@ -30,7 +31,7 @@
         (selected)="selectMessage(message)"
         ></banta-comment>
 
-    <a mat-button class="nav" *ngIf="hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
+    <a mat-button class="nav" [class.visible]="hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
 
     <div class="loading-more" *ngIf="isLoadingMore">
         <mat-spinner></mat-spinner>

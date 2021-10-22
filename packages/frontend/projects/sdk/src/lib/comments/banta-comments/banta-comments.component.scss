@@ -3,7 +3,7 @@
     flex-direction: column;
 }
 
-@keyframes appear {
+@keyframes select-comment {
     from {
         transform: scale(1.15);
     }
@@ -14,7 +14,7 @@
 }
 
 .focused {
-    animation-name: appear;
+    animation-name: select-comment;
     animation-duration: 400ms;
     animation-fill-mode: both;
     
@@ -37,4 +37,10 @@ banta-comment-view {
     width: fit-content;
     margin: 0 auto;
     min-height: 16em;
+}
+
+.main {
+    &.hidden {
+        display: none;
+    }
 }

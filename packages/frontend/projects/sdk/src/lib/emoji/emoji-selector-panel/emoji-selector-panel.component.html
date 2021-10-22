@@ -1,12 +1,36 @@
-<div class="categories">
-	<a title="{{category.name}}" mat-icon-button *ngFor="let category of categories" (click)="activeCategory = category.name">
-		<mat-icon>{{category.icon}}</mat-icon>
-	</a>
-</div>
-
-<div *ngFor="let category of categories">
-	<div class="emoji-list" *ngIf="activeCategory && activeCategory == category.name">
-		<a href="javascript:;" (click)="select(emoji.char)" *ngFor="let emoji of category.emojis" [innerHtml]="emoji.html || ''">
+<ng-container *ngIf="searchVisible">
+	<div class="search-box" *ngIf="searchVisible">
+		<a mat-icon-button href="javascript:;" (click)="hideSearch()">
+			<mat-icon>arrow_back</mat-icon>
+		</a>
+		<mat-form-field appearance="outline" floatLabel="always">
+			<mat-label>Search for emoji</mat-label>
+			<input name="search" type="text" matInput placeholder="Start typing" [(ngModel)]="searchQuery" />
+		</mat-form-field>
+	</div>
+	<div class="emoji-list">
+		<a href="javascript:;" (click)="select(emoji.char)" 
+			*ngFor="let emoji of searchResults" [innerHtml]="emoji.html || ''">
 		</a>
 	</div>
-</div>
+</ng-container>
+<ng-container *ngIf="!searchVisible">
+	<div class="categories">
+		<ng-container *ngIf="!searchVisible">
+			<a [title]="humanize(category.name)" [class.active]="activeCategory === category.name" mat-icon-button *ngFor="let category of categories" (click)="activeCategory = category.name">
+				<mat-icon>{{category.icon}}</mat-icon>
+			</a>
+
+			<a title="Search" [class.active] mat-icon-button (click)="showSearch()">
+				<mat-icon>search</mat-icon>
+			</a>
+		</ng-container>
+	</div>
+	<div *ngFor="let category of categories">
+		<div class="emoji-list" *ngIf="activeCategory && activeCategory == category.name">
+			<a href="javascript:;" (click)="select(emoji.char)" 
+				*ngFor="let emoji of category.emojis" [innerHtml]="emoji.html || ''">
+			</a>
+		</div>
+	</div>
+</ng-container>
