@@ -3,7 +3,8 @@ import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";
 
-const GENERIC_AVATAR_URL = 'https://gravatar.com/avatar/example?s=512&d=retro';
+
+const GENERIC_AVATAR_URL = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
 export class MockQuietSource implements ChatSource {
     constructor(
@@ -253,6 +254,8 @@ export class MockFirehoseSource implements ChatSource {
     }
 
     async send(message : ChatMessage) {
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 5000));
+
         message.id = uuid();
         this.backend.messages.set(message.id, message);
         this.addMessage(message);
@@ -400,6 +403,8 @@ export class MockPointSource implements ChatSource {
     }
 
     async send(message : ChatMessage) {
+        await new Promise<void>((resolve, reject) => setTimeout(() => reject(new Error("I dunno! I couldn't send!")), 5000));
+
         message.id = uuid();
         this.backend.messages.set(message.id, message);
         this.addMessage(message);
