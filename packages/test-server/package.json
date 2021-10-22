@@ -14,7 +14,8 @@
     "@alterior/web-server": "*",
     "@banta/firebase": "^0.1.2",
     "@banta/server": "^0.1.2",
-    "firebase-admin": "^9.12.0"
+    "firebase-admin": "^9.12.0",
+    "node-fetch": "^2.6.1"
   },
   "author": "Astronaut Labs, LLC",
   "license": "MIT"
