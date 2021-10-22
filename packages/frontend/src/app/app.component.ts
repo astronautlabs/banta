@@ -88,7 +88,7 @@ export class AppComponent {
         email: 'me@example.com',
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        avatarUrl: `https://gravatar.com/avatar/example?s=${Date.now().toString(16)}&d=robohash`,
+        avatarUrl: `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`,
         token: 'abc123'
       };
     }
