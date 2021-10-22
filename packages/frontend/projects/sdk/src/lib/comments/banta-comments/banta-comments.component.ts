@@ -2,7 +2,7 @@ import { Component, Input, Output } from '@angular/core';
 import { User, ChatSource, ChatMessage, UserAccount } from '@banta/common';
 import { Subject, Observable } from 'rxjs';
 import { SubSink } from 'subsink';
-import { ChatBackendService } from '../../chat-backend.service';
+import { ChatBackendService } from '../../common';
 import { BantaService } from '../../common';
 
 /**
@@ -46,6 +46,11 @@ export class BantaCommentsComponent {
     set source(value) {
         this._source = value;
     }
+
+    @Input() fixedHeight : boolean;
+    @Input() maxMessages : number;
+    @Input() maxVisibleMessages : number;
+    @Input() genericAvatarUrl : string;
 
     @Input()
     get topicID() : string {
@@ -124,6 +129,13 @@ export class BantaCommentsComponent {
         this.newMessageText += text;
     }
 
+    onReplyKeyDown(event : KeyboardEvent) {
+    }
+
+    insertReplyEmoji(text : string) {
+        this.replyMessage += text;
+    }
+
     async sendMessage() {
         if (!this.source)
             return;
@@ -157,11 +169,43 @@ export class BantaCommentsComponent {
         this._reported.next(message);
     }
 
-    selectMessage(message : ChatMessage) {
+    selectedMessage : ChatMessage;
+    selectedMessageThread : ChatSource;
+
+    replyMessage : string;
+
+    async unselectMessage() {
+        this._selected.next(null);
+        this.selectedMessage = null;
+        if (this.selectedMessageThread) {
+            if (this.selectedMessageThread.close)
+                this.selectedMessageThread.close();
+            this.selectedMessageThread = null;
+        }
+    }
+
+    async selectMessage(message : ChatMessage) {
         this._selected.next(message);
+
+        this.selectedMessage = message;
+        this.selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id);
     }
 
     selectMessageUser(message : ChatMessage) {
         this._userSelected.next(message);
+    }
+
+    async sendReply() {
+        await this.selectedMessageThread.send({
+            message: this.replyMessage,
+            parentMessageId: this.selectedMessage.id,
+            upvotes: 0,
+            user: this.user,
+            submessages: [],
+            topicId: this.topicID,
+            sentAt: Date.now(),
+            updatedAt: Date.now()
+        })
+        this.replyMessage = '';
     }
 }

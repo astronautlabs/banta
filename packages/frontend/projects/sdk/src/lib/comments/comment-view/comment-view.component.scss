@@ -8,16 +8,36 @@
 
 .message-container {
     flex-grow: 1;
-    overflow-y: auto;
     overflow-x: hidden;
-    height: 10em;
     color: black;
     background: white;
     padding: 0.5em 1em 0.5em 0.5em;
+    opacity: 1;
+    transition: 500ms opacity ease-in-out;
+    position: relative;
 
     &.no-scroll {
         height: auto;
         overflow-y: visible;
+    }
+
+    &.faded {
+        opacity: 0.25;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10;
+    }
+}
+
+:host.fixed-height {
+    .message-container {
+        overflow-y: auto;
     }
 }
 
@@ -27,3 +47,30 @@
         background: black;
     }
 }
+
+.empty-state {
+    text-align: center;
+    margin: 3em;
+    color: #666;
+}
+
+:host-context(.mat-dark-theme) {
+    .empty-state {
+        color: #666;
+    }
+}
+
+a.nav {
+    padding: 2em;
+    text-align: center;
+    text-transform: uppercase;
+    width: 100%;
+}
+
+.loading-more {
+    padding: 2em;
+    text-align: center;
+    margin: 0 auto;
+    width: fit-content;
+}
+

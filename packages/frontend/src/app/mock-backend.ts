@@ -48,7 +48,6 @@ export class MockBackend implements ChatBackend {
             source = new MockFirehoseSource(this, id);
 
         this.sources.set(id, source);
-        
         return source;
     }
 
@@ -57,7 +56,7 @@ export class MockBackend implements ChatBackend {
     }
 
     async getSourceForThread(topicId: string, messageId: string): Promise<ChatSource> {
-        return this.getSourceForId(topicId);
+        return this.getSourceForId(messageId);
     }
 
     async refreshMessage(message: ChatMessage): Promise<ChatMessage> {
@@ -283,10 +282,7 @@ export class MockFirehoseSource implements ChatSource {
 }
 
 export class MockPointSource implements ChatSource {
-    constructor(
-        readonly backend : MockBackend,
-        readonly identifier : string
-    ) {
+    private makeRandomPointMessage() {
         let randomPoints = [
             `This is a great article but I have some feedback for the author.`,
             `Other things that could be said will be said`,
@@ -295,59 +291,75 @@ export class MockPointSource implements ChatSource {
             `More things that are done tomorrow may not be done today`,
             `Google is a useful tool to find things`,
             `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET! Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET!`
+        ]; 
+        let messageText = randomPoints[Math.floor(randomPoints.length * Math.random())];
+        let user = MOCK_USERS[Math.floor(MOCK_USERS.length * Math.random())];
+        
+        if (!user.avatarUrl)
+            user.avatarUrl = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
+
+        return <ChatMessage>{
+            id: `${uuid()}_thepoint`,
+            user,
+            sentAt: Date.now(),
+            upvotes: 0,
+            message: messageText,
+            submessages: [
+                {
+                    user: this.currentUser,
+                    message: `Good point!`,
+                    sentAt: Date.now(),
+                    upvotes: 0
+                },
+                {
+                    user: { 
+                        id: 'aa',
+                        avatarUrl: null, 
+                        displayName: 'FunnilyGuy', 
+                        username: 'funnyguy' 
+                    },
+                    sentAt: Date.now(),
+                    message: `What would this mean for Buttigieg?`,
+                    upvotes: 0
+                },
+                {
+                    user,
+                    sentAt: Date.now(),
+                    message: `Klobucharino`,
+                    upvotes: 0
+                },
+                {
+                    user: this.currentUser,
+                    sentAt: Date.now(),
+                    message: `Good question!`,
+                    upvotes: 0
+                },
+                {
+                    user,
+                    sentAt: Date.now(),
+                    message: `But whyigieg`,
+                    upvotes: 0
+                }
+            ]
+        }
+    }
+
+    constructor(
+        readonly backend : MockBackend,
+        readonly identifier : string
+    ) {
+        this._messages = [
+            this.makeRandomPointMessage(),
+            this.makeRandomPointMessage(),
+            this.makeRandomPointMessage(),
+            this.makeRandomPointMessage(),
+            this.makeRandomPointMessage(),
+            this.makeRandomPointMessage(),
+            this.makeRandomPointMessage()
         ];
 
         setInterval(() => {
-            let messageText = randomPoints[Math.floor(randomPoints.length * Math.random())];
-            let user = MOCK_USERS[Math.floor(MOCK_USERS.length * Math.random())];
-
-            if (!user.avatarUrl)
-                user.avatarUrl = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
-
-            let message : ChatMessage = {
-                user,
-                sentAt: Date.now(),
-                upvotes: 0,
-                message: messageText,
-                submessages: [
-                    {
-                        user: this.currentUser,
-                        message: `Good point!`,
-                        sentAt: Date.now(),
-                        upvotes: 0
-                    },
-                    {
-                        user: { 
-                            id: 'aa',
-                            avatarUrl: null, 
-                            displayName: 'FunnilyGuy', 
-                            username: 'funnyguy' 
-                        },
-                        sentAt: Date.now(),
-                        message: `What would this mean for Buttigieg?`,
-                        upvotes: 0
-                    },
-                    {
-                        user,
-                        sentAt: Date.now(),
-                        message: `Klobucharino`,
-                        upvotes: 0
-                    },
-                    {
-                        user: this.currentUser,
-                        sentAt: Date.now(),
-                        message: `Good question!`,
-                        upvotes: 0
-                    },
-                    {
-                        user,
-                        sentAt: Date.now(),
-                        message: `But whyigieg`,
-                        upvotes: 0
-                    }
-                ]
-            }
-
+            let message = this.makeRandomPointMessage();
             this.addMessage(message);
             this.messageReceived.next(message);
         }, 5000);
@@ -363,7 +375,7 @@ export class MockPointSource implements ChatSource {
     };
 
     private addMessage(message : ChatMessage) {
-        this._messages.push(message);    
+        this._messages.push(message);
     }
 
     private _messages : ChatMessage[] = [];
@@ -392,5 +404,28 @@ export class MockPointSource implements ChatSource {
         this.backend.messages.set(message.id, message);
         this.addMessage(message);
         this._messageSent.next(message);
+    }
+
+    async loadAfter(message : ChatMessage, count : number): Promise<ChatMessage[]> {
+        return await new Promise(resolve => {
+            setTimeout(() => {
+                resolve([
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage(),
+                    this.makeRandomPointMessage()
+                ]);
+            }, 3000);
+        });
+        return null;
     }
 }

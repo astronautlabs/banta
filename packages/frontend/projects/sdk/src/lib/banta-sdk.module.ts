@@ -15,6 +15,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { BantaService } from './common';
 
 @NgModule({
@@ -32,7 +33,8 @@ import { BantaService } from './common';
         MatMenuModule,
         MatDialogModule,
         MatFormFieldModule,
-        MatInputModule
+        MatInputModule,
+        MatProgressSpinnerModule
     ],
     declarations: [
         BantaComponent,

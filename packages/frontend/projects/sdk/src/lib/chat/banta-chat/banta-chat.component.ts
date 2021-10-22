@@ -4,8 +4,7 @@ import { Subject, Observable } from 'rxjs';
 import { User, ChatSource, ChatMessage, NewMessageForm, UserAccount } from '@banta/common';
 import { SubSink } from 'subsink';
 import { ChatViewComponent } from '../chat-view/chat-view.component';
-import { BantaService } from '../../common';
-import { ChatBackendService } from "../../chat-backend.service";
+import { BantaService, ChatBackendService } from "../../common";
 
 /**
  * Chat component

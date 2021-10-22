@@ -62,3 +62,33 @@ form {
         }
     }
 }
+
+.focused {
+    .replies {
+        margin-top: 1em;
+        margin-left: 4em;
+    }
+}
+
+banta-comment-view {
+    opacity: 1;
+    transition: 400ms opacity ease-in-out;
+    &.faded {
+        opacity: 0.25;
+    }
+}
+
+
+form.new-message {
+    display: flex;
+    align-items: flex-start;
+
+    mat-form-field {
+        flex-grow: 1;
+    }
+
+    button {
+        margin-left: 1em;
+        margin-top: 0.5em;
+    }
+}

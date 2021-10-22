@@ -10,6 +10,10 @@ import { EmojiModule } from '../emoji';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { TextFieldModule } from '@angular/cdk/text-field';
 
 const COMPONENTS = [
     CommentComponent,
@@ -22,10 +26,14 @@ const COMPONENTS = [
     declarations: COMPONENTS,
     imports: [
         CommonModule,
+        TextFieldModule,
         FormsModule,
         MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
         MatButtonModule,
         MatMenuModule,
+        MatProgressSpinnerModule,
         BantaCommonModule,
         EmojiModule
     ],

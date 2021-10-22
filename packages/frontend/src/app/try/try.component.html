@@ -19,11 +19,15 @@
     </form>
 </ng-container>
 
-<h1>Unified (Chat + Comments)</h1>
-<banta [topicID]="topicID"></banta>
+<!-- <h1>Unified (Chat + Comments)</h1>
+<banta [topicID]="topicID"></banta> -->
 
 <h1>Comments</h1>
-<banta-comments topicID="{{topicID}}_thepoint"></banta-comments>
+<banta-comments 
+    topicID="{{topicID}}_thepoint"
+    [maxVisibleMessages]="3"
+    [maxMessages]="2000"
+    ></banta-comments>
 
-<h1>Chat</h1>
-<banta-chat topicID="{{topicID}}_firehose"></banta-chat>
+<!-- <h1>Chat</h1>
+<banta-chat topicID="{{topicID}}_firehose"></banta-chat> -->

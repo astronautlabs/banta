@@ -5,7 +5,7 @@ import { SubSink } from 'subsink';
 import { MatDialog } from '@angular/material/dialog';
 import { BantaChatComponent } from '../chat';
 import { BantaService } from '../common';
-import { ChatBackendService } from "../chat-backend.service";
+import { ChatBackendService } from "../common";
 import { Output } from "@angular/core";
 
 /**
@@ -44,10 +44,6 @@ export class BantaComponent {
                 this.newNotifications = true;
             })
         );
-    }
-
-    newPointSubMessageKeyDown(event : KeyboardEvent) {
-        // TODO
     }
     
     mobileFocus : string = null;
