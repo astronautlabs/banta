@@ -10,4 +10,8 @@ export interface ChatSource {
     currentUserChanged? : Observable<User>;
     send(message : ChatMessage) : Promise<void>;
     close?();
+
+    // v2
+    loadAfter?(message : ChatMessage, count : number) : Promise<ChatMessage[]>;
+    get?(id : string) : Promise<ChatMessage>;
 }
