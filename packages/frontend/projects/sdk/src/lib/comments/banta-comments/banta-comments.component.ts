@@ -146,6 +146,9 @@ export class BantaCommentsComponent {
     }
     
     get canComment() {
+        if (!this.user)
+            return false;
+        
         if (!this.user.permissions)
             return true;
         

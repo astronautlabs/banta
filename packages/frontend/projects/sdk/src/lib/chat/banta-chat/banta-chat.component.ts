@@ -147,6 +147,9 @@ export class BantaChatComponent {
     }
 
     get canChat() {
+        if (!this.user)
+            return false;
+        
         if (!this.user.permissions)
             return true;
         
