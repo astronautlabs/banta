@@ -9,7 +9,7 @@
 .message-container {
     flex-grow: 1;
     overflow-x: hidden;
-    color: black;
+    color: #111111;
     background: white;
     padding: 0.5em 1em 0.5em 0.5em;
     opacity: 1;
@@ -44,7 +44,7 @@
 :host-context(.mat-dark-theme) {
     .message-container {   
         color: white;
-        background: black;
+        background: #111111;
     }
 }
 

@@ -1,0 +1,119 @@
+:host {
+    margin: 0 2em 0 0;
+    display: block;
+}
+
+.avatar-container {
+    width: calc(48px + 1.75em);
+    display: flex;
+    justify-content: flex-end;
+
+    .avatar {
+        width: 48px;
+        height: 48px;
+        background: pink;
+        border-radius: 100%;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        margin-top: 0.75em;
+        margin-right: 0.75em;
+    }
+}
+
+
+form {
+    display: flex;
+    padding: 0.5em 0;
+    align-items: center;
+
+    .text-container {
+        position: relative;
+        display: flex;
+        flex-grow: 1;
+
+        textarea {
+            font-size: 14pt;
+            width: 100%;
+
+            &[disabled] {
+                opacity: 0.5;
+            }
+        }
+
+        mat-form-field {
+            margin-bottom: 1em;
+        }
+
+        emoji-selector-button {
+            bottom: 0;
+            right: 0;
+            position: absolute;
+        }
+
+        mat-spinner.loading {
+            position: absolute;
+            left: 0.5em;
+            bottom: 0.5em;
+        }
+
+        .error-message {
+            position: absolute;
+            left: 0.5em;
+            bottom: 0.5em;
+            color: #683333;
+            overflow-x: hidden;
+            max-width: 1.5em;
+            white-space: nowrap;
+            transition: 2s max-width ease-in-out;
+
+            &.expanded, &:hover {
+                max-width: 100%;
+            }
+
+            mat-icon {
+                vertical-align: middle;
+            }
+        }
+    }
+
+    input[type=text] {
+        background: black;
+        color: white;
+        border: 1px solid #333;
+        width: 100%;
+        height: 1em;
+    }
+
+
+
+    .actions {
+        margin-left: 1em;
+    }
+
+    button {
+        display: block;
+        margin: 0 0 0 auto;
+    }
+}
+
+form.new-message {
+    display: flex;
+    align-items: flex-start;
+
+    mat-form-field {
+        flex-grow: 1;
+    }
+
+    button {
+        margin: 1.25em 0 0 1em;
+    }
+}
+
+button.send {
+    min-width: 9em;
+}
+
+textarea {
+    max-height: 7em;
+}

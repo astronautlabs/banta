@@ -3,67 +3,21 @@
     flex-direction: column;
 }
 
-form {
-    display: flex;
-    padding: 0.5em 0;
-    align-items: center;
-
-    .text-container {
-        position: relative;
-        display: flex;
-        flex-grow: 1;
-
-        textarea {
-            font-size: 14pt;
-            background-color: white;
-            color: #333;
-            border: 1px solid;
-            border-color: #ccc;
-            min-height: 6em;
-            width: 100%;
-        }
-
-        emoji-selector-button {
-            bottom: 0;
-            right: 0;
-            position: absolute;
-        }
+@keyframes appear {
+    from {
+        transform: scale(1.15);
     }
 
-    input[type=text] {
-        background: black;
-        color: white;
-        border: 1px solid #333;
-        width: 100%;
-        height: 1em;
-    }
-
-
-
-    .actions {
-        margin-left: 1em;
-    }
-
-    button {
-        display: block;
-        margin: 0 0 0 auto;
-    }
-}
-
-
-:host-context(.mat-dark-theme) {
-    form {
-        .text-container {
-            textarea {
-                background: black;
-                color: white;
-                border-color: #333;
-            }
-        }
+    to {
+        transform: scale(1);
     }
 }
 
 .focused {
+    animation-name: appear;
+    animation-duration: 400ms;
+    animation-fill-mode: both;
+    
     .replies {
         margin-top: 1em;
         margin-left: 4em;
@@ -78,17 +32,9 @@ banta-comment-view {
     }
 }
 
-
-form.new-message {
-    display: flex;
-    align-items: flex-start;
-
-    mat-form-field {
-        flex-grow: 1;
-    }
-
-    button {
-        margin-left: 1em;
-        margin-top: 0.5em;
-    }
+.loading {
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+    min-height: 16em;
 }

@@ -72,19 +72,44 @@ export class BantaCommentsComponent {
         this._signInSelected.next();
     }
 
+    showEditAvatar() {
+        this._editAvatarSelected.next();
+    }
+
     user : UserAccount;
-    newMessageText : string;
+    
+    private _newMessageText : string;
+
+    get newMessageText(): string {
+        return this._newMessageText;
+    }
+
+    set newMessageText(value) {
+        this._newMessageText = value;
+        if (this._newMessageText === '' && this.sendError) 
+            setTimeout(() => this.sendError = null);
+    }
 
     @Input() signInLabel = 'Sign In';
     @Input() sendLabel = 'Send';
+    @Input() replyLabel = 'Reply'; 
+    @Input() sendingLabel = 'Sending';
     @Input() permissionDeniedLabel = 'Send';
+    @Input() postCommentLabel = 'Post a comment';
+    @Input() postReplyLabel = 'Post a reply';
 
     private _signInSelected = new Subject<void>();
     private _permissionDeniedError = new Subject<void>();
+    private _editAvatarSelected = new Subject<void>();
 
     @Output()
     get signInSelected(): Observable<void> {
         return this._signInSelected;
+    }
+
+    @Output()
+    get editAvatarSelected() {
+        return this._editAvatarSelected;
     }
 
     @Output()
@@ -136,28 +161,49 @@ export class BantaCommentsComponent {
         this.replyMessage += text;
     }
 
+    sending = false;
+    sendError : Error;
+    expandError = false;
+
+    indicateError(message : string) {
+        this.sendError = new Error(message);
+        setTimeout(() => {
+            this.expandError = true;
+            setTimeout(() => {
+                this.expandError = false;
+            }, 5*1000);
+        });
+    }
+
     async sendMessage() {
         if (!this.source)
             return;
         
-        let text = (this.newMessageText || '').trim();
-        this.newMessageText = '';
-
-        if (text === '')
-            return;
-
-        let message : ChatMessage = { 
-            user: this.user,
-            sentAt: Date.now(),
-            upvotes: 0,
-            message: text
-        };
-
+        this.sending = true;
+        this.sendError = null;
         try {
-            await this.source.send(message);
-        } catch (e) {
-            console.error(`Failed to send message: `, message);
-            console.error(e);
+            let text = (this.newMessageText || '').trim();
+
+            if (text === '')
+                return;
+
+            let message : ChatMessage = {
+                user: this.user,
+                sentAt: Date.now(),
+                upvotes: 0,
+                message: text
+            };
+
+            try {
+                await this.source.send(message);
+                this.newMessageText = '';
+            } catch (e) {
+                this.indicateError(`Could not send: ${e.message}`);
+                console.error(`Failed to send message: `, message);
+                console.error(e);
+            }
+        } finally {
+            this.sending = false;
         }
     }
 
@@ -184,11 +230,15 @@ export class BantaCommentsComponent {
         }
     }
 
+    selectedMessageVisible = false;
+
     async selectMessage(message : ChatMessage) {
         this._selected.next(message);
-
         this.selectedMessage = message;
-        this.selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id);
+        setTimeout(() => this.selectedMessageVisible = true);
+        setTimeout(async () => {
+            this.selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id);
+        }, 250);
     }
 
     selectMessageUser(message : ChatMessage) {

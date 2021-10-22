@@ -94,3 +94,11 @@ a {
         color: #51cdb5;
     }
 }
+
+mat-spinner.icon {
+    display: inline-block;
+}
+
+.mat-button-base mat-spinner.icon {
+    margin-right: 8px;
+}

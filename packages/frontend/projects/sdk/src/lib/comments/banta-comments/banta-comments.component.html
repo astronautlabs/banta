@@ -1,5 +1,5 @@
 
-<div class="focused" *ngIf="selectedMessage">
+<div class="focused" [class.visible]="selectedMessageVisible" *ngIf="selectedMessage">
 
     <div>
         <a mat-button href="javascript:;" (click)="unselectMessage()">
@@ -13,68 +13,49 @@
         ></banta-comment>
 
     <div class="replies">
-        Reply
-        <form class="new-message" (submit)="sendReply()">
-            <div class="text-container">
-                <textarea 
-                    name="message" 
-                    (keydown)="onReplyKeyDown($event)"
-                    [(ngModel)]="replyMessage"></textarea>
-                <emoji-selector-button 
-                    class="top-right"
-                    (selected)="insertReplyEmoji($event)"
-                    ></emoji-selector-button>
+
+        <ng-container *ngIf="!selectedMessageThread">
+            <div class="loading">
+                <mat-spinner></mat-spinner>
             </div>
-            <button [disabled]="!replyMessage" 
-                mat-raised-button color="primary">Send</button>
-        </form>
-        <banta-comment-view 
-            [source]="selectedMessageThread"
-            [allowReplies]="false"
-            [fixedHeight]="false"
-            [showEmptyState]="false"
-            ></banta-comment-view>
+        </ng-container>
+
+        <ng-container *ngIf="selectedMessageThread">
+            <banta-comment-field
+                [sendLabel]="replyLabel"
+                [sendingLabel]="sendingLabel"
+                (signInSelected)="showSignIn()"
+                (editAvatarSelected)="showEditAvatar()"
+                [source]="selectedMessageThread"
+                [canComment]="canComment"
+                [signInLabel]="signInLabel"
+                [user]="user"
+                [label]="postReplyLabel"
+                ></banta-comment-field>
+
+            <banta-comment-view 
+                [source]="selectedMessageThread"
+                [allowReplies]="false"
+                [fixedHeight]="false"
+                [showEmptyState]="false"
+                ></banta-comment-view>
+        </ng-container>
     </div>
 </div>
 
-<form class="new-message" (submit)="sendMessage()" *ngIf="!selectedMessage">
-    <div class="text-container">
-        <textarea 
-            name="message" 
-            placeholder="Type your comment"
-            (keydown)="onKeyDown($event)"
-            [(ngModel)]="newMessageText"></textarea>
-        <emoji-selector-button 
-            class="top-right"
-            (selected)="insertEmoji($event)"
-            ></emoji-selector-button>
-    </div>
-    <div class="actions">
-        <ng-container *ngIf="!user">
-            <button 
-                mat-raised-button 
-                color="primary"
-                type="button"
-                (click)="showSignIn()"
-                >{{signInLabel}}</button>
-        </ng-container>
-        <ng-container *ngIf="user">
-            <button 
-                *ngIf="canComment"
-                mat-raised-button 
-                color="primary"
-                [disabled]="!newMessageText" 
-                >{{sendLabel}}</button>
-            <button 
-                *ngIf="!canComment"
-                type="button"
-                (click)="showPermissionDenied()"
-                mat-raised-button 
-                color="primary"
-                >{{permissionDeniedLabel}}</button>
-        </ng-container>
-    </div>
-</form>
+
+<banta-comment-field
+    class="main"
+    [source]="source"
+    [user]="user"
+    [sendLabel]="sendLabel"
+    [sendingLabel]="sendingLabel"
+    [signInLabel]="signInLabel"
+    [canComment]="canComment"
+    [label]="postCommentLabel"
+    (editAvatarSelected)="showEditAvatar()"
+    (signInSelected)="showSignIn()"
+    ></banta-comment-field>
 
 <banta-comment-view 
     [class.faded]="selectedMessage"

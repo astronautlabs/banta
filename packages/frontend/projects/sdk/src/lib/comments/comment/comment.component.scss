@@ -1,8 +1,21 @@
+@keyframes appear {
+    from {
+        transform: translate(100vw, 0);
+    }
+
+    to {
+        transform: translate(0, 0);
+    }
+}
+
 :host {
     display: flex;
     flex-direction: column;
     position: relative;
     padding: 0.5em;
+    animation-name: appear;
+    animation-duration: 400ms;
+    animation-fill-mode: both;
 
     &:hover {
         background: #eee;

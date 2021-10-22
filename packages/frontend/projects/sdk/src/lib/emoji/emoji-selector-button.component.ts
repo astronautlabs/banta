@@ -4,7 +4,7 @@ import { Subject, Observable } from 'rxjs';
 @Component({
     selector: 'emoji-selector-button',
     template: `
-        <button mat-icon-button (click)="show()">
+        <button type="button" mat-icon-button (click)="show()">
             <mat-icon>emoji_emotions</mat-icon>
         </button>
         <emoji-selector-panel 

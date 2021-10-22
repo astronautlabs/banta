@@ -14,12 +14,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { CommentFieldComponent } from '..';
 
 const COMPONENTS = [
     CommentComponent,
     CommentViewComponent,
     BantaCommentsComponent,
-    LiveCommentComponent
+    LiveCommentComponent,
+    CommentFieldComponent
 ];
 
 @NgModule({
