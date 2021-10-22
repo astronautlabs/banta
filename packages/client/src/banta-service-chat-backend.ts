@@ -89,7 +89,7 @@ export class BantaServiceChatBackend implements ChatBackend {
             topicId,
             await this._underlyingChatBackend.getSourceForThread(topicId, messageId),
             this,
-            `/topics/${topicId}/messages/${messageId}`
+            `/topics/${topicId}/messages/${messageId}/messages`
         );
     }
 
