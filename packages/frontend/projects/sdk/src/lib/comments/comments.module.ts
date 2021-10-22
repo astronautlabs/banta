@@ -14,7 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { TextFieldModule } from '@angular/cdk/text-field';
-import { CommentFieldComponent } from '..';
+import { CommentFieldComponent } from './comment-field/comment-field.component';
 
 const COMPONENTS = [
     CommentComponent,
