@@ -100,8 +100,8 @@ export class EmojiSelectorButtonComponent {
         Object.assign(
             this.panelElement.nativeElement.style,
             {
-                top: `${pos.top + pos.height}px`,
-                right: `${Math.max(0, window.innerWidth - pos.left - pos.width)}px`
+                top: `${window.scrollY + pos.top + pos.height}px`,
+                right: `${window.scrollX + Math.max(0, window.innerWidth - pos.left - pos.width)}px`
             }
         );
 

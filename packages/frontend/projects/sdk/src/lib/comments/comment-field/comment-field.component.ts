@@ -54,8 +54,8 @@ export class CommentFieldComponent {
         let pos = this.autocompleteContainerEl.nativeElement.getBoundingClientRect();
         let size = this.autocompleteEl.nativeElement.getBoundingClientRect();
 
-        this.autocompleteEl.nativeElement.style.left = `${pos.left}px`;
-        this.autocompleteEl.nativeElement.style.top = `${pos.top}px`;
+        this.autocompleteEl.nativeElement.style.left = `${window.scrollX + pos.left}px`;
+        this.autocompleteEl.nativeElement.style.top = `${window.scrollY + pos.top}px`;
         this.autocompleteEl.nativeElement.style.width = `${pos.width}px`;
         this.autocompleteVisible = true;
     }
