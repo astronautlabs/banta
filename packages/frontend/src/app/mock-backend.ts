@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";
 import { MOCK_USERS } from "./mock-users";
+import * as pmq from 'popular-movie-quotes';
 
 const GENERIC_AVATAR_URL = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
@@ -236,21 +237,7 @@ export class MockChatSource extends SimulatedSource {
         readonly backend : MockBackend,
         readonly identifier : string
     ) {
-        super(backend, identifier, [
-            `Whoa!`,
-            `Cool!`,
-            `Nifty!`,
-            `Sweet!`,
-            `@liam, awesome!`,
-            `Crazy!`,
-            `Wunderbar!`,
-            `Lasagna!`,
-            `Tacos!`,
-            `@liam, Life is a box of chocolates, you never know which one...`,
-            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET!`,
-            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET! The orange one makes me dislike oranges. Orange orangutan is obsolete and unoriginal! Monkeys and such. Life is a box of chocolates, you never know which one... oh fuck it. Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET!`,
-            `Delicious!`
-        ], 3000, 8);
+        super(backend, identifier, pmq.getAll().map(x => x.quote), 3000, 8);
     }
 }
 
@@ -259,15 +246,7 @@ export class MockCommentsSource extends SimulatedSource {
         readonly backend : MockBackend,
         readonly identifier : string
     ) {
-        super(backend, identifier, [
-            `This is a great article but I have some feedback for the author.`,
-            `Other things that could be said will be said`,
-            `If only things were as simple as they appear`,
-            `Life is a box of chocolates, you never know which one... oh fuck it`,
-            `More things that are done tomorrow may not be done today`,
-            `Google is a useful tool to find things`,
-            `Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET! Lorem ipsum dolor sit amet! Lorem ipsum dolor sit amet! LOREM IPSUM DOLOR SIT AMET!`
-        ], 5000, 8);
+        super(backend, identifier, pmq.getAll().map(x => x.quote), 5000, 8);
     }
 }
 
