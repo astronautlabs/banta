@@ -20,6 +20,7 @@ export class FirebaseChatSource implements ChatSource {
         let subscription : Subscription;
         this._messageReceived = lazyConnection({
             start: subject => {
+                console.log(`[Banta] Subscribing to topic '${identifier}' in collection path '${collectionPath}'`);
                 let maxCount = 200;
                 subscription = this.datastore
                     .watchForChanges(`${collectionPath}/messages`, { order: { field: 'sentAt', direction: 'asc' }, limit: 100 })
@@ -28,6 +29,9 @@ export class FirebaseChatSource implements ChatSource {
                             if (change.type === 'added') {
                                 let message = <ChatMessage>change.document;
                 
+                                console.log(`[Banta] Received message:`);
+                                console.dir(message);
+
                                 this.messages.push(message);
                                 subject.next(message);
             
