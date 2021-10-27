@@ -58,6 +58,9 @@ import { Subject, Observable } from 'rxjs';
 export class EmojiSelectorButtonComponent {
 
     private _selected = new Subject<string>();
+    private clickListener : any;
+    private resizeListener : any;
+    showEmojiPanel = false;
 
     @Output()
     get selected() : Observable<string> {
@@ -82,6 +85,23 @@ export class EmojiSelectorButtonComponent {
 
     private removeListener() {
         document.removeEventListener('click', this.clickListener);
+        window.removeEventListener('resize', this.resizeListener);
+    }
+
+    place() {
+        let pos = this.buttonElement.nativeElement.getBoundingClientRect();
+        let size = this.panelElement.nativeElement.getBoundingClientRect();
+        let left = window.scrollX + pos.left + pos.width - size.width;
+        if (left < 0)
+            left = (window.scrollX + window.innerWidth) / 2 - size.width / 2;
+
+        Object.assign(
+            this.panelElement.nativeElement.style,
+            {
+                top: `${window.scrollY + pos.top + pos.height}px`,
+                left: `${Math.max(0, left)}px`
+            }
+        );
     }
 
     show() {
@@ -91,21 +111,15 @@ export class EmojiSelectorButtonComponent {
         }
 
         this.showEmojiPanel = true;
-
-
-        let pos = this.buttonElement.nativeElement.getBoundingClientRect();
-        let size = this.panelElement.nativeElement.getBoundingClientRect();
-
-
-        Object.assign(
-            this.panelElement.nativeElement.style,
-            {
-                top: `${window.scrollY + pos.top + pos.height}px`,
-                right: `${window.scrollX + Math.max(0, window.innerWidth - pos.left - pos.width)}px`
-            }
-        );
+        this.place();
 
         setTimeout(() => {
+            this.resizeListener = () => {
+                if (!this.showEmojiPanel)
+                    return;
+                this.place();
+            };
+
             this.clickListener = (ev : MouseEvent) => {
 
                 let parent = <HTMLElement> ev.target;
@@ -126,12 +140,9 @@ export class EmojiSelectorButtonComponent {
             };
     
             document.addEventListener('click', this.clickListener);
+            window.addEventListener('resize', this.resizeListener);
         });
     }
-
-    private clickListener : any;
-
-    showEmojiPanel = false;
 
     insert(str) {
         this._selected.next(str);

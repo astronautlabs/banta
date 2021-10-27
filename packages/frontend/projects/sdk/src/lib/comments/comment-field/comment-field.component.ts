@@ -36,6 +36,8 @@ export class CommentFieldComponent {
     @Input() label = 'Post a comment';
     @Input() permissionDeniedLabel = 'Unavailable'
     @Input() signInLabel = 'Sign In';
+    @Input() placeholder = '';
+    
     @ViewChild('autocomplete') autocompleteEl : ElementRef<HTMLElement>;
     @ViewChild('autocompleteContainer') autocompleteContainerEl : ElementRef<HTMLElement>;
     @ViewChild('textarea') textareaEl : ElementRef<HTMLTextAreaElement>;

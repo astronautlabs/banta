@@ -47,22 +47,6 @@ body {
     overflow-x: hidden;
 }
 
-.logo {
-    font-family: 'Odibee Sans';
-    font-size: 40pt;
-    font-weight: bold;
-}
-
-nav {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    .logo {
-        font-size: 30pt;
-    }
-}
-
 .spacer {
     flex-grow: 1;
 }

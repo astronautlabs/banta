@@ -5,9 +5,13 @@
 	border-radius: 5px;
 	padding: 0.5em;
 
+	width: calc(9*(32px + 1em));
+	max-width: calc(100vw - 1.5em);
+}
+
+.selector {
 	display: flex;
 	flex-direction: column;
-	width: calc(9*(32px + 1em));
 }
 
 .categories {
@@ -51,5 +55,16 @@
 
 	mat-form-field {
 		flex-grow: 1;
+	}
+}
+
+@media (max-width: 500px) {
+	.selector {
+		flex-direction: row;
+		height: 27em;
+	}
+
+	.emoji-list {
+		height: auto;
 	}
 }

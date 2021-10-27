@@ -44,3 +44,11 @@ banta-comment-view {
         display: none;
     }
 }
+
+@media (max-width: 500px) {
+    .focused {
+        .replies {
+            margin-left: 0;
+        }
+    }
+}

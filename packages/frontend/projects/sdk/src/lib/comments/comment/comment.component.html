@@ -13,10 +13,6 @@
             [style.background-image]="avatarForUser(message.user)"></a>
         <a href="javascript:;" class="display-name" (click)="selectUser()">{{message.user.displayName}}</a>
         <a href="javascript:;" class="username" (click)="selectUser()">@{{message.user.username}}</a>
-
-        <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
-            <mat-icon [inline]="true">more_vert</mat-icon>
-        </button>
     </div>
     <div class="content">
         {{message.message}}
@@ -41,5 +37,9 @@
                 <mat-icon [inline]="true">thumb_up</mat-icon>
             </button>
         </div>
+        
+        <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
+            <mat-icon [inline]="true">more_vert</mat-icon>
+        </button>
     </div>
 </div>

@@ -6,12 +6,22 @@
 }
 
 img.logo {
-    height: 1.25em;
+    height: 2.5em;
+    position: relative;
+    top: 2px;
+}
+
+img.icon {
+    height: 2em;
     position: relative;
     top: 2px;
 }
 
 nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
     a {
         color: #777;
         text-decoration: none;
@@ -21,6 +31,12 @@ nav {
         &.active {
             font-weight: bold;
             color: black;
+        }
+
+        &.logo {
+            img.icon {
+                display: none;
+            }
         }
     }
 }
@@ -79,5 +95,23 @@ main {
 
     footer {
         display: none;
+    }
+}
+
+@media (max-width: 400px) {
+    :host {
+        padding: 0.5em;
+    }
+    
+    nav {
+        a.logo {
+            img.logo {
+                display: none;
+            }
+
+            img.icon {
+                display: initial;
+            }
+        }
     }
 }

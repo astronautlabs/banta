@@ -2,15 +2,10 @@
     <ng-content select="[data-before]"></ng-content>
     
     <a mat-button class="nav" [class.visible]="isViewingMore" href="javascript:;" (click)="showNew()">
-        Show 
-        <ng-container *ngIf="newMessages.length === 1">
-            {{newMessages.length}} new message
-        </ng-container>
-        <ng-container *ngIf="newMessages.length > 1">
-            {{newMessages.length}} new messages
-        </ng-container>
-        <ng-container *ngIf="newMessages.length === 0">
-            new messages
+        <mat-icon>file_upload</mat-icon>
+        New
+        <ng-container *ngIf="newMessages.length >= 1">
+            ({{newMessages.length}})
         </ng-container>
     </a>
 

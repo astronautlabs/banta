@@ -13,7 +13,7 @@
                 <textarea 
                     #textarea
                     name="message" 
-                    placeholder="Type your comment"
+                    [placeholder]="placeholder"
                     matInput
                     cdkTextareaAutosize 
                     (keydown)="onKeyDown($event)"
@@ -69,12 +69,14 @@
                 >
                 <mat-icon *ngIf="!sending">chevron_right</mat-icon>
                 <mat-spinner *ngIf="sending" class="icon" diameter="18" strokeWidth="2"></mat-spinner>
-                <ng-container *ngIf="!sending">
-                    {{sendLabel}}
-                </ng-container>
-                <ng-container *ngIf="sending">
-                    {{sendingLabel}}
-                </ng-container>
+                <span class="label">
+                    <ng-container *ngIf="!sending">
+                        {{sendLabel}}
+                    </ng-container>
+                    <ng-container *ngIf="sending">
+                        {{sendingLabel}}
+                    </ng-container>
+                </span>
 
                 </button>
             <button 
