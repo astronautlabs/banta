@@ -54,9 +54,10 @@ export class ChatService {
             throw new Error(`Message must include a valid user reference`);
             
         let source = await this.chatBackend.getSourceForTopic(message.topicId);
-        source.send(message);
+        message = await source.send(message);
         
         this._events.next(<PostMessageEvent>{ type: 'post', message });
+        return message;
     }
 
     async getMessage(topicId : string, messageId : string) {
@@ -76,8 +77,9 @@ export class ChatService {
             throw { code: 'no-parent-message', message: `Cannot find message ${topicId}/${messageId}` };
     
         let source = await this.chatBackend.getSourceForThread(topicId, messageId);
-        await source.send(message);
+        message = await source.send(message);
 
         this._events.next(<PostMessageEvent>{ type: 'post', message });
+        return message;
     }
 }
