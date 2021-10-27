@@ -1,7 +1,12 @@
 # @/banta
+> **⚠ Alpha** | [🌐 Website](http://bantachat.com/) | [📦 NPM](https://npmjs.com/package/@banta/sdk)
 
 This is the Banta project, an effort to create an open framework for chatting/comments on the web. The codebase is a 
 monorepo, containing several components. You can find the components under the `packages/` directory.
+
+![demo](demo.gif)
+
+[Try it out](https://bantachat.com/try)
 
 ## Components
 
