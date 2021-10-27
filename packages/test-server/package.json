@@ -3,6 +3,7 @@
   "version": "0.1.5",
   "description": "",
   "main": "dist/main.js",
+  "private": true,
   "scripts": {
     "build": "tsc -b",
     "start": "npm run build && node dist/main"
