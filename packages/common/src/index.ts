@@ -12,3 +12,4 @@ export * from './user-account';
 export * from './user';
 export * from './vote';
 export * from './injectable';
+export * from './filter-object';
