@@ -12,7 +12,7 @@ export interface ChatBackend {
     getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
     upvoteMessage(topicId : string, messageId : string, submessageId : string, vote : Vote): Promise<void>;
     watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void;
-    modifyMessage?(message : ChatMessage) : () => void;
+    modifyMessage?(message : ChatMessage) : Promise<void>;
     
     readonly notificationsChanged : Observable<Notification[]>;
     readonly newNotification : Observable<Notification>;
