@@ -47,6 +47,8 @@ export class BantaServiceChatSource implements ChatSource {
         }
 
         //messageSent.next(message);
+
+        return await response.json();
     }
     
     close() {
