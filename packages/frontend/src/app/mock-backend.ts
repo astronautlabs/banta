@@ -103,6 +103,8 @@ export class MockSource implements ChatSource {
         this.messages.push(message);
         //this.messageSent.next(message);
         this.messageReceived.next(message);
+
+        return message;
     }
 
     close() {
