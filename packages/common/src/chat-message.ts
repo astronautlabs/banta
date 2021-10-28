@@ -7,6 +7,7 @@ export interface ChatMessage {
     parentMessageId? : string;
     sentAt : number;
     updatedAt? : number;
+    hidden? : boolean;
     message : string;
     submessages? : ChatMessage[];
     upvotes : number;
