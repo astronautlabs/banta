@@ -1,6 +1,6 @@
 {
   "name": "@banta/firebase",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -21,7 +21,7 @@
     "@astronautlabs/datastore": "^3.1.4",
     "@astronautlabs/datastore-firestore": "^3.1.4",
     "@astronautlabs/jwt": "0.0.12",
-    "@banta/common": "^0.1.5"
+    "@banta/common": "^0.1.6"
   },
   "peerDependencies": {
     "rxjs": "^6.5.5"
