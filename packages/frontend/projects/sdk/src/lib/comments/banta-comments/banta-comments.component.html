@@ -39,6 +39,8 @@
                 [source]="selectedMessageThread"
                 [canComment]="canComment"
                 [signInLabel]="signInLabel"
+                [permissionDeniedLabel]="permissionDeniedLabel"
+                (permissionDeniedError)="showPermissionDenied()"
                 [user]="user"
                 [label]="postReplyLabel"
                 ></banta-comment-field>

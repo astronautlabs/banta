@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, Output, ViewChild } from "@angular/core";
 import { ChatMessage, ChatSource, User } from "@banta/common";
-import { Subject } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { EMOJIS } from "../../emoji";
 
 export interface AutoCompleteOption {
@@ -45,9 +45,20 @@ export class CommentFieldComponent {
     @Input() hashtags : HashTag[];
     @Input() participants : User[] = [];
 
+    private _permissionDeniedError = new Subject<void>();
+
+    @Output()
+    get permissionDeniedError(): Observable<void> {
+        return this._permissionDeniedError;
+    }
+
     ngAfterViewInit() {
         let root = document.body.querySelector('[ng-version]') || document.body;
         root.appendChild(this.autocompleteEl.nativeElement);
+    }
+
+    showPermissionDenied() {
+        this._permissionDeniedError.next();
     }
 
     showAutoComplete(options : AutoCompleteOption[]) {
