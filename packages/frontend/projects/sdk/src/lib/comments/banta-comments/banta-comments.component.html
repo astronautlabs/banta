@@ -61,6 +61,8 @@
         [label]="postCommentLabel"
         (editAvatarSelected)="showEditAvatar()"
         (signInSelected)="showSignIn()"
+        [permissionDeniedLabel]="permissionDeniedLabel"
+        (permissionDeniedError)="showPermissionDenied()"
         ></banta-comment-field>
 
     <banta-comment-view 
