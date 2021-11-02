@@ -175,6 +175,7 @@ export class BantaChatComponent {
             user: null,
             sentAt: Date.now(),
             upvotes: 0,
+            url: location.href,
             message: text
         };
 

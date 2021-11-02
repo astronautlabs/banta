@@ -205,38 +205,6 @@ export class BantaCommentsComponent {
         });
     }
 
-    async sendMessage() {
-        if (!this.source)
-            return;
-        
-        this.sending = true;
-        this.sendError = null;
-        try {
-            let text = (this.newMessageText || '').trim();
-
-            if (text === '')
-                return;
-
-            let message : ChatMessage = {
-                user: this.user,
-                sentAt: Date.now(),
-                upvotes: 0,
-                message: text
-            };
-
-            try {
-                await this.source.send(message);
-                this.newMessageText = '';
-            } catch (e) {
-                this.indicateError(`Could not send: ${e.message}`);
-                console.error(`Failed to send message: `, message);
-                console.error(e);
-            }
-        } finally {
-            this.sending = false;
-        }
-    }
-
     async upvoteMessage(message : ChatMessage) {
         this._upvoted.next(message);
         await this.backend.upvoteMessage(message.topicId, message.parentMessageId ? message.parentMessageId : message.id, message.parentMessageId ? message.id : undefined);

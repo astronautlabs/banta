@@ -252,6 +252,7 @@ export class CommentFieldComponent {
             let message : ChatMessage = {
                 user: this.user,
                 sentAt: Date.now(),
+                url: location.href,
                 upvotes: 0,
                 message: text
             };
