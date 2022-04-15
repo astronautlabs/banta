@@ -19,6 +19,8 @@ export class CommentViewComponent {
     private _upvoted = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
+    private _usernameSelected = new Subject<User>();
+    private _avatarSelected = new Subject<User>();
 
     @Input() 
     allowReplies = true;
@@ -42,6 +44,16 @@ export class CommentViewComponent {
     get upvoted() {
         return this._upvoted;
     }
+
+	@Output()
+	get usernameSelected() {
+		return this._usernameSelected;
+	}
+
+	@Output()
+	get avatarSelected() {
+		return this._avatarSelected;
+	}
 
     menuMessage : ChatMessage = null;
     messages : ChatMessage[] = [];
@@ -67,6 +79,14 @@ export class CommentViewComponent {
     selectMessageUser(message : ChatMessage) {
         this._userSelected.next(message);
     }
+
+	selectUsername() {
+		this._usernameSelected.next(this.currentUser);
+	}
+
+	selectAvatar() {
+		this._avatarSelected.next(this.currentUser);
+	}
 
     set source(value) {
         if (this._sourceSubs) {

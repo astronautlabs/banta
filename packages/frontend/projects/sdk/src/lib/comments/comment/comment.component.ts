@@ -11,7 +11,10 @@ export class CommentComponent {
     private _reported = new Subject<void>();
     private _selected = new Subject<void>();
     private _upvoted = new Subject<void>();
-    private _userSelected = new Subject<void>();
+
+	private _userSelected = new Subject<void>();
+	private _avatarClicked = new Subject<void>();
+	private _usernameClicked = new Subject<void>();
     
     @Input()
     message : ChatMessage;
@@ -19,10 +22,20 @@ export class CommentComponent {
     @Input()
     showReplyAction = true;
 
-    @Output()
+	@Output()
     get userSelected() {
         return this._userSelected;
     }
+
+    @Output()
+    get usernameClicked() {
+        return this._usernameClicked;
+    }
+
+	@Output()
+	get avatarClicked() {
+		return this._avatarClicked;
+	}
 
     @Output()
     get reported() {
@@ -51,9 +64,19 @@ export class CommentComponent {
         this._selected.next();
     }
 
-    selectUser() {
+	selectUser() {
         return this._userSelected.next();
     }
+
+    usernameClick() {
+		console.log('username clicked');
+        return this._usernameClicked.next();
+    }
+
+	avatarClick() {
+		console.log('avatar clicked');
+		return this._avatarClicked.next();
+	}
     
     avatarForUser(user : User) {
         if (user && user.avatarUrl) {

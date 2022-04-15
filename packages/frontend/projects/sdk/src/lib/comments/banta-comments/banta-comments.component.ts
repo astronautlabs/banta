@@ -24,6 +24,10 @@ export class BantaCommentsComponent {
     private _reported = new Subject<ChatMessage>();
     private _selected = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
+
+	private _usernameSelected = new Subject<User>();
+	private _avatarSelected = new Subject<User>();
+
     private _source : ChatSource;
 
     private _subs = new SubSink();
@@ -117,6 +121,16 @@ export class BantaCommentsComponent {
         return this._userSelected;
     }
 
+	@Output()
+    get usernameSelected() {
+        return this._usernameSelected;
+    }
+
+	@Output()
+    get avatarSelected() {
+        return this._avatarSelected;
+    }
+
     onKeyDown(event : KeyboardEvent) {
     }
 
@@ -159,4 +173,13 @@ export class BantaCommentsComponent {
     selectMessageUser(message : ChatMessage) {
         this._userSelected.next(message);
     }
+
+	selectUsername(user: User) {
+		return this._usernameSelected.next(user);
+	}
+
+	selectAvatar(user: User) {
+		return this._avatarSelected.next(user);
+	}
+
 }

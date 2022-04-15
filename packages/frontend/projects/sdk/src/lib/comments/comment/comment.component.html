@@ -7,10 +7,10 @@
 <div class="message-content">
     <div class="user">
         <div class="avatar" 
-            (click)="selectUser()"
+            (click)="avatarClick()"
             [style.background-image]="avatarForUser(message.user)"></div>
         <label class="display-name" (click)="selectUser()">{{message.user.displayName}}</label>
-        <label class="username" (click)="selectUser()">@{{message.user.username}}</label>
+        <label class="username" (click)="usernameClick()">@{{message.user.username}}</label>
 
         <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
             <mat-icon [inline]="true">more_vert</mat-icon>
