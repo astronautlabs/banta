@@ -13,8 +13,8 @@ export class CommentComponent {
     private _upvoted = new Subject<void>();
 
 	private _userSelected = new Subject<void>();
-	private _avatarClicked = new Subject<void>();
-	private _usernameClicked = new Subject<void>();
+	private _avatarClicked = new Subject<User>();
+	private _usernameClicked = new Subject<User>();
     
     @Input()
     message : ChatMessage;
@@ -68,14 +68,12 @@ export class CommentComponent {
         return this._userSelected.next();
     }
 
-    usernameClick() {
-		console.log('username clicked');
-        return this._usernameClicked.next();
+    usernameClick(user: User) {
+        return this._usernameClicked.next(user);
     }
 
-	avatarClick() {
-		console.log('avatar clicked');
-		return this._avatarClicked.next();
+	avatarClick(user: User) {
+		return this._avatarClicked.next(user);
 	}
     
     avatarForUser(user : User) {
@@ -86,4 +84,5 @@ export class CommentComponent {
 
         return null;
     }
+
 }

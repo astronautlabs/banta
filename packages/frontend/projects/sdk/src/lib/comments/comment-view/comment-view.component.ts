@@ -80,12 +80,12 @@ export class CommentViewComponent {
         this._userSelected.next(message);
     }
 
-	selectUsername() {
-		this._usernameSelected.next(this.currentUser);
+	selectUsername(user: User) {
+		this._usernameSelected.next(user);
 	}
 
-	selectAvatar() {
-		this._avatarSelected.next(this.currentUser);
+	selectAvatar(user: User) {
+		this._avatarSelected.next(user);
 	}
 
     set source(value) {
