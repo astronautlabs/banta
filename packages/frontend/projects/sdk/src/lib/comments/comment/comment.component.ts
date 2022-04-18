@@ -13,8 +13,8 @@ export class CommentComponent {
     private _upvoted = new Subject<void>();
 
 	private _userSelected = new Subject<void>();
-	private _avatarClicked = new Subject<User>();
-	private _usernameClicked = new Subject<User>();
+	private _avatarSelected = new Subject<User>();
+	private _usernameSelected = new Subject<User>();
     
     ngOnInit() {
         let maxTime = 500;
@@ -42,32 +42,33 @@ export class CommentComponent {
 
 	@Output()
     get userSelected() {
-        return this._userSelected;
+        return this._userSelected.asObservable();
     }
 
     @Output()
-    get usernameClicked() {
-        return this._usernameClicked;
+    get usernameSelected() {
+        return this._usernameSelected.asObservable();
     }
 
 	@Output()
-	get avatarClicked() {
-		return this._avatarClicked;
+	get avatarSelected() {
+		return this._avatarSelected.asObservable();
 	}
 
     @Output()
     get reported() {
-        return this._reported;
+        return this._reported.asObservable();
     }
     
+
     @Output()
     get upvoted() {
-        return this._upvoted;
+        return this._upvoted.asObservable();
     }
 
     @Output()
     get selected() {
-        return this._selected;
+        return this._selected.asObservable();
     }
 
     @HostBinding('attr.data-comment-id')
@@ -88,15 +89,17 @@ export class CommentComponent {
     }
 
 	selectUser() {
-        return this._userSelected.next();
+        this._userSelected.next();
     }
 
-    usernameClick(user: User) {
-        return this._usernameClicked.next(user);
+    selectUsername(user: User) {
+        this._usernameSelected.next(user);
+		this.selectUser();
     }
 
-	avatarClick(user: User) {
-		return this._avatarClicked.next(user);
+	selectAvatar(user: User) {
+		this._avatarSelected.next(user);
+		this.selectUser();
 	}
     
     avatarForUser(user : User) {

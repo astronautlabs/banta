@@ -82,7 +82,7 @@ export class CommentViewComponent {
         this._reported.next(message);
     }
     
-    async selectMessage(message : ChatMessage) {
+    selectMessage(message : ChatMessage) {
         this._selected.next(message);
     }
 
