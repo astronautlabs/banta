@@ -28,9 +28,30 @@ export class EmojiSelectorPanelComponent implements OnInit {
 
 	categories : any[];
 	activeCategory : string = 'people';
-
+	searchResults : any[] = [];
+    searchVisible = false;
+	
 	@Output()
 	private selected : Subject<string> = new Subject();
+
+	private _searchQuery : string;
+
+	get searchQuery() {
+		return this._searchQuery;
+	}
+
+	set searchQuery(value) {
+		this._searchQuery = value;
+		setTimeout(() => {
+			this.searchResults = Object.keys(EMOJIS).filter(k => k.includes(value)).map(k => EMOJIS[k]);
+			this.searchResults.splice(50, this.searchResults.length);
+			console.log(`looking for '${value}' => ${this.searchResults.length} results`);
+		});
+	}
+
+	humanize(str : string) {
+		return str.replace(/(^| )[a-z]/g, k => k.toUpperCase()).replace(/_/g, ' ');
+	}
 
 	select(char : string) {
 		this.selected.next(char);
@@ -39,6 +60,20 @@ export class EmojiSelectorPanelComponent implements OnInit {
 	pairs(object) {
 		return Object.keys(object).map(key => [key, object[key]]);
 	}
+
+	hideSearch() {
+		// because of the "outside click detection"
+        setTimeout(() => {
+            this.searchVisible = false;
+        });
+	}
+	
+    showSearch() {
+		// because of the "outside click detection"
+        setTimeout(() => {
+            this.searchVisible = true;
+        });
+    }
 
 	ngOnInit() {
 

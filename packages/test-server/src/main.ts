@@ -1,19 +1,45 @@
-
+import "@alterior/platform-nodejs";
 import { Application } from "@alterior/runtime";
-import { Module } from "@alterior/di";
-import { NotificationsProvider, AuthenticationProvider, ChatBackend } from "@banta/common";
-import { FirebaseNotificationsProvider, FirebaseAuthenticationProvider, FirebaseChatBackend } from "@banta/firebase";
+import { WebService, Mount, Get } from "@alterior/web-server";
+import { NotificationsProvider, AuthenticationProvider } from "@banta/common";
+import { FirebaseNotificationsProvider, FirebaseAuthenticationProvider, FirebaseChatBackend, FirebaseStoreRef } from "@banta/firebase";
+import { ChatBackendService, BantaBackendModule, BantaBackendController } from "@banta/server";
 
-@Module({
+import * as Fb from 'firebase-admin';
+import { CORSMiddleware } from "./cors";
+
+globalThis.fetch = require('node-fetch');
+
+let firebaseCredsFile = process.env['FIREBASE_CREDS_FILE'] || "../private/firebase-service-account.json";
+console.log(`Loading firebase credentials from ${firebaseCredsFile}`);
+
+Fb.initializeApp({
+    credential: Fb.credential.cert(require(firebaseCredsFile)),
+    databaseURL: process.env['FIRESTORE_URL']
+});
+
+@WebService({
+    server: {
+        port: 3422,
+        middleware: [ CORSMiddleware ]
+    },
     providers: [
+        { provide: FirebaseStoreRef, useClass: FirebaseStoreRef },
         { provide: NotificationsProvider, useClass: FirebaseNotificationsProvider },
         { provide: AuthenticationProvider, useClass: FirebaseAuthenticationProvider },
-        { provide: ChatBackend, useClass: FirebaseChatBackend }
+        { provide: ChatBackendService, useClass: FirebaseChatBackend }
     ],
     imports: [
-        BantaServerModule
+        BantaBackendModule
     ]
 })
-class ServerModule {}
+class ExampleService {
+    @Mount() banta : BantaBackendController;
 
-Application.bootstrap(ServerModule);
+    @Get('/healthz')
+    healthz() {
+        return { message: 'Healthy' };
+    }
+}
+
+Application.bootstrap(ExampleService);

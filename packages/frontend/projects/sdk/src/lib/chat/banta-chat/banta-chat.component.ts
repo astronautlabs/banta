@@ -4,8 +4,7 @@ import { Subject, Observable } from 'rxjs';
 import { User, ChatSource, ChatMessage, NewMessageForm, UserAccount } from '@banta/common';
 import { SubSink } from 'subsink';
 import { ChatViewComponent } from '../chat-view/chat-view.component';
-import { BantaService } from '../../common';
-import { ChatBackendService } from "../../chat-backend.service";
+import { BantaService, ChatBackendService } from "../../common";
 
 /**
  * Chat component
@@ -148,7 +147,13 @@ export class BantaChatComponent {
     }
 
     get canChat() {
+        if (!this.user)
+            return false;
+        
         if (!this.user.permissions)
+            return true;
+        
+        if (!this.user.permissions.canChat)
             return true;
         
         return this.user.permissions?.canChat(this.source);
@@ -156,7 +161,7 @@ export class BantaChatComponent {
 
     newMessage : NewMessageForm = {};
 
-    sendMessage() {
+    async sendMessage() {
         if (!this.source)
             return;
 
@@ -170,9 +175,15 @@ export class BantaChatComponent {
             user: null,
             sentAt: Date.now(),
             upvotes: 0,
+            url: location.href,
             message: text
         };
 
-        this.source.send(message);
+        try {
+            await this.source.send(message);
+        } catch (e) {
+            console.error(`Failed to send message: `, message);
+            console.error(e);
+        }
     }
 }

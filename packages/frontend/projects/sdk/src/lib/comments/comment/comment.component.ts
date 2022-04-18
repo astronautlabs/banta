@@ -1,4 +1,4 @@
-import { Component, Output, Input } from "@angular/core";
+import { Component, Output, Input, HostBinding } from "@angular/core";
 import { Subject } from 'rxjs';
 import { ChatMessage, User } from '@banta/common';
 
@@ -13,6 +13,24 @@ export class CommentComponent {
     private _upvoted = new Subject<void>();
     private _userSelected = new Subject<void>();
     
+    ngOnInit() {
+        let maxTime = 500;
+        let minTime = 0;
+        let randomTime = minTime + Math.random() * (maxTime - minTime);
+
+        setTimeout(() => {
+            this.isNew = true;
+            this.visible = true;
+            setTimeout(() => this.isNew = false, 1000);
+        }, randomTime);
+    }
+
+    @HostBinding('class.new')
+    isNew = false;
+
+    @HostBinding('class.visible')
+    visible = false;
+
     @Input()
     message : ChatMessage;
 
@@ -37,6 +55,11 @@ export class CommentComponent {
     @Output()
     get selected() {
         return this._selected;
+    }
+
+    @HostBinding('attr.data-comment-id')
+    get commentId() {
+        return this.message?.id;
     }
 
     report() {

@@ -1,6 +1,5 @@
-import { ChatSource, ChatMessage, Vote, Injectable } from "@banta/common";
+import { ChatSource, ChatMessage, Vote, Injectable, filterObject } from "@banta/common";
 import { ChatBackend, Notification } from "@banta/common";
-import * as firebase from "firebase";
 import { DataStore } from "@astronautlabs/datastore";
 import { FirebaseChatSource } from "./firebase-chat-source";
 import { AuthenticationProvider, NotificationsProvider, UpvoteNotification } from "@banta/common";
@@ -129,5 +128,21 @@ export class FirebaseChatBackend implements ChatBackend {
 
         let subscription = this.datastore.watch<ChatMessage>(path).subscribe(x => handler(x));
         return () => subscription.unsubscribe();
+    }
+
+    async modifyMessage(message : Partial<ChatMessage>): Promise<void> {
+        let path : string;
+        
+        if (message.parentMessageId)
+            path = `/bantaTopics/${message.topicId}/messages/${message.parentMessageId}/messages/${message.id}`;
+        else
+            path = `/bantaTopics/${message.topicId}/messages/${message.id}`;
+
+        await this.datastore.update(path, {
+            ...filterObject(message, [
+                'message', 'hidden'
+            ]),
+            updatedAt: Date.now()
+        });
     }
 }

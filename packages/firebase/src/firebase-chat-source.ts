@@ -7,7 +7,6 @@ import { MentionNotification } from "@banta/common";
 import { v4 as uuid } from 'uuid';
 import { Counter } from "@banta/common";
 import { lazyConnection } from "./lazy-connection";
-import * as firebase from 'firebase';
 
 export class FirebaseChatSource implements ChatSource {
     constructor(
@@ -21,6 +20,7 @@ export class FirebaseChatSource implements ChatSource {
         let subscription : Subscription;
         this._messageReceived = lazyConnection({
             start: subject => {
+                console.log(`[Banta] Subscribing to topic '${identifier}' in collection path '${collectionPath}'`);
                 let maxCount = 200;
                 subscription = this.datastore
                     .watchForChanges(`${collectionPath}/messages`, { order: { field: 'sentAt', direction: 'asc' }, limit: 100 })
@@ -29,6 +29,9 @@ export class FirebaseChatSource implements ChatSource {
                             if (change.type === 'added') {
                                 let message = <ChatMessage>change.document;
                 
+                                console.log(`[Banta] Received message:`);
+                                console.dir(message);
+
                                 this.messages.push(message);
                                 subject.next(message);
             
@@ -71,9 +74,10 @@ export class FirebaseChatSource implements ChatSource {
 
     messages : ChatMessage[] = [];
 
-    async send(message : ChatMessage): Promise<ChatMessage> {
+    async send(message : ChatMessage) {
         let finalMessage = await this.recordMessage(this.collectionPath, message);
         await this.sendMentionNotifications(finalMessage);
+
         return finalMessage;
     }
 

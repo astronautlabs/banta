@@ -1,29 +1,5 @@
-<h1>Try it out</h1>
-
-<ng-container *ngIf="!allowChangingTopic">
-    <mat-form-field appearance="outline" floatLabel="always">
-        <mat-label>Topic ID</mat-label>
-        <input readonly matInput type="text" name="newTopicID" [value]="topicID" />
-    </mat-form-field>
-</ng-container>
-<ng-container *ngIf="allowChangingTopic">
-    <form (submit)="changeTopic()">
-        <div>
-            <mat-form-field appearance="outline" floatLabel="always">
-                <mat-label>New Topic ID</mat-label>
-                <input matInput type="text" name="newTopicID" [(ngModel)]="newTopicID" />
-            </mat-form-field>
-            &nbsp;
-            <button mat-raised-button color="primary">Apply</button>
-        </div>
-    </form>
-</ng-container>
-
-<h1>Unified (Chat + Comments)</h1>
-<banta [topicID]="topicID"></banta>
-
-<h1>Comments</h1>
-<banta-comments topicID="{{topicID}}_thepoint"></banta-comments>
-
-<h1>Chat</h1>
-<banta-chat topicID="{{topicID}}_firehose"></banta-chat>
+<banta-comments 
+    topicID="{{topicID}}_comments"
+    [maxVisibleMessages]="3"
+    [maxMessages]="2000"
+    ></banta-comments>

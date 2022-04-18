@@ -6,17 +6,15 @@
 
 <div class="message-content">
     <div class="user">
-        <div class="avatar" 
+        <a 
+            href="javascript:;"
+            class="avatar"
             (click)="selectUser()"
-            [style.background-image]="avatarForUser(message.user)"></div>
-        <label class="display-name" (click)="selectUser()">{{message.user.displayName}}</label>
-        <label class="username" (click)="selectUser()">@{{message.user.username}}</label>
-
-        <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
-            <mat-icon [inline]="true">more_vert</mat-icon>
-        </button>
+            [style.background-image]="avatarForUser(message.user)"></a>
+        <a href="javascript:;" class="display-name" (click)="selectUser()">{{message.user.displayName}}</a>
+        <a href="javascript:;" class="username" (click)="selectUser()">@{{message.user.username}}</a>
     </div>
-    <div class="content" (click)="select()">
+    <div class="content">
         {{message.message}}
     </div>
     
@@ -39,5 +37,9 @@
                 <mat-icon [inline]="true">thumb_up</mat-icon>
             </button>
         </div>
+        
+        <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
+            <mat-icon [inline]="true">more_vert</mat-icon>
+        </button>
     </div>
 </div>

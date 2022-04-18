@@ -1,14 +1,33 @@
 :host {	
 	background: #111;
+	color: white;
 	border: 1px solid #333;
 	border-radius: 5px;
 	padding: 0.5em;
 
-	display: flex;
-	flex-direction: column;
-	width: calc(8*(32px + 1em));
+	width: calc(9*(32px + 1em));
+	max-width: calc(100vw - 1.5em);
 }
 
+.selector {
+	display: flex;
+	flex-direction: column;
+}
+
+.categories {
+	a {
+		opacity: 0.25;
+		transition: 400ms opacity ease-in-out;
+
+		&:hover {
+			opacity: 0.5;
+		}
+
+		&.active {
+			opacity: 1;
+		}
+	}
+}
 .emoji-list {
 	flex-grow: 1;
 	overflow-y: auto;
@@ -27,5 +46,25 @@
 		&:hover {
 			background-color: #333;
 		}
+	}
+}
+
+.search-box {
+	display: flex;
+	align-items: baseline;
+
+	mat-form-field {
+		flex-grow: 1;
+	}
+}
+
+@media (max-width: 500px) {
+	.selector {
+		flex-direction: row;
+		height: 27em;
+	}
+
+	.emoji-list {
+		height: auto;
 	}
 }

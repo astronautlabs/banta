@@ -47,6 +47,8 @@ export class BantaServiceChatSource implements ChatSource {
         }
 
         //messageSent.next(message);
+
+        return await response.json();
     }
     
     close() {
@@ -89,7 +91,7 @@ export class BantaServiceChatBackend implements ChatBackend {
             topicId,
             await this._underlyingChatBackend.getSourceForThread(topicId, messageId),
             this,
-            `/topics/${topicId}/messages/${messageId}`
+            `/topics/${topicId}/messages/${messageId}/messages`
         );
     }
 

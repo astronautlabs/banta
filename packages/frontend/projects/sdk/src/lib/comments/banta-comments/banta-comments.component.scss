@@ -3,62 +3,52 @@
     flex-direction: column;
 }
 
-form {
-    display: flex;
-    padding: 0.5em 0;
-    align-items: center;
-
-    .text-container {
-        position: relative;
-        display: flex;
-        flex-grow: 1;
-
-        textarea {
-            font-size: 14pt;
-            background-color: white;
-            color: #333;
-            border: 1px solid;
-            border-color: #ccc;
-            min-height: 6em;
-            width: 100%;
-        }
-
-        emoji-selector-button {
-            bottom: 0;
-            right: 0;
-            position: absolute;
-        }
+@keyframes select-comment {
+    from {
+        transform: scale(1.15);
     }
 
-    input[type=text] {
-        background: black;
-        color: white;
-        border: 1px solid #333;
-        width: 100%;
-        height: 1em;
-    }
-
-
-
-    .actions {
-        margin-left: 1em;
-    }
-
-    button {
-        display: block;
-        margin: 0 0 0 auto;
+    to {
+        transform: scale(1);
     }
 }
 
+.focused {
+    animation-name: select-comment;
+    animation-duration: 400ms;
+    animation-fill-mode: both;
+    
+    .replies {
+        margin-top: 1em;
+        margin-left: 4em;
+    }
+}
 
-:host-context(.mat-dark-theme) {
-    form {
-        .text-container {
-            textarea {
-                background: black;
-                color: white;
-                border-color: #333;
-            }
+banta-comment-view {
+    opacity: 1;
+    transition: 400ms opacity ease-in-out;
+    &.faded {
+        opacity: 0.25;
+    }
+}
+
+.loading {
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+    min-height: 16em;
+}
+
+.main {
+    &.hidden {
+        display: none;
+    }
+}
+
+@media (max-width: 500px) {
+    .focused {
+        .replies {
+            margin-left: 0;
         }
     }
 }

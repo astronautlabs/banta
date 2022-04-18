@@ -1,47 +1,80 @@
 
-<form class="new-message" (submit)="sendMessage()">
-    <div class="text-container">
-        <textarea 
-            name="message" 
-            (keydown)="onKeyDown($event)"
-            [(ngModel)]="newMessageText"></textarea>
-        <emoji-selector-button 
-            class="top-right"
-            (selected)="insertEmoji($event)"
-            ></emoji-selector-button>
-    </div>
-    <div class="actions">
+<div class="focused" [class.visible]="selectedMessageVisible" *ngIf="selectedMessage">
 
-        <ng-container *ngIf="!user">
-            <button 
-                mat-raised-button 
-                color="primary"
-                type="button"
-                (click)="showSignIn()"
-                >{{signInLabel}}</button>
+    <div>
+        <a mat-button href="javascript:;" (click)="unselectMessage()">
+            <mat-icon>arrow_back</mat-icon>
+            Latest Comments
+        </a>
+    </div>
+
+    <banta-comment 
+        [message]="selectedMessage"
+        ></banta-comment>
+
+    <div class="replies">
+
+        <ng-container *ngIf="!selectedMessageThread">
+            <div class="loading">
+                <mat-spinner></mat-spinner>
+            </div>
         </ng-container>
-        <ng-container *ngIf="user">
-            <button 
-                *ngIf="canComment"
-                mat-raised-button 
-                color="primary"
-                [disabled]="!newMessageText" 
-                >{{sendLabel}}</button>
-            <button 
-                *ngIf="!canComment"
-                type="button"
-                (click)="showPermissionDenied()"
-                mat-raised-button 
-                color="primary"
-                >{{permissionDeniedLabel}}</button>
+
+        <ng-container *ngIf="selectedMessageThread">
+            <banta-comment-view 
+                [source]="selectedMessageThread"
+                [allowReplies]="false"
+                [fixedHeight]="false"
+                [showEmptyState]="false"
+                [newestLast]="true"
+                ></banta-comment-view>
+
+            <banta-comment-field
+                [sendLabel]="replyLabel"
+                [sendingLabel]="sendingLabel"
+                [hashtags]="hashtags"
+                [participants]="participants"
+                (signInSelected)="showSignIn()"
+                (editAvatarSelected)="showEditAvatar()"
+                [source]="selectedMessageThread"
+                [canComment]="canComment"
+                [signInLabel]="signInLabel"
+                [permissionDeniedLabel]="permissionDeniedLabel"
+                (permissionDeniedError)="showPermissionDenied()"
+                [user]="user"
+                [label]="postReplyLabel"
+                ></banta-comment-field>
         </ng-container>
     </div>
-</form>
+</div>
 
-<banta-comment-view 
-    [source]="source"
-    (userSelected)="selectMessageUser($event)"
-    (selected)="selectMessage($event)"
-    (upvoted)="upvoteMessage($event)"
-    (reported)="reportMessage($event)"
-    ></banta-comment-view>
+<div class="main" [class.hidden]="selectedMessage">
+    <banta-comment-field
+        [source]="source"
+        [user]="user"
+        [sendLabel]="sendLabel"
+        [sendingLabel]="sendingLabel"
+        [signInLabel]="signInLabel"
+        [canComment]="canComment"
+        [hashtags]="hashtags"
+        [participants]="participants"
+        [label]="postCommentLabel"
+        (editAvatarSelected)="showEditAvatar()"
+        (signInSelected)="showSignIn()"
+        [permissionDeniedLabel]="permissionDeniedLabel"
+        (permissionDeniedError)="showPermissionDenied()"
+        ></banta-comment-field>
+
+    <banta-comment-view 
+        [class.faded]="selectedMessage"
+        [source]="source"
+        [fixedHeight]="fixedHeight"
+        [maxMessages]="maxMessages"
+        [maxVisibleMessages]="maxVisibleMessages"
+        [genericAvatarUrl]="genericAvatarUrl"
+        (userSelected)="selectMessageUser($event)"
+        (selected)="selectMessage($event)"
+        (upvoted)="upvoteMessage($event)"
+        (reported)="reportMessage($event)"
+        ></banta-comment-view>
+</div>

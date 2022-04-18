@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import * as firebase from 'firebase';
+import * as firebase from 'firebase/app';
+import 'firebase/firestore';
 
 @Component({
     templateUrl: './try.component.html',

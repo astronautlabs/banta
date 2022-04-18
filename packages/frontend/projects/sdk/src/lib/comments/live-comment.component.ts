@@ -1,7 +1,7 @@
 import { Component, Input, Output } from '@angular/core';
 import { ChatMessage } from '@banta/common';
 import { Subject, Observable } from 'rxjs';
-import { ChatBackendService } from '../chat-backend.service';
+import { ChatBackendService } from '../common';
 
 @Component({
     selector: 'banta-live-comment',
