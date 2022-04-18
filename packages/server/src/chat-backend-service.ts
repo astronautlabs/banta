@@ -11,7 +11,7 @@ export abstract class ChatBackendService implements ChatBackend {
     abstract getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
     abstract upvoteMessage(topicId : string, messageId : string, submessageId? : string, vote? : Vote): Promise<void>;
     abstract watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void;
-    
+    abstract modifyMessage?(message : ChatMessage) : Promise<void>;
     abstract get notificationsChanged() : Observable<Notification[]>;
     abstract get newNotification() : Observable<Notification>;
 }

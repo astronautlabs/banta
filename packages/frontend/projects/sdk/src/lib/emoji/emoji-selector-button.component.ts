@@ -1,13 +1,14 @@
-import { Component, Output } from '@angular/core';
+import { Component, ElementRef, Output, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
 @Component({
     selector: 'emoji-selector-button',
     template: `
-        <button mat-icon-button (click)="show()">
+        <button #button type="button" mat-icon-button (click)="show()">
             <mat-icon>emoji_emotions</mat-icon>
         </button>
         <emoji-selector-panel 
+            #panel
             (selected)="insert($event)"
             [class.visible]="showEmojiPanel"
             ></emoji-selector-panel>
@@ -20,8 +21,8 @@ import { Subject, Observable } from 'rxjs';
 
         emoji-selector-panel {
             position: absolute;
-            bottom: 2.5em;
-            right: 0;
+            /* bottom: 2.5em;
+            right: 0; */
             opacity: 0;
             pointer-events: none;
             z-index: 10;
@@ -36,7 +37,7 @@ import { Subject, Observable } from 'rxjs';
             color: #666
         }
 
-        :host.bottom-left emoji-selector-panel {
+        /* :host.bottom-left emoji-selector-panel {
             right: auto;
             left: 0;
         }
@@ -51,24 +52,56 @@ import { Subject, Observable } from 'rxjs';
             bottom: auto;
             left: 0;
             right: auto;
-        }
+        } */
     `]
 })
 export class EmojiSelectorButtonComponent {
 
     private _selected = new Subject<string>();
+    private clickListener : any;
+    private resizeListener : any;
+    showEmojiPanel = false;
 
     @Output()
     get selected() : Observable<string> {
         return this._selected;
     }
 
+    @ViewChild('panel', { read: ElementRef })
+    panelElement : ElementRef<HTMLElement>;
+
+    @ViewChild('button', { read: ElementRef })
+    buttonElement : ElementRef<HTMLElement>;
+
     ngOnDestroy() {
         this.removeListener();
+        this.panelElement.nativeElement.remove();
+    }
+
+    ngAfterViewInit() {
+        let root = document.body.querySelector('[ng-version]') || document.body;
+        root.appendChild(this.panelElement.nativeElement);
     }
 
     private removeListener() {
         document.removeEventListener('click', this.clickListener);
+        window.removeEventListener('resize', this.resizeListener);
+    }
+
+    place() {
+        let pos = this.buttonElement.nativeElement.getBoundingClientRect();
+        let size = this.panelElement.nativeElement.getBoundingClientRect();
+        let left = window.scrollX + pos.left + pos.width - size.width;
+        if (left < 0)
+            left = (window.scrollX + window.innerWidth) / 2 - size.width / 2;
+
+        Object.assign(
+            this.panelElement.nativeElement.style,
+            {
+                top: `${window.scrollY + pos.top + pos.height}px`,
+                left: `${Math.max(0, left)}px`
+            }
+        );
     }
 
     show() {
@@ -78,8 +111,15 @@ export class EmojiSelectorButtonComponent {
         }
 
         this.showEmojiPanel = true;
+        this.place();
 
         setTimeout(() => {
+            this.resizeListener = () => {
+                if (!this.showEmojiPanel)
+                    return;
+                this.place();
+            };
+
             this.clickListener = (ev : MouseEvent) => {
 
                 let parent = <HTMLElement> ev.target;
@@ -100,12 +140,9 @@ export class EmojiSelectorButtonComponent {
             };
     
             document.addEventListener('click', this.clickListener);
+            window.addEventListener('resize', this.resizeListener);
         });
     }
-
-    private clickListener : any;
-
-    showEmojiPanel = false;
 
     insert(str) {
         this._selected.next(str);

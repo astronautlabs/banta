@@ -43,11 +43,35 @@ export class ChatController {
         message.user = authorizedUser;
         message.topicId = topicId;
 
-        this.chatService.post(message);
-        return {
-            code: 'success',
-            message: 'Success'
-        };
+        try {
+            message = await this.chatService.post(message);
+        } catch (e) {
+            console.error(`Failed to post message to ${topicId}: ${e.message} [code=${e.code}]`);
+            return Response.badRequest({ message: e.message, code: e.code });
+        }
+        
+        return message;
+    }
+
+    @Post(`/topics/:topicID/messages/:messageID/messages`)
+    async subPost(
+        @PathParam('topicID') topicID : string, 
+        @PathParam('messageID') messageID : string, 
+        @Body() message : ChatMessage
+    ) {
+        let authorizedUser = await this.getAuthorizedUser();
+
+        message.user = authorizedUser;
+        message.topicId = topicID;
+
+        try {
+            message = await this.chatService.postSubMessage(topicID, messageID, message);
+        } catch (e) {
+            console.error(`Failed to post sub-message to ${topicID}/${messageID}: ${e.message} [code=${e.code}]`);
+            return Response.badRequest({ message: e.message, code: e.code });
+        }
+
+        return message;
     }
 
     @Post(`/topics/:topicID/messages/:messageID/upvote`)
@@ -87,29 +111,5 @@ export class ChatController {
         });
 
         return { code: 'success', message: 'Success' };
-    }
-
-    @Post(`/topics/:topicID/messages/:messageID/messages`)
-    async subPost(
-        @PathParam('topicID') topicID : string, 
-        @PathParam('messageID') messageID : string, 
-        @Body() message : ChatMessage
-    ) {
-        let authorizedUser = await this.getAuthorizedUser();
-
-        message.user = authorizedUser;
-        message.topicId = topicID;
-
-        try {
-            await this.chatService.postSubMessage(topicID, messageID, message);
-        } catch (e) {
-            console.error(`Failed to post sub-message to ${topicID}/${messageID}: ${e.message} [code=${e.code}]`);
-            return Response.badRequest({ message: e.message, code: e.code });
-        }
-
-        return {
-            code: 'success',
-            message: 'Success'
-        };
     }
 }

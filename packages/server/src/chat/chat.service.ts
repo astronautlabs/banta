@@ -1,14 +1,40 @@
 import { Injectable } from "@alterior/di";
 import { ChatMessage } from "@banta/common";
-import { ChatBackend, Vote } from "@banta/common";
+import { Vote } from "@banta/common";
+import { Subject } from "rxjs";
 import { ChatBackendService } from "../chat-backend-service";
+
+export interface ChatEvent {
+    type : 'post' | 'edit' | 'upvote';
+}
+
+export interface PostMessageEvent extends ChatEvent {
+    type : 'post';
+    message : ChatMessage;
+}
+
+export interface EditMessageEvent extends ChatEvent {
+    type : 'edit';
+    message : ChatMessage;
+}
+
+export interface UpvoteEvent extends ChatEvent {
+    type: 'upvote';
+    message : ChatMessage;
+    vote : Vote;
+}
 
 @Injectable()
 export class ChatService {
     constructor(
         private chatBackend : ChatBackendService
     ) {
+    }
 
+    private _events = new Subject<ChatEvent>();
+
+    get events() {
+        return this._events;
     }
 
     async upvote(message : ChatMessage, vote : Vote) {
@@ -19,6 +45,8 @@ export class ChatService {
             await this.chatBackend.upvoteMessage(message.topicId, message.parentMessageId, message.id, vote);
         else
             await this.chatBackend.upvoteMessage(message.topicId, message.id, undefined, vote);
+        
+        this._events.next(<UpvoteEvent>{ type: 'upvote', message, vote });
     }
 
     async post(message : ChatMessage) {
@@ -26,7 +54,10 @@ export class ChatService {
             throw new Error(`Message must include a valid user reference`);
             
         let source = await this.chatBackend.getSourceForTopic(message.topicId);
-        return source.send(message);
+        message = await source.send(message);
+        
+        this._events.next(<PostMessageEvent>{ type: 'post', message });
+        return message;
     }
 
     async getMessage(topicId : string, messageId : string) {
@@ -46,6 +77,9 @@ export class ChatService {
             throw { code: 'no-parent-message', message: `Cannot find message ${topicId}/${messageId}` };
     
         let source = await this.chatBackend.getSourceForThread(topicId, messageId);
-        return await source.send(message);
+        message = await source.send(message);
+
+        this._events.next(<PostMessageEvent>{ type: 'post', message });
+        return message;
     }
 }

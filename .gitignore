@@ -1,4 +1,5 @@
 node_modules/
 dist/
+dist.esm/
 lerna-debug.log
 packages/t3-server/

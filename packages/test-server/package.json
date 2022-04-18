@@ -1,0 +1,23 @@
+{
+  "name": "@banta/example-server",
+  "version": "0.1.8",
+  "description": "",
+  "main": "dist/main.js",
+  "private": true,
+  "scripts": {
+    "build": "tsc -b",
+    "start": "npm run build && node dist/main"
+  },
+  "dependencies": {
+    "@alterior/di": "*",
+    "@alterior/platform-nodejs": "*",
+    "@alterior/runtime": "*",
+    "@alterior/web-server": "*",
+    "@banta/firebase": "^0.1.8",
+    "@banta/server": "^0.1.8",
+    "firebase-admin": "^9.12.0",
+    "node-fetch": "^2.6.1"
+  },
+  "author": "Astronaut Labs, LLC",
+  "license": "MIT"
+}

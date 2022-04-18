@@ -1,7 +1,8 @@
-import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
+import { Component, Input, ViewChild, ElementRef, Output, HostBinding } from "@angular/core";
 import { User, ChatMessage, ChatSource } from '@banta/common';
 import { SubSink } from 'subsink';
 import { Subject } from 'rxjs';
+import { ChatBackendService } from "../../common";
 
 @Component({
     selector: 'banta-comment-view',
@@ -9,7 +10,9 @@ import { Subject } from 'rxjs';
     styleUrls: ['./comment-view.component.scss']
 })
 export class CommentViewComponent {
-    constructor() {
+    constructor(
+        private backend : ChatBackendService
+    ) {
 
     }
 
@@ -22,8 +25,15 @@ export class CommentViewComponent {
     private _usernameSelected = new Subject<User>();
     private _avatarSelected = new Subject<User>();
 
+    @Input()
+    showEmptyState = true;
+
     @Input() 
     allowReplies = true;
+
+    @Input()
+    @HostBinding('class.fixed-height')
+    fixedHeight : boolean;
 
     @Output()
     get selected() {
@@ -72,10 +82,10 @@ export class CommentViewComponent {
         this._reported.next(message);
     }
     
-    selectMessage(message : ChatMessage) {
+    async selectMessage(message : ChatMessage) {
         this._selected.next(message);
     }
-    
+
     selectMessageUser(message : ChatMessage) {
         this._userSelected.next(message);
     }
@@ -96,10 +106,12 @@ export class CommentViewComponent {
         this._source = value;
 
         if (value) {
-            let messages = value.messages || [];
+            let messages = (value.messages || []).slice();
+            this.messages = messages;
+            this.olderMessages = messages.splice(this.maxVisibleMessages, messages.length);
+            this.hasMore = this.olderMessages.length > 0;
 
             this._sourceSubs = new SubSink();
-            this.messages = messages.slice();
             this._sourceSubs.add(
                 this._source.messageReceived
                     .subscribe(msg => this.messageReceived(msg)),
@@ -123,23 +135,77 @@ export class CommentViewComponent {
     messageContainer : ElementRef<HTMLElement>;
 
     @Input()
-    maxMessages = 200;
+    maxMessages = 2000;
+
+    @Input()
+    maxVisibleMessages : number = 200;
 
     @Input()
     newestLast = false;
 
-    private addMessage(message : ChatMessage) {
-        if (this.newestLast) {
-            while (this.messages.length + 1 > this.maxMessages)
-                this.messages.shift();
-                
-            this.messages.push(message);
+    isViewingMore = false;
+    isLoadingMore = false;
+    hasMore = false;
+
+    newMessages : ChatMessage[] = [];
+    olderMessages : ChatMessage[] = [];
+
+    messageIdentity(index : number, chatMessage : ChatMessage) {
+        return chatMessage.id;
+    }
+
+    async showNew() {
+        this.isViewingMore = false;
+        this.messages = this.newMessages.splice(0, this.newMessages.length).concat(this.messages);
+        let overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
+        this.olderMessages = overflow.concat(this.olderMessages);
+        this.olderMessages.splice(this.maxMessages - this.maxVisibleMessages, this.olderMessages.length);
+    }
+
+    async showMore() {
+        this.isViewingMore = true;
+
+        if (this.olderMessages.length > 0) {
+            this.isLoadingMore = false;
+            this.messages = this.messages.concat(this.olderMessages.splice(0, 50));
         } else {
-            while (this.messages.length + 1 > this.maxMessages)
-                this.messages.pop();
-                
-            this.messages.unshift(message);
+            if (this.source.loadAfter) {
+                this.isLoadingMore = true;
+            
+                let lastMessage = this.messages[this.messages.length - 1];
+                let messages = await this.source.loadAfter(lastMessage, 100);
+                this.messages = this.messages.concat(messages);
+                this.isLoadingMore = false;
+                if (messages.length === 0)
+                    this.hasMore = false;
+
+            } else {
+                this.hasMore = false;
+            }
         }
+    }
+
+    private addMessage(message : ChatMessage) {
+        let destination = this.messages;
+        let bucket = this.olderMessages;
+
+        if (this.isViewingMore) {
+            destination = this.newMessages;
+            bucket = null;
+        }
+
+        if (this.newestLast) {
+            destination.push(message);
+            let overflow = destination.splice(this.maxVisibleMessages, destination.length);
+            bucket?.push(...overflow);
+        } else {
+            destination.unshift(message);
+            let overflow = destination.splice(this.maxVisibleMessages, destination.length);
+            bucket?.unshift(...overflow);
+        }
+
+        if (bucket?.length > 0)
+            this.hasMore = true;
     }
 
     private messageReceived(message : ChatMessage) {

@@ -44,22 +44,7 @@ body {
     color: black;
     margin: 0;
     padding: 0;
-}
-
-.logo {
-    font-family: 'Odibee Sans';
-    font-size: 40pt;
-    font-weight: bold;
-}
-
-nav {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    .logo {
-        font-size: 30pt;
-    }
+    overflow-x: hidden;
 }
 
 .spacer {
@@ -93,4 +78,12 @@ a {
     a {
         color: #51cdb5;
     }
+}
+
+mat-spinner.icon {
+    display: inline-block;
+}
+
+.mat-button-base mat-spinner.icon {
+    margin-right: 8px;
 }

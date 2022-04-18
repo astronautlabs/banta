@@ -2,17 +2,10 @@ import { Injectable } from "@alterior/di";
 import { v4 as uuid } from 'uuid';
 
 import { Notification, NewUserAccount, UserAccount, SignUpResult, AuthenticationProvider, NotificationsProvider } from "@banta/common";
-import { Logger } from "@alterior/logging";
-
-export const GOOGLE_IDENTITY = 
-    'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit';
-
-const SECRET = 'abcdefghijklmnopqrstuvwxyz';
 
 @Injectable()
 export class AccountsService {
     constructor(
-        private logger : Logger,
         private authProvider : AuthenticationProvider,
         private notificationsProvider : NotificationsProvider
     ) {
