@@ -2,4 +2,7 @@
     topicID="{{topicID}}_comments"
     [maxVisibleMessages]="3"
     [maxMessages]="2000"
+    (usernameSelected)="alert('Username was selected')"
+    (userSelected)="alert('User (avatar or username) was selected')"
+    (avatarSelected)="alert('Avatar was selected')"
     ></banta-comments>

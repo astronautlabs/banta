@@ -26,6 +26,10 @@ export class TryComponent {
         return defaultValue;
     }
 
+    alert(message: string) {
+        alert(message);
+    }
+
     async ngOnInit() {
         this.allowChangingTopic = await this.getSetting('allowChangingTopic', false);
         this.topicID = await this.getSetting('demoTopic', 'home4');

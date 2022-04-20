@@ -26,7 +26,11 @@ export class BantaCommentsComponent {
     private _reported = new Subject<ChatMessage>();
     private _selected = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
-    private _source : ChatSource;
+
+    private _usernameSelected = new Subject<User>();
+    private _avatarSelected = new Subject<User>();
+
+    private _source: ChatSource;
 
     private _subs = new SubSink();
 
@@ -49,7 +53,7 @@ export class BantaCommentsComponent {
     }
 
     @Input()
-    get source() : ChatSource {
+    get source(): ChatSource {
         return this._source;
     }
 
@@ -63,7 +67,7 @@ export class BantaCommentsComponent {
     @Input() genericAvatarUrl : string;
 
     @Input()
-    get topicID() : string {
+    get topicID(): string {
         return this._source.identifier;
     }
 
@@ -71,7 +75,7 @@ export class BantaCommentsComponent {
         this.setSourceFromTopicID(value);
     }
 
-    private async setSourceFromTopicID(topicID : string) {
+    private async setSourceFromTopicID(topicID: string) {
         if (this._source && this._source.close)
             this._source.close();
         this._source = null;
@@ -144,7 +148,7 @@ export class BantaCommentsComponent {
     showPermissionDenied() {
         this._permissionDeniedError.next();
     }
-    
+
     get canComment() {
         if (!this.user)
             return false;
@@ -160,27 +164,37 @@ export class BantaCommentsComponent {
 
     @Output()
     get upvoted() {
-        return this._upvoted;
+        return this._upvoted.asObservable();
     }
-    
+
     @Output()
     get reported() {
-        return this._reported;
+        return this._reported.asObservable();
     }
 
     @Output()
     get selected() {
-        return this._selected;
+        return this._selected.asObservable();
     }
     @Output()
     get userSelected() {
-        return this._userSelected;
+        return this._userSelected.asObservable();
     }
 
-    onKeyDown(event : KeyboardEvent) {
+    @Output()
+    get usernameSelected() {
+        return this._usernameSelected.asObservable();
     }
 
-    insertEmoji(text : string) {
+    @Output()
+    get avatarSelected() {
+        return this._avatarSelected.asObservable();
+    }
+
+    onKeyDown(event: KeyboardEvent) {
+    }
+
+    insertEmoji(text: string) {
         this.newMessageText += text;
     }
 
@@ -210,7 +224,7 @@ export class BantaCommentsComponent {
         await this.backend.upvoteMessage(message.topicId, message.parentMessageId ? message.parentMessageId : message.id, message.parentMessageId ? message.id : undefined);
     }
 
-    reportMessage(message : ChatMessage) {
+    reportMessage(message: ChatMessage) {
         this._reported.next(message);
     }
 
@@ -245,8 +259,16 @@ export class BantaCommentsComponent {
         }, 250);
     }
 
-    selectMessageUser(message : ChatMessage) {
+    selectMessageUser(message: ChatMessage) {
         this._userSelected.next(message);
+    }
+
+    selectUsername(user: User) {
+        this._usernameSelected.next(user);
+    }
+
+    selectAvatar(user: User) {
+        this._avatarSelected.next(user);
     }
 
     async sendReply() {

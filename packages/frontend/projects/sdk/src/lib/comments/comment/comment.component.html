@@ -9,10 +9,10 @@
         <a 
             href="javascript:;"
             class="avatar"
-            (click)="selectUser()"
+            (click)="selectAvatar(message.user)"
             [style.background-image]="avatarForUser(message.user)"></a>
         <a href="javascript:;" class="display-name" (click)="selectUser()">{{message.user.displayName}}</a>
-        <a href="javascript:;" class="username" (click)="selectUser()">@{{message.user.username}}</a>
+        <a href="javascript:;" class="username" (click)="selectUsername(message.user)">@{{message.user.username}}</a>
     </div>
     <div class="content">
         {{message.message}}

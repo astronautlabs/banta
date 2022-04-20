@@ -22,6 +22,8 @@ export class CommentViewComponent {
     private _upvoted = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
+    private _usernameSelected = new Subject<User>();
+    private _avatarSelected = new Subject<User>();
 
     @Input()
     showEmptyState = true;
@@ -53,6 +55,16 @@ export class CommentViewComponent {
         return this._upvoted;
     }
 
+	@Output()
+	get usernameSelected() {
+		return this._usernameSelected;
+	}
+
+	@Output()
+	get avatarSelected() {
+		return this._avatarSelected;
+	}
+
     menuMessage : ChatMessage = null;
     messages : ChatMessage[] = [];
     currentUser : User;
@@ -70,13 +82,21 @@ export class CommentViewComponent {
         this._reported.next(message);
     }
     
-    async selectMessage(message : ChatMessage) {
+    selectMessage(message : ChatMessage) {
         this._selected.next(message);
     }
 
     selectMessageUser(message : ChatMessage) {
         this._userSelected.next(message);
     }
+
+	selectUsername(user: User) {
+		this._usernameSelected.next(user);
+	}
+
+	selectAvatar(user: User) {
+		this._avatarSelected.next(user);
+	}
 
     set source(value) {
         if (this._sourceSubs) {
