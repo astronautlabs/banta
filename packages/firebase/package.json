@@ -26,5 +26,8 @@
   "peerDependencies": {
     "rxjs": "^6.5.5"
   },
-  "gitHead": "60a5f362427d97b73bb20a5f6956b8f87c30521b"
+  "gitHead": "d0220d82c6f44071d9765673209f88a7e9eb7320",
+  "devDependencies": {
+    "typescript": "^4.6.3"
+  }
 }
