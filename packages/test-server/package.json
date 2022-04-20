@@ -5,7 +5,7 @@
   "main": "dist/main.js",
   "private": true,
   "scripts": {
-    "build": "tsc -b",
+    "buildx": "tsc -b",
     "start": "npm run build && node dist/main"
   },
   "dependencies": {
