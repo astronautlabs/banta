@@ -1,6 +1,6 @@
 {
   "name": "@banta/server",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -23,7 +23,7 @@
     "@alterior/web-server": "^3.0.0-beta.98",
     "@astronautlabs/datastore": "^2.0.0",
     "@astronautlabs/datastore-firestore": "^2.0.2",
-    "@banta/common": "^0.2.0",
+    "@banta/common": "^0.2.1",
     "@types/express-serve-static-core": "^4.17.24",
     "@types/serve-static": "^1.13.10",
     "@types/uuid": "^3.4.6",
