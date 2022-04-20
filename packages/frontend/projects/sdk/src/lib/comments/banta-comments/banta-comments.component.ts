@@ -1,8 +1,7 @@
 import { Component, ElementRef, Input, Output } from '@angular/core';
 import { User, ChatSource, ChatMessage, UserAccount } from '@banta/common';
 import { HashTag } from '../comment-field/comment-field.component';
-import { Subject, Observable } from 'rxjs';
-import { SubSink } from 'subsink';
+import { Subject, Observable, Subscription } from 'rxjs';
 import { ChatBackendService } from '../../common';
 import { BantaService } from '../../common';
 
@@ -32,7 +31,7 @@ export class BantaCommentsComponent {
 
     private _source: ChatSource;
 
-    private _subs = new SubSink();
+    private _subs = new Subscription();
 
     @Input() hashtags : HashTag[] = [
         { hashtag: 'error', description: 'Cause an error' },

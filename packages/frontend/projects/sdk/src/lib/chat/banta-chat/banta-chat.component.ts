@@ -1,8 +1,7 @@
 import { Component, Input, Output, ElementRef, ViewChild } from "@angular/core";
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, Subscription } from 'rxjs';
 
 import { User, ChatSource, ChatMessage, NewMessageForm, UserAccount } from '@banta/common';
-import { SubSink } from 'subsink';
 import { ChatViewComponent } from '../chat-view/chat-view.component';
 import { BantaService, ChatBackendService } from "../../common";
 
@@ -23,13 +22,11 @@ export class BantaChatComponent {
     }
 
     private _source : ChatSource;
-    private _subs = new SubSink();
+    private _subs = new Subscription();
     user : UserAccount = null;
 
     ngOnInit() {
-        this._subs.add(
-            this.banta.userChanged.subscribe(user => this.user = user)
-        );
+        this._subs.add(this.banta.userChanged.subscribe(user => this.user = user));
     }
 
     ngOnDestroy() {

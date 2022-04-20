@@ -33,7 +33,6 @@
     "ngx-markdown": "^10.1.1",
     "popular-movie-quotes": "^1.2.4",
     "rxjs": "^6.6.7",
-    "subsink": "^1.0.1",
     "tslib": "^2.0.0",
     "twemoji": "^12.1.6",
     "uuid": "^3.4.0",

@@ -1,7 +1,6 @@
 import { Component, Input, ViewChild, ElementRef, HostBinding } from "@angular/core";
 import { NewMessageForm, ChatMessage, User, ChatSource, Notification } from '@banta/common';
-import { Subject, BehaviorSubject, Observable } from 'rxjs';
-import { SubSink } from 'subsink';
+import { Subject, BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { BantaChatComponent } from '../chat';
 import { BantaService } from '../common';
@@ -28,20 +27,18 @@ export class BantaComponent {
     pointSource : ChatSource;
 
     private _topicID : string;
-    private _subs = new SubSink();
+    private _subs = new Subscription();
 
     auxOpen = false;
     auxTitle = 'Notifications';
     auxMode = 'notifications';
 
     ngOnInit() {
-        this._subs.add(
-            this.banta.userChanged.subscribe(user => this.currentUser = user),
-            this.backend.notificationsChanged.subscribe(notifs => this.notifications = notifs),
-            this.backend.newNotification.subscribe(notif => {
+        this._subs.add(this.banta.userChanged.subscribe(user => this.currentUser = user));
+        this._subs.add(this.backend.notificationsChanged.subscribe(notifs => this.notifications = notifs));
+        this._subs.add(this.backend.newNotification.subscribe(notif => {
                 this.newNotifications = true;
-            })
-        );
+        }));
     }
     
     mobileFocus : string = null;
