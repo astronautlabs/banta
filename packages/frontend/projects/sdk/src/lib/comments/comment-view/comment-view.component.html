@@ -1,6 +1,6 @@
 <div class="message-container">
     <ng-content select="[data-before]"></ng-content>
-    
+
     <a mat-button class="nav" [class.visible]="isViewingMore" href="javascript:;" (click)="showNew()">
         <mat-icon>file_upload</mat-icon>
         New
@@ -14,7 +14,7 @@
             Be the first to comment!
         </div>
     </ng-container>
-    <banta-comment 
+    <banta-comment
         *ngFor="let message of messages; trackBy: messageIdentity"
         class="abbreviated"
         [message]="message"
@@ -26,6 +26,7 @@
         (upvoted)="upvoteMessage(message)"
         (reported)="reportMessage(message)"
         (selected)="selectMessage(message)"
+        (shared)="sharedMessage($event)"
         ></banta-comment>
 
     <a mat-button class="nav" [class.visible]="hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>

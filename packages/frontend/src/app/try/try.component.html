@@ -1,8 +1,9 @@
-<banta-comments 
+<banta-comments
     topicID="{{topicID}}_comments"
-    [maxVisibleMessages]="3"
+    [maxVisibleMessages]="5"
     [maxMessages]="2000"
     (usernameSelected)="alert('Username was selected')"
     (userSelected)="alert('User (avatar or username) was selected')"
     (avatarSelected)="alert('Avatar was selected')"
+    (shared)="sharedMessage($event)"
     ></banta-comments>

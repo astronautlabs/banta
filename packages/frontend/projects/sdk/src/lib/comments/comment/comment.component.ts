@@ -12,10 +12,12 @@ export class CommentComponent {
     private _selected = new Subject<void>();
     private _upvoted = new Subject<void>();
 
+    private _shared = new Subject<ChatMessage>();
+
 	private _userSelected = new Subject<void>();
 	private _avatarSelected = new Subject<User>();
 	private _usernameSelected = new Subject<User>();
-    
+
     ngOnInit() {
         let maxTime = 500;
         let minTime = 0;
@@ -59,7 +61,7 @@ export class CommentComponent {
     get reported() {
         return this._reported.asObservable();
     }
-    
+
 
     @Output()
     get upvoted() {
@@ -76,12 +78,21 @@ export class CommentComponent {
         return this.message?.id;
     }
 
+    @Output()
+    get shared(){
+      return this._shared.asObservable();
+    }
+
     report() {
         this._reported.next();
     }
-    
+
     upvote() {
         this._upvoted.next();
+    }
+
+    share() {
+        this._shared.next(this.message);
     }
 
     select() {
@@ -101,7 +112,7 @@ export class CommentComponent {
 		this._avatarSelected.next(user);
 		this.selectUser();
 	}
-    
+
     avatarForUser(user : User) {
         if (user && user.avatarUrl) {
             let url = user.avatarUrl;
