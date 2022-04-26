@@ -56,8 +56,14 @@ export class BantaCommentsComponent implements AfterViewInit {
     }
 
     scrollToComment(commentId: ChatMessage['id']): void {
-        const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
-        if (comment) comment.item(0).scroll({behavior: 'smooth'});
+        setTimeout(() => {
+          const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
+          console.log(comment)
+          if (comment.length > 0) {
+            // comment.item(0).scroll({behavior: 'smooth'});
+            comment.item(0).scrollIntoView();
+          }
+        }, 1000);
     }
 
     checkForSharedComment(): void {
