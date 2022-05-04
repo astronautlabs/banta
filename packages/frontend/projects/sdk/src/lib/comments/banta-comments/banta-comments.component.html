@@ -8,7 +8,7 @@
         </a>
     </div>
 
-    <banta-comment 
+    <banta-comment
         [message]="selectedMessage"
         ></banta-comment>
 
@@ -21,7 +21,7 @@
         </ng-container>
 
         <ng-container *ngIf="selectedMessageThread">
-            <banta-comment-view 
+            <banta-comment-view
                 [source]="selectedMessageThread"
                 [allowReplies]="false"
                 [fixedHeight]="false"
@@ -65,7 +65,7 @@
         (permissionDeniedError)="showPermissionDenied()"
         ></banta-comment-field>
 
-    <banta-comment-view 
+    <banta-comment-view
         [class.faded]="selectedMessage"
         [source]="source"
         [fixedHeight]="fixedHeight"
@@ -78,5 +78,6 @@
         (reported)="reportMessage($event)"
         (usernameSelected)="selectUsername($event)"
         (avatarSelected)="selectAvatar($event)"
+        (shared)="shareMessage($event)"
         ></banta-comment-view>
 </div>

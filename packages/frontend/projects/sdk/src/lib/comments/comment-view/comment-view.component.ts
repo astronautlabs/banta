@@ -1,8 +1,8 @@
-import { Component, Input, ViewChild, ElementRef, Output, HostBinding } from "@angular/core";
-import { User, ChatMessage, ChatSource } from '@banta/common';
-import { SubSink } from 'subsink';
-import { Subject } from 'rxjs';
-import { ChatBackendService } from "../../common";
+import {Component, Input, ViewChild, ElementRef, Output, HostBinding} from "@angular/core";
+import {User, ChatMessage, ChatSource} from '@banta/common';
+import {SubSink} from 'subsink';
+import {Subject} from 'rxjs';
+import {ChatBackendService} from "../../common";
 
 @Component({
     selector: 'banta-comment-view',
@@ -11,29 +11,30 @@ import { ChatBackendService } from "../../common";
 })
 export class CommentViewComponent {
     constructor(
-        private backend : ChatBackendService
+        private backend: ChatBackendService
     ) {
 
     }
 
     private _sourceSubs = new SubSink();
-    private _source : ChatSource;
+    private _source: ChatSource;
     private _selected = new Subject<ChatMessage>();
     private _upvoted = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
     private _usernameSelected = new Subject<User>();
     private _avatarSelected = new Subject<User>();
+    private _shared = new Subject<ChatMessage>();
 
     @Input()
     showEmptyState = true;
 
-    @Input() 
+    @Input()
     allowReplies = true;
 
     @Input()
     @HostBinding('class.fixed-height')
-    fixedHeight : boolean;
+    fixedHeight: boolean;
 
     @Output()
     get selected() {
@@ -55,48 +56,57 @@ export class CommentViewComponent {
         return this._upvoted;
     }
 
-	@Output()
-	get usernameSelected() {
-		return this._usernameSelected;
-	}
+    @Output()
+    get usernameSelected() {
+        return this._usernameSelected;
+    }
 
-	@Output()
-	get avatarSelected() {
-		return this._avatarSelected;
-	}
+    @Output()
+    get avatarSelected() {
+        return this._avatarSelected;
+    }
 
-    menuMessage : ChatMessage = null;
-    messages : ChatMessage[] = [];
-    currentUser : User;
+    @Output()
+    get shared() {
+        return this._shared;
+    }
+
+    menuMessage: ChatMessage = null;
+    messages: ChatMessage[] = [];
+    currentUser: User;
 
     @Input()
     get source() {
         return this._source;
     }
 
-    upvoteMessage(message : ChatMessage) {
+    upvoteMessage(message: ChatMessage) {
         this._upvoted.next(message);
     }
 
-    reportMessage(message : ChatMessage) {
+    reportMessage(message: ChatMessage) {
         this._reported.next(message);
     }
-    
-    selectMessage(message : ChatMessage) {
+
+    selectMessage(message: ChatMessage) {
         this._selected.next(message);
     }
 
-    selectMessageUser(message : ChatMessage) {
+    selectMessageUser(message: ChatMessage) {
         this._userSelected.next(message);
     }
 
-	selectUsername(user: User) {
-		this._usernameSelected.next(user);
-	}
+    selectUsername(user: User) {
+        this._usernameSelected.next(user);
+    }
 
-	selectAvatar(user: User) {
-		this._avatarSelected.next(user);
-	}
+    selectAvatar(user: User) {
+        this._avatarSelected.next(user);
+    }
+
+    sharedMessage(message: ChatMessage) {
+        this._shared.next(message);
+    }
 
     set source(value) {
         if (this._sourceSubs) {
@@ -106,7 +116,7 @@ export class CommentViewComponent {
         this._source = value;
 
         if (value) {
-            let messages = (value.messages || []).slice();
+            const messages = (value.messages || []).slice();
             this.messages = messages;
             this.olderMessages = messages.splice(this.maxVisibleMessages, messages.length);
             this.hasMore = this.olderMessages.length > 0;
@@ -119,7 +129,7 @@ export class CommentViewComponent {
                     .subscribe(msg => this.messageSent(msg))
             );
 
-            
+
             if (this._source.currentUserChanged) {
                 this._sourceSubs.add(
                     this._source.currentUserChanged.subscribe(user => this.currentUser = user)
@@ -129,16 +139,16 @@ export class CommentViewComponent {
     }
 
     @Input()
-    genericAvatarUrl : string;
-    
+    genericAvatarUrl: string;
+
     @ViewChild('messageContainer')
-    messageContainer : ElementRef<HTMLElement>;
+    messageContainer: ElementRef<HTMLElement>;
 
     @Input()
     maxMessages = 2000;
 
     @Input()
-    maxVisibleMessages : number = 200;
+    maxVisibleMessages: number = 200;
 
     @Input()
     newestLast = false;
@@ -147,10 +157,10 @@ export class CommentViewComponent {
     isLoadingMore = false;
     hasMore = false;
 
-    newMessages : ChatMessage[] = [];
-    olderMessages : ChatMessage[] = [];
+    newMessages: ChatMessage[] = [];
+    olderMessages: ChatMessage[] = [];
 
-    messageIdentity(index : number, chatMessage : ChatMessage) {
+    messageIdentity(index: number, chatMessage: ChatMessage) {
         return chatMessage.id;
     }
 
@@ -171,7 +181,7 @@ export class CommentViewComponent {
         } else {
             if (this.source.loadAfter) {
                 this.isLoadingMore = true;
-            
+
                 let lastMessage = this.messages[this.messages.length - 1];
                 let messages = await this.source.loadAfter(lastMessage, 100);
                 this.messages = this.messages.concat(messages);
@@ -185,7 +195,7 @@ export class CommentViewComponent {
         }
     }
 
-    private addMessage(message : ChatMessage) {
+    private addMessage(message: ChatMessage) {
         let destination = this.messages;
         let bucket = this.olderMessages;
 
@@ -208,7 +218,7 @@ export class CommentViewComponent {
             this.hasMore = true;
     }
 
-    private messageReceived(message : ChatMessage) {
+    private messageReceived(message: ChatMessage) {
         this.addMessage(message);
 
         if (this.isScrolledToLatest())
@@ -219,16 +229,16 @@ export class CommentViewComponent {
         if (!this.messageContainer)
             return false;
 
-        let el = this.messageContainer.nativeElement;
-        let currentScroll = el.scrollTop;
-        let currentTotal = el.scrollHeight - el.offsetHeight;
-    
+        const el = this.messageContainer.nativeElement;
+        const currentScroll = el.scrollTop;
+        const currentTotal = el.scrollHeight - el.offsetHeight;
+
         return currentScroll > currentTotal - 10;
     }
 
-    private messageSent(message : ChatMessage) {
+    private messageSent(message: ChatMessage) {
         this.addMessage(message);
-        
+
         if (!this.messageContainer)
             return;
 
@@ -238,27 +248,27 @@ export class CommentViewComponent {
     scrollToLatest() {
         if (!this.messageContainer)
             return;
-        
-        let el = this.messageContainer.nativeElement;
+
+        const el = this.messageContainer.nativeElement;
         el.scrollTop = el.scrollHeight;
     }
 
-    mentionsMe(message : ChatMessage) {
+    mentionsMe(message: ChatMessage) {
         if (!this.currentUser)
             return false;
 
         if (message.message.includes(`@${this.currentUser.username}`))
             return true;
-        
+
         return false;
     }
 
-    avatarForUser(user : User) {
+    avatarForUser(user: User) {
         let url = this.genericAvatarUrl;
 
         if (user && user.avatarUrl)
             url = user.avatarUrl;
-        
+
         return `url(${url})`;
     }
 }

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
+import {ChatMessage} from "@banta/common";
 
 @Component({
     templateUrl: './try.component.html',
@@ -38,5 +39,9 @@ export class TryComponent {
 
     changeTopic() {
         this.topicID = this.newTopicID;
+    }
+
+    sharedMessage(message: ChatMessage) {
+        this.alert(`messsage id: ${message.id} has been shared `)
     }
 }

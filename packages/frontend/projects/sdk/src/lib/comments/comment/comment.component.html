@@ -6,7 +6,7 @@
 
 <div class="message-content">
     <div class="user">
-        <a 
+        <a
             href="javascript:;"
             class="avatar"
             (click)="selectAvatar(message.user)"
@@ -17,7 +17,7 @@
     <div class="content">
         {{message.message}}
     </div>
-    
+
     <div class="actions">
         <banta-timestamp [value]="message.sentAt"></banta-timestamp>
         <div class="spacer"></div>
@@ -30,14 +30,20 @@
             </button>
         </div>
         <div class="counted-action">
-            <div class="count-indicator">  
+            <div class="count-indicator">
                 {{message.upvotes}}
             </div>
             <button mat-icon-button matTooltip="Upvote" matTooltipPosition="below" (click)="upvote()">
                 <mat-icon [inline]="true">thumb_up</mat-icon>
             </button>
         </div>
-        
+
+        <div class="counted-action">
+            <button mat-icon-button matTooltip="Share this comment" matTooltipPosition="below" (click)="share()">
+                <mat-icon [inline]="true" >share</mat-icon>
+            </button>
+        </div>
+
         <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
             <mat-icon [inline]="true">more_vert</mat-icon>
         </button>
