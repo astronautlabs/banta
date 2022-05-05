@@ -9,13 +9,13 @@ const GENERIC_AVATAR_URL = `https://gravatar.com/avatar/${Date.now().toString(16
 
 @Injectable()
 export class MockBackend implements ChatBackend {
-    messages = new Map<string,ChatMessage>();
-    userAvatars = new Map<string,string>();
+    messages = new Map<string, ChatMessage>();
+    userAvatars = new Map<string, string>();
 
-    private sources = new Map<string,ChatSource>();
+    private sources = new Map<string, ChatSource>();
 
     private getSourceForId(id : string) {
-        
+
         if (this.sources.has(id))
             return this.sources.get(id);
 
@@ -40,6 +40,10 @@ export class MockBackend implements ChatBackend {
         return this.getSourceForId(messageId);
     }
 
+    async getSourceCountForTopic(message: ChatMessage): Promise<number> {
+      return Math.floor(Math.random() * 21);
+    }
+
     async refreshMessage(message: ChatMessage): Promise<ChatMessage> {
         return message;
     }
@@ -60,7 +64,7 @@ export class MockBackend implements ChatBackend {
 
         if (!message.upvotes)
             message.upvotes = 0;
-        
+
         message.upvotes += 1;
     }
 
@@ -90,10 +94,10 @@ export class MockSource implements ChatSource {
     async send(message: ChatMessage) {
         if (message.message.includes('#error'))
             throw new Error(`An error has occurred`);
-        
+
         if (message.message.includes('#timeout'))
             await new Promise<void>((_, reject) => setTimeout(() => reject(new Error(`Timeout`)), 7000));
-            
+
         if (message.message.includes('#slow'))
             await new Promise<void>(resolve => setTimeout(() => resolve(), 5000));
 
@@ -131,6 +135,8 @@ export class MockSource implements ChatSource {
         this.backend.messages.set(message.id, message);
     }
 
+
+
 }
 
 export class SimulatedSource extends MockSource {
@@ -157,7 +163,7 @@ export class SimulatedSource extends MockSource {
     protected generateMessage() {
         let messageText = this.possibleMessages[Math.floor(this.possibleMessages.length * Math.random())];
         let user = MOCK_USERS[Math.floor(MOCK_USERS.length * Math.random())];
-        
+
         if (!user.avatarUrl)
             user.avatarUrl = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
@@ -175,11 +181,11 @@ export class SimulatedSource extends MockSource {
                     upvotes: 0
                 },
                 {
-                    user: { 
+                    user: {
                         id: 'aa',
-                        avatarUrl: null, 
-                        displayName: 'FunnilyGuy', 
-                        username: 'funnyguy' 
+                        avatarUrl: null,
+                        displayName: 'FunnilyGuy',
+                        username: 'funnyguy'
                     },
                     sentAt: Date.now(),
                     message: `What would this mean for Buttigieg?`,
