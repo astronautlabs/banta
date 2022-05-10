@@ -145,4 +145,10 @@ export class FirebaseChatBackend implements ChatBackend {
             updatedAt: Date.now()
         });
     }
+
+    async getSourceCountForTopic(topicId: string) {
+        return await this.datastore.read<ChatMessage>(
+            `/bantaTopics/${topicId}/counters/messages`
+        );
+    }
 }

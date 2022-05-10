@@ -137,4 +137,8 @@ export class BantaServiceChatBackend implements ChatBackend {
             throw new Error(`Caught error upvoting message ${topicId}/${messageId}: ${response.status} ${response.statusText}: ${body.message || '<no message>'}`);
         }
     }
+
+    async getSourceCountForTopic(topicID: string) {
+        return this._underlyingChatBackend.getSourceCountForTopic(topicID);
+    }
 }

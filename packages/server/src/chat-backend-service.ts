@@ -14,4 +14,5 @@ export abstract class ChatBackendService implements ChatBackend {
     abstract modifyMessage?(message : ChatMessage) : Promise<void>;
     abstract get notificationsChanged() : Observable<Notification[]>;
     abstract get newNotification() : Observable<Notification>;
+    abstract getSourceCountForTopic(topicId: string): Promise<number>
 }

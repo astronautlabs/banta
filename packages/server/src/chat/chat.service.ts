@@ -82,4 +82,8 @@ export class ChatService {
         this._events.next(<PostMessageEvent>{ type: 'post', message });
         return message;
     }
+
+    async getSourceCountForTopic(topicID: string) {
+        return this.chatBackend.getSourceCountForTopic(topicID);
+    }
 }
