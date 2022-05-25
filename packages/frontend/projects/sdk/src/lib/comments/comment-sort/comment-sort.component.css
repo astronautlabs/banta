@@ -1,0 +1,5 @@
+.sort-row {
+  display: flex;
+  justify-content: end;
+  padding-right: 3em;
+}

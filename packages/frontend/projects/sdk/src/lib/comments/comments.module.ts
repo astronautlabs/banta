@@ -16,31 +16,35 @@ import { MatInputModule } from '@angular/material/input';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { CommentFieldComponent } from './comment-field/comment-field.component';
 import {MatTooltipModule} from '@angular/material/tooltip';
+import {CommentSortComponent} from "./comment-sort/comment-sort.component";
+import {MatSelectModule} from "@angular/material/select";
 
 const COMPONENTS = [
     CommentComponent,
     CommentViewComponent,
     BantaCommentsComponent,
     LiveCommentComponent,
-    CommentFieldComponent
+    CommentFieldComponent,
+    CommentSortComponent
 ];
 
 @NgModule({
     declarations: COMPONENTS,
-    imports: [
-        CommonModule,
-        TextFieldModule,
-        FormsModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatButtonModule,
-        MatMenuModule,
-        MatProgressSpinnerModule,
-        BantaCommonModule,
-        EmojiModule,
-        MatTooltipModule
-    ],
+  imports: [
+    CommonModule,
+    TextFieldModule,
+    FormsModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatProgressSpinnerModule,
+    BantaCommonModule,
+    EmojiModule,
+    MatTooltipModule,
+    MatSelectModule
+  ],
     exports: COMPONENTS
 })
 export class CommentsModule {

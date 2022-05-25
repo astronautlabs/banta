@@ -1,0 +1,10 @@
+<div class="sort-row">
+  <mat-form-field>
+    <mat-label>Sort by</mat-label>
+    <mat-select [value]="defaultOrder" >
+      <mat-option [value]="commentsOrder.NEWEST">Newest</mat-option>
+      <mat-option [value]="commentsOrder.OLDEST">Oldest</mat-option>
+      <mat-option [value]="commentsOrder.LIKES">Likes</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
