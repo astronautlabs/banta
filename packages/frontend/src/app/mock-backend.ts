@@ -40,7 +40,7 @@ export class MockBackend implements ChatBackend {
         return this.getSourceForId(messageId);
     }
 
-    async getSourceCountForTopic(message: ChatMessage): Promise<number> {
+    async getSourceCountForTopic(topicId: string): Promise<number> {
       return Math.floor(Math.random() * 21);
     }
 
