@@ -1,6 +1,6 @@
 {
   "name": "@banta/example-server",
-  "version": "0.2.2",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/main.js",
   "private": true,
@@ -13,8 +13,8 @@
     "@alterior/platform-nodejs": "*",
     "@alterior/runtime": "*",
     "@alterior/web-server": "*",
-    "@banta/firebase": "^0.2.2",
-    "@banta/server": "^0.2.2",
+    "@banta/firebase": "^1.0.0",
+    "@banta/server": "^1.0.0",
     "firebase-admin": "^9.12.0",
     "node-fetch": "^2.6.7"
   },
