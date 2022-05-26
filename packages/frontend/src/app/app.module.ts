@@ -20,6 +20,7 @@ import { DevComponent } from './dev/dev.component';
 import { MockBackend } from './mock-backend';
 import { FirebaseAuthenticationProvider, FirebaseChatBackend, FirebaseNotificationsProvider, FirebaseStoreRef } from '@banta/firebase';
 import { BantaServiceChatBackend } from '@banta/client';
+import { TryChatComponent } from './try-chat/try-chat.component';
 
 
 @NgModule({
@@ -29,6 +30,7 @@ import { BantaServiceChatBackend } from '@banta/client';
     NotFoundComponent,
     SourceComponent,
     TryComponent,
+    TryChatComponent,
     DemoComponent,
     DevComponent
   ],
