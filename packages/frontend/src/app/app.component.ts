@@ -43,17 +43,19 @@ export class AppComponent {
       // using example-server
       let bantaService = this.chatBackend;
       firebase.auth().onAuthStateChanged(async user => {
-        this.banta.user = {
-          createdAt: null,
-          displayName: user.displayName,
-          email: user.email,
-          updatedAt: null,
-          username: user.email.replace(/@.*/, '')
-        };
-        if (user)
+        if (user) {
+          this.banta.user = {
+            createdAt: null,
+            displayName: user.displayName,
+            email: user.email,
+            updatedAt: null,
+            username: user.email.replace(/@.*/, '')
+          };
           bantaService.userToken = await user.getIdToken();
-        else
+        } else {
+          this.banta.user = null;
           bantaService.userToken = null;
+        }
       });
 
       console.group(`DEV TOOLS for BANTA on FIREBASE`);

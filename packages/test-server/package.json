@@ -6,10 +6,11 @@
   "private": true,
   "scripts": {
     "buildx": "tsc -b",
-    "start": "npm run build && node dist/main"
+    "start": "npm run buildx && node dist/main"
   },
   "dependencies": {
     "@alterior/di": "*",
+    "@alterior/express": "^3.0.0-rc.8",
     "@alterior/platform-nodejs": "*",
     "@alterior/runtime": "*",
     "@alterior/web-server": "*",

@@ -1,10 +1,12 @@
 import "@alterior/platform-nodejs";
 import { Application } from "@alterior/runtime";
-import { WebService, Mount, Get } from "@alterior/web-server";
+import { WebService, Mount, Get, WebServerEngine } from "@alterior/web-server";
 import { NotificationsProvider, AuthenticationProvider } from "@banta/common";
 import { FirebaseNotificationsProvider, FirebaseAuthenticationProvider, FirebaseChatBackend, FirebaseStoreRef } from "@banta/firebase";
 import { ChatBackendService, BantaBackendModule, BantaBackendController } from "@banta/server";
+import { ExpressEngine } from '@alterior/express';
 
+WebServerEngine.default = ExpressEngine;
 import * as Fb from 'firebase-admin';
 import { CORSMiddleware } from "./cors";
 

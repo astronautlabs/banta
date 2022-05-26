@@ -18,6 +18,7 @@ export class FirebaseAuthenticationProvider extends AuthenticationProvider {
         let publicKeyUrl = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
         let publicKeyResponse = await fetch(publicKeyUrl);
         let publicKey = await publicKeyResponse.json();
+
         let decodedToken = await JWT.validate(tokenStr, {
             algorithm: 'RS256',
             secretOrKey: publicKey
