@@ -1,4 +1,4 @@
-import { ChatMessage, ChatSource } from "@banta/common";
+import { ChatMessage, ChatSource, ChatSourceOptions, CommentsOrder } from "@banta/common";
 import { Observable, Subject, Subscription } from "rxjs";
 import { DataStore } from "@astronautlabs/datastore";
 import { createDataStore } from "@astronautlabs/datastore-firestore";
@@ -13,17 +13,26 @@ export class FirebaseChatSource implements ChatSource {
         readonly identifier : string,
         private auth : AuthenticationProvider,
         private notif : NotificationsProvider,
-        private collectionPath : string
+        private collectionPath : string,
+        private options: ChatSourceOptions
     ) {
         this.datastore = createDataStore();
 
         let subscription : Subscription;
+        let sortMapping: Record<CommentsOrder, [string, 'asc' | 'desc']> = {
+            [CommentsOrder.NEWEST]: [ 'sentAt', 'asc' ],
+            [CommentsOrder.OLDEST]: [ 'sentAt', 'desc' ],
+            [CommentsOrder.LIKES]: [ 'upvotes', 'desc' ]
+        };
+
         this._messageReceived = lazyConnection({
             start: subject => {
                 console.log(`[Banta] Subscribing to topic '${identifier}' in collection path '${collectionPath}'`);
                 let maxCount = 200;
+                let [ sortField, sortDir ] = sortMapping[options?.sortOrder ?? CommentsOrder.NEWEST];
+                
                 subscription = this.datastore
-                    .watchForChanges(`${collectionPath}/messages`, { order: { field: 'sentAt', direction: 'asc' }, limit: 100 })
+                    .watchForChanges(`${collectionPath}/messages`, { order: { field: sortField, direction: sortDir }, limit: 100 })
                     .subscribe(changes => {
                         for (let change of changes) {
                             if (change.type === 'added') {
@@ -58,6 +67,10 @@ export class FirebaseChatSource implements ChatSource {
             stop: () => subscription.unsubscribe()
         });
         
+    }
+
+    get sortOrder() {
+        return this.options?.sortOrder ?? CommentsOrder.NEWEST;
     }
 
     datastore : DataStore;

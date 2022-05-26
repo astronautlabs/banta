@@ -1,4 +1,4 @@
-import { ChatMessage, ChatSource, User, ChatBackend, Notification, Vote } from "@banta/common";
+import { ChatMessage, ChatSource, User, ChatBackend, Notification, Vote, ChatSourceOptions, CommentsOrder } from "@banta/common";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";
@@ -14,30 +14,38 @@ export class MockBackend implements ChatBackend {
 
     private sources = new Map<string, ChatSource>();
 
-    private getSourceForId(id : string) {
+    /**
+     * @internal
+     */
+    sourceWasClosed(source: MockSource) {
+        this.sources.delete(`${source.identifier}:${source.sortOrder}`);
+    }
 
-        if (this.sources.has(id))
-            return this.sources.get(id);
+    private getSourceForId(id : string, options: ChatSourceOptions) {
+
+        let key = `${id}:${options.sortOrder}`;
+        if (this.sources.has(key))
+            return this.sources.get(key);
 
         let source : ChatSource;
 
         if (id.endsWith('_comments'))
-            source = new MockCommentsSource(this, id);
+            source = new MockCommentsSource(this, id, options.sortOrder ?? CommentsOrder.NEWEST);
         else if (id.endsWith('_chat'))
-            source = new MockChatSource(this, id);
+            source = new MockChatSource(this, id, options.sortOrder ?? CommentsOrder.NEWEST);
         else if (id.endsWith('_replies'))
-            source = new MockReplySource(this, id);
+            source = new MockReplySource(this, id, options.sortOrder ?? CommentsOrder.NEWEST);
 
-        this.sources.set(id, source);
+        this.sources.set(key, source);
         return source;
     }
 
-    async getSourceForTopic(topicId: string): Promise<ChatSource> {
-        return this.getSourceForId(topicId);
+    async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSource> {
+        return this.getSourceForId(topicId, options);
     }
 
-    async getSourceForThread(topicId: string, messageId: string): Promise<ChatSource> {
-        return this.getSourceForId(messageId);
+    async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSource> {
+        return this.getSourceForId(messageId, options);
     }
 
     async getSourceCountForTopic(topicId: string): Promise<number> {
@@ -81,7 +89,8 @@ export class MockBackend implements ChatBackend {
 export class MockSource implements ChatSource {
     constructor(
         readonly backend : MockBackend,
-        readonly identifier: string
+        readonly identifier: string,
+        public sortOrder: CommentsOrder
     ) {
         this.currentUserChanged.next(this.currentUser);
     }
@@ -112,6 +121,7 @@ export class MockSource implements ChatSource {
     }
 
     close() {
+        this.backend.sourceWasClosed(this);
     }
 
     private _currentUser : User = {
@@ -143,21 +153,30 @@ export class SimulatedSource extends MockSource {
     constructor(
         readonly backend : MockBackend,
         readonly identifier : string,
+        readonly sortOrder: CommentsOrder,
         readonly possibleMessages : string[],
         readonly interval : number,
         readonly initialCount : number
     ) {
-        super(backend, identifier);
+        super(backend, identifier, sortOrder);
 
         for (let i = 0; i < initialCount; ++i) {
             this.messages.push(this.generateMessage());
         }
 
-        setInterval(() => {
+        console.log(`[MockBackend] Opening simulated source...`);
+        this._interval = setInterval(() => {
             let message = this.generateMessage();
             this.addMessage(message);
             this.messageReceived.next(message);
         }, interval);
+    }
+
+    private _interval;
+
+    close(): void {
+        console.log(`[MockBackend] Closing simulated source...`);
+        clearInterval(this._interval);
     }
 
     protected generateMessage() {
@@ -243,27 +262,30 @@ export class SimulatedSource extends MockSource {
 export class MockChatSource extends SimulatedSource {
     constructor(
         readonly backend : MockBackend,
-        readonly identifier : string
+        readonly identifier : string,
+        readonly sortOrder: CommentsOrder
     ) {
-        super(backend, identifier, pmq.getAll().map(x => x.quote), 3000, 8);
+        super(backend, identifier, sortOrder, pmq.getAll().map(x => x.quote), 3000, 8);
     }
 }
 
 export class MockCommentsSource extends SimulatedSource {
     constructor(
         readonly backend : MockBackend,
-        readonly identifier : string
+        readonly identifier : string,
+        readonly sortOrder: CommentsOrder
     ) {
-        super(backend, identifier, pmq.getAll().map(x => x.quote), 5000, 8);
+        super(backend, identifier, sortOrder, pmq.getAll().map(x => x.quote), 5000, 8);
     }
 }
 
 export class MockReplySource extends SimulatedSource {
     constructor(
         readonly backend : MockBackend,
-        readonly identifier : string
+        readonly identifier : string,
+        readonly sortOrder: CommentsOrder
     ) {
-        super(backend, identifier, [
+        super(backend, identifier, sortOrder, [
             `Good point.`,
             `Do you have a blog?`,
             `Not sure this is such a great take tbh`,

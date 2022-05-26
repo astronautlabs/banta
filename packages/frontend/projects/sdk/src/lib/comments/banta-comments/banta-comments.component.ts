@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, ElementRef, Input, Output} from '@angular/core';
-import {User, ChatSource, ChatMessage, UserAccount} from '@banta/common';
+import {User, ChatSource, ChatMessage, UserAccount, CommentsOrder} from '@banta/common';
 import {HashTag} from '../comment-field/comment-field.component';
 import {Subject, Observable} from 'rxjs';
 import {SubSink} from 'subsink';
@@ -36,6 +36,21 @@ export class BantaCommentsComponent implements AfterViewInit {
     private _source: ChatSource;
 
     private _subs = new SubSink();
+
+    _sortOrder: CommentsOrder;
+
+    get sortOrder() {
+        return this._sortOrder;
+    }
+
+    set sortOrder(value) {
+        if (this._sortOrder !== value) {
+            this._sortOrder = value;
+            setTimeout(() => {
+                this.setSourceFromTopicID(this.topicID);
+            });
+        }
+    }
 
     @Input() hashtags: HashTag[] = [
         {hashtag: 'error', description: 'Cause an error'},
@@ -91,22 +106,30 @@ export class BantaCommentsComponent implements AfterViewInit {
 
     @Input()
     get topicID(): string {
-        return this._source.identifier;
+        return this._topicID;
     }
 
+    private _topicID: string;
+
     set topicID(value) {
-        this.setSourceFromTopicID(value);
+        if (this._topicID !== value) {
+            this._topicID = value;
+            setTimeout(() => this.setSourceFromTopicID(value));
+        }
     }
 
     private async setSourceFromTopicID(topicID: string) {
-        if (this._source && this._source.close)
-            this._source.close();
+        this._source?.close?.();
         this._source = null;
-        this._source = await this.backend.getSourceForTopic(topicID);
+        setTimeout(async () => {
+            this._source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder });
 
-        this._source.messageReceived.subscribe(m => this.addParticipant(m));
-        this._source.messageSent.subscribe(m => this.addParticipant(m));
-        this._source.messages.forEach(m => this.addParticipant(m));
+            console.log(`[banta-comments] Subscribing to source for topic '${topicID}'`);
+
+            this._source.messageReceived.subscribe(m => this.addParticipant(m));
+            this._source.messageSent.subscribe(m => this.addParticipant(m));
+            this._source.messages.forEach(m => this.addParticipant(m)); 
+        });
     }
 
     private addParticipant(message: ChatMessage) {

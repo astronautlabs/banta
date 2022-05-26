@@ -13,3 +13,4 @@ export * from './user';
 export * from './vote';
 export * from './injectable';
 export * from './filter-object';
+export * from './comments-order';

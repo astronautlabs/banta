@@ -1,4 +1,4 @@
-import { ChatSource, ChatMessage, Vote, Injectable, filterObject } from "@banta/common";
+import { ChatSource, ChatMessage, Vote, Injectable, filterObject, ChatSourceOptions } from "@banta/common";
 import { ChatBackend, Notification } from "@banta/common";
 import { DataStore } from "@astronautlabs/datastore";
 import { FirebaseChatSource } from "./firebase-chat-source";
@@ -36,16 +36,16 @@ export class FirebaseChatBackend implements ChatBackend {
     protected datastore : DataStore;
     //private firestore : firebaseAdmin.firestore.Firestore;
 
-    async getSourceForTopic(topicId: string): Promise<ChatSource> {
-        return await this.getSourceForCollection(topicId, `/bantaTopics/${topicId}`);
+    async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSource> {
+        return await this.getSourceForCollection(topicId, `/bantaTopics/${topicId}`, options);
     }
 
-    async getSourceForThread(topicId : string, id : string): Promise<ChatSource> {
-        return await this.getSourceForCollection(topicId, `/bantaTopics/${topicId}/messages/${id}`);
+    async getSourceForThread(topicId : string, id : string, options?: ChatSourceOptions): Promise<ChatSource> {
+        return await this.getSourceForCollection(topicId, `/bantaTopics/${topicId}/messages/${id}`, options);
     }
 
-    protected async getSourceForCollection(identifier : string, collectionPath : string): Promise<ChatSource> {
-        return new FirebaseChatSource(identifier, this.auth, this.notif, collectionPath);
+    protected async getSourceForCollection(identifier : string, collectionPath : string, options: ChatSourceOptions): Promise<ChatSource> {
+        return new FirebaseChatSource(identifier, this.auth, this.notif, collectionPath, options);
     }
 
     async refreshMessage(message: ChatMessage): Promise<ChatMessage> {

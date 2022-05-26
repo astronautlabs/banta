@@ -1,4 +1,4 @@
-import { ChatSource, ChatMessage, ChatBackend, Notification } from '@banta/common';
+import { ChatSource, ChatMessage, ChatBackend, Notification, ChatSourceOptions } from '@banta/common';
 import { Observable } from 'rxjs';
 
 export class BantaServiceChatSource implements ChatSource {
@@ -8,6 +8,10 @@ export class BantaServiceChatSource implements ChatSource {
         private backend : BantaServiceChatBackend,
         private collectionPath : string
     ) {
+    }
+
+    get sortOrder() {
+        return this.underlyingChatSource.sortOrder;
     }
 
     get messageReceived(): Observable<ChatMessage> {
@@ -77,19 +81,19 @@ export class BantaServiceChatBackend implements ChatBackend {
         return this._underlyingChatBackend.newNotification;
     }
 
-    async getSourceForTopic(topicId: string): Promise<ChatSource> {
+    async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSource> {
         return new BantaServiceChatSource(
             topicId,
-            await this._underlyingChatBackend.getSourceForTopic(topicId),
+            await this._underlyingChatBackend.getSourceForTopic(topicId, options),
             this,
             `/topics/${topicId}/messages`
         );
     }
 
-    async getSourceForThread(topicId: string, messageId: string): Promise<ChatSource> {
+    async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSource> {
         return new BantaServiceChatSource(
             topicId,
-            await this._underlyingChatBackend.getSourceForThread(topicId, messageId),
+            await this._underlyingChatBackend.getSourceForThread(topicId, messageId, options),
             this,
             `/topics/${topicId}/messages/${messageId}/messages`
         );

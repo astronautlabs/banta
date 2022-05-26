@@ -1,12 +1,6 @@
-import {Component, Input, Output} from '@angular/core';
-import {ChatSource} from "@banta/common";
-import {Subject} from "rxjs";
-
-export enum CommentsOrder {
-  NEWEST= 'newest',
-  OLDEST= 'oldest',
-  LIKES= 'likes',
-}
+import { Component, Input, Output } from '@angular/core';
+import { CommentsOrder } from "@banta/common";
+import { Subject } from "rxjs";
 
 @Component({
   selector: 'banta-comment-sort',
@@ -15,17 +9,24 @@ export enum CommentsOrder {
 })
 export class CommentSortComponent {
 
-  defaultOrder = CommentsOrder.LIKES;
   commentsOrder = CommentsOrder;
-  private _sort = new Subject<void>();
+  private _sortChange = new Subject<CommentsOrder>();
+  private _sort: CommentsOrder = CommentsOrder.LIKES;
 
-  @Input() source: ChatSource;
+  @Input() 
+  get sort() { 
+    return this._sort;
+  }
+
+  set sort(value) {
+    if (this._sort !== value) {
+      this._sort = value;
+      setTimeout(() => this._sortChange.next(value));
+    }
+  }
 
   @Output()
   get sortChange() {
-    return this._sort.asObservable();
+    return this._sortChange.asObservable();
   }
-
-  constructor() { }
-
 }

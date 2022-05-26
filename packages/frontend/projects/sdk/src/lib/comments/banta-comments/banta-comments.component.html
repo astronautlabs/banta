@@ -65,7 +65,8 @@
         (permissionDeniedError)="showPermissionDenied()"
         ></banta-comment-field>
 
-    <banta-comment-sort></banta-comment-sort>
+    <banta-comment-sort
+        [(sort)]="sortOrder"></banta-comment-sort>
 
     <banta-comment-view
         [class.faded]="selectedMessage"

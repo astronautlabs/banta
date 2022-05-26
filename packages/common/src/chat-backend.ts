@@ -3,10 +3,15 @@ import { Observable } from 'rxjs';
 import { ChatMessage } from './chat-message';
 import { Vote } from './vote';
 import { Notification } from './notification';
+import { CommentsOrder } from './comments-order';
+
+export interface ChatSourceOptions {
+    sortOrder: CommentsOrder;
+}
 
 export interface ChatBackend {
-    getSourceForTopic(topicId : string) : Promise<ChatSource>;
-    getSourceForThread(topicId : string, messageId : string) : Promise<ChatSource>;
+    getSourceForTopic(topicId : string, options?: ChatSourceOptions) : Promise<ChatSource>;
+    getSourceForThread(topicId : string, messageId : string, options?: ChatSourceOptions) : Promise<ChatSource>;
     getSourceCountForTopic?(topicId: string): Promise<number>
     refreshMessage(message : ChatMessage): Promise<ChatMessage>;
     getMessage(topicId : string, messageId : string): Promise<ChatMessage>;

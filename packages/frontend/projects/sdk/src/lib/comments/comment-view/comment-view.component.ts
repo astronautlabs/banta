@@ -116,6 +116,7 @@ export class CommentViewComponent {
         this._source = value;
 
         if (value) {
+            console.log(`[banta-comment-view] Subscribing to source...`);
             const messages = (value.messages || []).slice();
             this.messages = messages;
             this.olderMessages = messages.splice(this.maxVisibleMessages, messages.length);
