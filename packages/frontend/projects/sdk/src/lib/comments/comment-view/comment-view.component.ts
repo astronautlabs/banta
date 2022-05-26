@@ -1,8 +1,7 @@
-import {Component, Input, ViewChild, ElementRef, Output, HostBinding} from "@angular/core";
-import {User, ChatMessage, ChatSource} from '@banta/common';
-import {SubSink} from 'subsink';
-import {Subject} from 'rxjs';
-import {ChatBackendService} from "../../common";
+import { Component, Input, ViewChild, ElementRef, Output, HostBinding } from "@angular/core";
+import { User, ChatMessage, ChatSource } from '@banta/common';
+import { Subject, Subscription } from 'rxjs';
+import { ChatBackendService } from "../../common";
 
 @Component({
     selector: 'banta-comment-view',
@@ -16,7 +15,7 @@ export class CommentViewComponent {
 
     }
 
-    private _sourceSubs = new SubSink();
+    private _sourceSubs = new Subscription();
     private _source: ChatSource;
     private _selected = new Subject<ChatMessage>();
     private _upvoted = new Subject<ChatMessage>();
@@ -122,14 +121,9 @@ export class CommentViewComponent {
             this.olderMessages = messages.splice(this.maxVisibleMessages, messages.length);
             this.hasMore = this.olderMessages.length > 0;
 
-            this._sourceSubs = new SubSink();
-            this._sourceSubs.add(
-                this._source.messageReceived
-                    .subscribe(msg => this.messageReceived(msg)),
-                this._source.messageSent
-                    .subscribe(msg => this.messageSent(msg))
-            );
-
+            this._sourceSubs = new Subscription();
+            this._sourceSubs.add(this._source.messageReceived.subscribe(msg => this.messageReceived(msg)));
+            this._sourceSubs.add(this._source.messageSent.subscribe(msg => this.messageSent(msg)));
 
             if (this._source.currentUserChanged) {
                 this._sourceSubs.add(

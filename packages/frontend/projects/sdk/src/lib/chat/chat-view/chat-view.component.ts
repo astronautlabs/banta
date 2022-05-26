@@ -1,7 +1,6 @@
 import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
 import { ChatSource, User, ChatMessage } from '@banta/common';
-import { SubSink } from 'subsink';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 
 @Component({
     selector: 'banta-chat-view',
@@ -15,7 +14,7 @@ export class ChatViewComponent {
 
     }
 
-    private _sourceSubs = new SubSink();
+    private _sourceSubs = new Subscription();
     private _source : ChatSource;
 
     @Input()
@@ -59,7 +58,7 @@ export class ChatViewComponent {
         this.messages = [];
 
         if (value) {
-            this._sourceSubs = new SubSink();
+            this._sourceSubs = new Subscription();
             this.messages = value.messages.slice();
 
             console.log(`Source set:`);
@@ -68,14 +67,9 @@ export class ChatViewComponent {
             console.log(`Messages loaded:`);
             console.dir(this.messages); 
             
-            this._sourceSubs.add(
-                this._source.messageReceived
-                    .subscribe(msg => this.messageReceived(msg)),
-                this._source.messageSent
-                    .subscribe(msg => this.messageSent(msg))
-            );
+            this._sourceSubs.add(this._source.messageReceived.subscribe(msg => this.messageReceived(msg)));
+            this._sourceSubs.add(this._source.messageSent.subscribe(msg => this.messageSent(msg)));
 
-            
             if (this._source.currentUserChanged) {
                 this._sourceSubs.add(
                     this._source.currentUserChanged

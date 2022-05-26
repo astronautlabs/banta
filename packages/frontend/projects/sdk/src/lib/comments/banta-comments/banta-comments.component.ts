@@ -1,11 +1,10 @@
-import {AfterViewInit, Component, ElementRef, Input, Output} from '@angular/core';
-import {User, ChatSource, ChatMessage, UserAccount, CommentsOrder} from '@banta/common';
-import {HashTag} from '../comment-field/comment-field.component';
-import {Subject, Observable} from 'rxjs';
-import {SubSink} from 'subsink';
-import {ChatBackendService} from '../../common';
-import {BantaService} from '../../common';
-import {ActivatedRoute} from "@angular/router";
+import { AfterViewInit, Component, ElementRef, Input, Output } from '@angular/core';
+import { User, ChatSource, ChatMessage, UserAccount, CommentsOrder } from '@banta/common';
+import { HashTag } from '../comment-field/comment-field.component';
+import { Subject, Observable, Subscription } from 'rxjs';
+import { ChatBackendService } from '../../common';
+import { BantaService } from '../../common';
+import { ActivatedRoute } from '@angular/router';
 
 /**
  * Comments component
@@ -35,7 +34,7 @@ export class BantaCommentsComponent implements AfterViewInit {
 
     private _source: ChatSource;
 
-    private _subs = new SubSink();
+    private _subs = new Subscription();
 
     _sortOrder: CommentsOrder;
 
