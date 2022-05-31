@@ -1,8 +1,8 @@
 <form class="new-message" (submit)="sendMessage()">
     <div class="avatar-container">
-        <a  href="javascript:;" 
-            class="avatar" 
-            (click)="showEditAvatar()" 
+        <a  href="javascript:;"
+            class="avatar"
+            (click)="showEditAvatar()"
             [style.background-image]="'url(' + user?.avatarUrl + ')'"
             ></a>
     </div>
@@ -10,17 +10,18 @@
         <div class="field-container">
             <mat-form-field appearance="outline" floatLabel="always">
                 <mat-label>{{label}}</mat-label>
-                <textarea 
+                <textarea
                     #textarea
-                    name="message" 
+                    name="message"
                     [placeholder]="placeholder"
                     matInput
-                    cdkTextareaAutosize 
+                    cdkTextareaAutosize
                     (keydown)="onKeyDown($event)"
                     (blur)="onBlur()"
                     [disabled]="sending"
                     [(ngModel)]="text"></textarea>
             </mat-form-field>
+            <ng-content></ng-content>
             <div #autocompleteContainer class="autocomplete-container">
                 <div #autocomplete class="autocomplete" [class.visible]="autocompleteVisible">
 
@@ -28,11 +29,11 @@
                         <strong>{{completionPrefix}}</strong>...
                     </div>
 
-                    <a 
-                        mat-button 
-                        *ngFor="let option of autocompleteOptions; index as index" 
+                    <a
+                        mat-button
+                        *ngFor="let option of autocompleteOptions; index as index"
                         (click)="activateAutoComplete(option)"
-                        [class.active]="autoCompleteSelected === index" 
+                        [class.active]="autoCompleteSelected === index"
                         >
                         {{option.label}}
                     </a>
@@ -45,27 +46,27 @@
             <mat-icon *ngIf="sendError">error</mat-icon>
             {{sendError.message}}
         </div>
-        <emoji-selector-button 
+        <emoji-selector-button
             class="top-right"
             (selected)="insertEmoji($event)"
             ></emoji-selector-button>
     </div>
     <div class="actions">
         <ng-container *ngIf="!user">
-            <button 
-                mat-raised-button 
+            <button
+                mat-raised-button
                 color="primary"
                 type="button"
                 (click)="showSignIn()"
                 >{{signInLabel}}</button>
         </ng-container>
         <ng-container *ngIf="user">
-            <button 
+            <button
                 *ngIf="canComment"
-                mat-raised-button 
+                mat-raised-button
                 class="send"
                 color="primary"
-                [disabled]="!text || sending" 
+                [disabled]="!text || sending"
                 >
                 <mat-icon *ngIf="!sending">chevron_right</mat-icon>
                 <mat-spinner *ngIf="sending" class="icon" diameter="18" strokeWidth="2"></mat-spinner>
@@ -79,11 +80,11 @@
                 </span>
 
                 </button>
-            <button 
+            <button
                 *ngIf="!canComment"
                 type="button"
                 (click)="showPermissionDenied()"
-                mat-raised-button 
+                mat-raised-button
                 color="primary"
                 >{{permissionDeniedLabel}}</button>
         </ng-container>
