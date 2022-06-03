@@ -3,7 +3,7 @@ import { Application } from "@alterior/runtime";
 import { WebService, Mount, Get, WebServerEngine } from "@alterior/web-server";
 import { NotificationsProvider, AuthenticationProvider } from "@banta/common";
 import { FirebaseNotificationsProvider, FirebaseAuthenticationProvider, FirebaseChatBackend, FirebaseStoreRef } from "@banta/firebase";
-import { ChatBackendService, BantaBackendModule, BantaBackendController } from "@banta/server";
+import { ChatBackendService, BantaBackendModule, BantaBackendController } from "../..";
 import { ExpressEngine } from '@alterior/express';
 
 WebServerEngine.default = ExpressEngine;

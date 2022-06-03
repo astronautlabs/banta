@@ -1,0 +1,17 @@
+{
+  "name": "@banta/example-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "private": true,
+  "scripts": {
+    "buildx": "tsc -b",
+    "start": "npm run buildx && node dist/main"
+  },
+  "author": "Astronaut Labs, LLC",
+  "license": "MIT",
+  "devDependencies": {
+    "@alterior/platform-nodejs": "^3.0.0-rc.7",
+    "@alterior/express": "^3.0.0-rc.8"
+  }
+}

@@ -4,6 +4,7 @@ import { AccountsService } from "../accounts";
 import { ChatService } from "./chat.service";
 import * as bodyParser from 'body-parser';
 import { HttpError } from "@alterior/common";
+import type * as express from 'express';
 
 export interface SignInRequest {
     email : string;
@@ -21,7 +22,7 @@ export class ChatController {
     }
 
     async getAuthorizedUser(): Promise<User> {
-        let authorization = WebEvent.current.request.header('authorization');
+        let authorization = WebEvent.current.request.headers.authorization;
 
         if (authorization && /^bearer .*/i.test(authorization)) {
             let tokenStr = authorization.replace(/^bearer /i, '');
@@ -35,18 +36,18 @@ export class ChatController {
 
     @Post(`/topics/:topicID/messages`)
     async post(
-        @PathParam('topicID') topicId : string, 
+        @PathParam('topicID') topicID : string, 
         @Body() message : ChatMessage
     ) {
         let authorizedUser = await this.getAuthorizedUser();
 
         message.user = authorizedUser;
-        message.topicId = topicId;
+        message.topicId = topicID;
 
         try {
             message = await this.chatService.post(message);
         } catch (e) {
-            console.error(`Failed to post message to ${topicId}: ${e.message} [code=${e.code}]`);
+            console.error(`Failed to post message to ${topicID}: ${e.message} [code=${e.code}]`);
             return Response.badRequest({ message: e.message, code: e.code });
         }
         
@@ -87,7 +88,7 @@ export class ChatController {
             id: authorizedUser.id,
             user: authorizedUser,
             createdAt: Date.now(),
-            ipAddress: WebEvent.request.ip
+            ipAddress: (WebEvent.request as express.Request).ip
         });
 
         return { code: 'success', message: 'Success' };
@@ -107,7 +108,7 @@ export class ChatController {
             id: authorizedUser.id,
             user: authorizedUser,
             createdAt: Date.now(),
-            ipAddress: WebEvent.request.ip
+            ipAddress: (WebEvent.request as express.Request).ip
         });
 
         return { code: 'success', message: 'Success' };
