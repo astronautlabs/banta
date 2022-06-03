@@ -17,7 +17,13 @@ export class FirebaseAuthenticationProvider extends AuthenticationProvider {
     async validateToken(tokenStr : string): Promise<UserAccount> {
         let publicKeyUrl = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
         let publicKeyResponse = await fetch(publicKeyUrl);
-        let publicKey = await publicKeyResponse.json();
+        let keySet = await publicKeyResponse.json();
+
+        let unverifiedToken = await JWT.decodeUntrusted(tokenStr);
+        let publicKey = keySet[unverifiedToken.header.kid];
+
+        if (!publicKey)
+            throw new Error(`Not a valid token (not signed by a trusted Firebase key)`);
 
         let decodedToken = await JWT.validate(tokenStr, {
             algorithm: 'RS256',
@@ -28,7 +34,7 @@ export class FirebaseAuthenticationProvider extends AuthenticationProvider {
             return decodedToken.claims.u;
         }
         
-        let uid = decodedToken.claims.uid;
+        let uid = decodedToken.claims.sub;
         //let user = await firebaseAdmin.auth().getUser(uid);
         
         return {
