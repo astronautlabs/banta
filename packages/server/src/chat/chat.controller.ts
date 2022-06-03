@@ -48,6 +48,8 @@ export class ChatController {
             message = await this.chatService.post(message);
         } catch (e) {
             console.error(`Failed to post message to ${topicID}: ${e.message} [code=${e.code}]`);
+            console.error(e);
+            
             return Response.badRequest({ message: e.message, code: e.code });
         }
         
