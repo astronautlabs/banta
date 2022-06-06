@@ -14,6 +14,10 @@ The expected developer workflow is to first:
 - Install all dependencies on all of the modules under `packages/` (`lerna bootstrap`)
 - Make sure they are all linked together (`lerna link`)
 - Build all dependencies (`lerna run build`)
+- Run `npm run fix:firebase` within `packages/server`
+    * This will build @banta/firebase from `packages/firebase` and copy it into `server/node_modules`
+    * **This is important!** Without it you will get duplicate copies of `firebase-admin` which will yield a "app not configured error" from the firebase-admin package. 
+    * **You will need to run this from within `packages/server` whenever you change `packages/firebase` or changes will not be reflected**
 - Enter the `test-server` directory
 - Run `npm start`
 
