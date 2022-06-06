@@ -20,7 +20,7 @@
   "dependencies": {
     "@astronautlabs/datastore": "^3.1.4",
     "@astronautlabs/datastore-firestore": "^3.1.4",
-    "@astronautlabs/jwt": "0.0.12",
+    "@astronautlabs/jwt": "^1.1.0",
     "@banta/common": "^1.0.0"
   },
   "peerDependencies": {
