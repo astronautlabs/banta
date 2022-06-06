@@ -14,13 +14,11 @@ The expected developer workflow is to first:
 - Install all dependencies on all of the modules under `packages/` (`lerna bootstrap`)
 - Make sure they are all linked together (`lerna link`)
 - Build all dependencies (`lerna run build`)
-- Run `npm run fix:firebase:win` within `packages/server`
-    * If you are on Windows, use `npm run fix:firebase:mac` (im sorry about this)
-    * This will build @banta/firebase from `packages/firebase` and copy it into `server/node_modules`
-    * **This is important!** Without it you will get duplicate copies of `firebase-admin` which will yield a "app not configured error" from the firebase-admin package. 
-    * **You will need to run this from within `packages/server` whenever you change `packages/firebase` or changes will not be reflected**
 - Enter the `test-server` directory
-- Run `npm start`
+- Run `npm start:win` for Windows or `npm start:mac` for Mac/Linux
+    * I'm sorry that this is platform specific
+    * It's because of the `fix:firebase` command which prevents duplicate `firebase-admin` packages during development
+    * Please fix it for us :*-(
 
 You will also need to configure the `frontend` package (which is the Angular application which typically runs at `bantachat.com` to use the `BantaServiceChatBackend` implementation from `@banta/client`). To do so while using the Firebase storage backend, use the following providers in the `frontend` project's `AppModule`:
 

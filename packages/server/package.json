@@ -14,8 +14,8 @@
     "start": "npm run build && node dist/main",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublishOnly": "npm run build",
-    "fix:firebase:win": "cd ../firebase && npm run build && cd ../server && rimraf node_modules/@banta/firebase && cpy ../firebase node_modules/@banta",
-    "fix:firebase:mac": "cd ../firebase && npm run build && cd ../server && rimraf node_modules/@banta/firebase && cp -Rf ../firebase node_modules/@banta"
+    "fix:firebase:win": "cd ../firebase && npm run build && cd ../server && rimraf node_modules/@banta/firebase && cpy ../firebase node_modules/@banta && rimraf node_modules/@banta/firebase/node_modules",
+    "fix:firebase:mac": "cd ../firebase && npm run build && cd ../server && rimraf node_modules/@banta/firebase && cp -Rf ../firebase node_modules/@banta && rimraf node_modules/@banta/firebase/node_modules"
   },
   "author": "",
   "license": "ISC",

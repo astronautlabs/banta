@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "buildx": "tsc -b",
-    "start": "npm run buildx && node dist/main"
+    "start:win": "cd .. && npm run fix:firebase:win && cd test-server && npm run buildx && node dist/main",
+    "start:mac": "cd .. && npm run fix:firebase:mac && cd test-server && npm run buildx && node dist/main"
   },
   "author": "Astronaut Labs, LLC",
   "license": "MIT"
