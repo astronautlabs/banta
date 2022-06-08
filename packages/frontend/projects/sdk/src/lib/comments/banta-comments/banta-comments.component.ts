@@ -36,7 +36,7 @@ export class BantaCommentsComponent implements AfterViewInit {
 
     private _subs = new Subscription();
 
-    _sortOrder: CommentsOrder;
+    _sortOrder: CommentsOrder = CommentsOrder.NEWEST;
 
     get sortOrder() {
         return this._sortOrder;
