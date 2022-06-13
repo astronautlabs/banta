@@ -41,6 +41,7 @@
                 [signInLabel]="signInLabel"
                 [permissionDeniedLabel]="permissionDeniedLabel"
                 (permissionDeniedError)="showPermissionDenied()"
+                [shouldInterceptMessageSend]="shouldInterceptMessageSend"
                 [user]="user"
                 [label]="postReplyLabel"
                 ></banta-comment-field>
@@ -63,6 +64,7 @@
         (signInSelected)="showSignIn()"
         [permissionDeniedLabel]="permissionDeniedLabel"
         (permissionDeniedError)="showPermissionDenied()"
+        [shouldInterceptMessageSend]="shouldInterceptMessageSend"
         ></banta-comment-field>
 
     <banta-comment-sort
