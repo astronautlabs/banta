@@ -22,7 +22,7 @@ export class FirebaseChatSource implements ChatSource {
         let sortMapping: Record<CommentsOrder, [string, 'asc' | 'desc']> = {
             [CommentsOrder.NEWEST]: [ 'sentAt', 'asc' ],
             [CommentsOrder.OLDEST]: [ 'sentAt', 'desc' ],
-            [CommentsOrder.LIKES]: [ 'upvotes', 'desc' ]
+            [CommentsOrder.LIKES]: [ 'upvotes', 'asc' ]
         };
 
         this._messageReceived = lazyConnection({
@@ -30,6 +30,8 @@ export class FirebaseChatSource implements ChatSource {
                 console.log(`[Banta] Subscribing to topic '${identifier}' in collection path '${collectionPath}'`);
                 let maxCount = 200;
                 let [ sortField, sortDir ] = sortMapping[options?.sortOrder ?? CommentsOrder.NEWEST];
+
+                console.log(`[Banta] Showing comments by ${sortField}:${sortDir}`);
                 
                 subscription = this.datastore
                     .watchForChanges(`${collectionPath}/messages`, { order: { field: sortField, direction: sortDir }, limit: 100 })
