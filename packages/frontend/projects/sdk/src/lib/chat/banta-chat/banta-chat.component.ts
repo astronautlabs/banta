@@ -25,6 +25,9 @@ export class BantaChatComponent {
     private _subs = new Subscription();
     user : UserAccount = null;
 
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage) => boolean | Promise<boolean>;
+
+
     ngOnInit() {
         this._subs.add(this.banta.userChanged.subscribe(user => this.user = user));
     }
@@ -114,11 +117,11 @@ export class BantaChatComponent {
     selectUser(message : ChatMessage) {
         this._userSelected.next(message);
     }
-    
+
     report(message : ChatMessage) {
         this._reported.next(message);
     }
-    
+
     upvote(message : ChatMessage) {
         this._upvoted.next(message);
     }
@@ -146,13 +149,13 @@ export class BantaChatComponent {
     get canChat() {
         if (!this.user)
             return false;
-        
+
         if (!this.user.permissions)
             return true;
-        
+
         if (!this.user.permissions.canChat)
             return true;
-        
+
         return this.user.permissions?.canChat(this.source);
     }
 
@@ -168,7 +171,7 @@ export class BantaChatComponent {
         if (text === '')
             return;
 
-        let message : ChatMessage = { 
+        let message : ChatMessage = {
             user: null,
             sentAt: Date.now(),
             upvotes: 0,
@@ -177,7 +180,10 @@ export class BantaChatComponent {
         };
 
         try {
-            await this.source.send(message);
+            const intercept = await this.shouldInterceptMessageSend?.(message);
+            if (!intercept) {
+                await this.source.send(message);
+            }
         } catch (e) {
             console.error(`Failed to send message: `, message);
             console.error(e);

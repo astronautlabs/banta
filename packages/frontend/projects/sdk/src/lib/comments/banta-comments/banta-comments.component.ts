@@ -36,7 +36,7 @@ export class BantaCommentsComponent implements AfterViewInit {
 
     private _subs = new Subscription();
 
-    _sortOrder: CommentsOrder;
+    _sortOrder: CommentsOrder = CommentsOrder.NEWEST;
 
     get sortOrder() {
         return this._sortOrder;
@@ -103,6 +103,8 @@ export class BantaCommentsComponent implements AfterViewInit {
     @Input() maxVisibleMessages: number;
     @Input() genericAvatarUrl: string;
 
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage) => boolean | Promise<boolean>;
+
     @Input()
     get topicID(): string {
         return this._topicID;
@@ -127,7 +129,7 @@ export class BantaCommentsComponent implements AfterViewInit {
 
             this._source.messageReceived.subscribe(m => this.addParticipant(m));
             this._source.messageSent.subscribe(m => this.addParticipant(m));
-            this._source.messages.forEach(m => this.addParticipant(m)); 
+            this._source.messages.forEach(m => this.addParticipant(m));
         });
     }
 
