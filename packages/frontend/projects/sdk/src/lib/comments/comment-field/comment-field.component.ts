@@ -34,10 +34,12 @@ export class CommentFieldComponent {
     @Input() sendLabel = 'Send';
     @Input() sendingLabel = 'Sending';
     @Input() label = 'Post a comment';
-    @Input() permissionDeniedLabel = 'Unavailable'
+    @Input() permissionDeniedLabel = 'Unavailable';
     @Input() signInLabel = 'Sign In';
     @Input() placeholder = '';
-    
+
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage) => boolean | Promise<boolean>;
+
     @ViewChild('autocomplete') autocompleteEl : ElementRef<HTMLElement>;
     @ViewChild('autocompleteContainer') autocompleteContainerEl : ElementRef<HTMLElement>;
     @ViewChild('textarea') textareaEl : ElementRef<HTMLTextAreaElement>;
@@ -153,7 +155,7 @@ export class CommentFieldComponent {
             await this.sendMessage();
             return;
         }
-        
+
         if (this.completionFunc) {
             if (event.key === 'Backspace') {
                 this.completionPrefix = this.completionPrefix.slice(0, this.completionPrefix.length - 1);
@@ -178,7 +180,7 @@ export class CommentFieldComponent {
                     // makes :-), :-( etc work (as they are ":)" etc in the db)
                     if (prefix.startsWith('-'))
                         prefix = prefix.slice(1);
-        
+
                     return Object.keys(EMOJIS)
                         .filter(k => k.includes(prefix) || EMOJIS[k].keywords.some(kw => kw.includes(prefix)))
                         .map(k => ({
@@ -201,7 +203,7 @@ export class CommentFieldComponent {
             } else if (event.key === '#') {
                 this.startAutoComplete(event, prefix => {
                     prefix = prefix.slice(1);
-        
+
                     return this.hashtags
                         .filter(ht => ht.hashtag.includes(prefix))
                         .map(ht => ({
@@ -240,7 +242,7 @@ export class CommentFieldComponent {
     async sendMessage() {
         if (!this.source)
             return;
-        
+
         this.sending = true;
         this.sendError = null;
         try {
@@ -258,7 +260,10 @@ export class CommentFieldComponent {
             };
 
             try {
-                await this.source.send(message);
+                const intercept = await this.shouldInterceptMessageSend?.(message);
+                if (!intercept) {
+                    await this.source.send(message);
+                }
                 this.text = '';
             } catch (e) {
                 this.indicateError(`Could not send: ${e.message}`);
