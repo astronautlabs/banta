@@ -7,6 +7,8 @@ export * from './new-message-form';
 export * from './new-user-account';
 export * from './notification';
 export * from './notifications-provider';
+export * from './cdn-provider';
+export * from './data-uri-cdn-provider';
 export * from './sign-up-result';
 export * from './user-account';
 export * from './user';
