@@ -45,4 +45,4 @@ Though sending messages via Firebase is fully implemented, our project's Firebas
 
 The `app.module.ts` file already has commented out providers which connect the Banta SDK to a Firebase-backed Client/Server backend. Simply toggle on the necessary configuration in that file, which will automatically disable the default `MockBackend`.
 
-For getting a working server up, you must run `test-server`. If all steps above were taken, you can simply enter `packages/server/test-server` and run `npm start` and you should see the server start. See the [test-server README](packages/server/test-server/README.md) for more details.
+For getting a working server up, you must run `test-server`. If all steps above were taken, you can simply enter `packages/server/test-server` and run `npm start` and you should see the server start. See the [@/server README](packages/server/README.md) for more details.
