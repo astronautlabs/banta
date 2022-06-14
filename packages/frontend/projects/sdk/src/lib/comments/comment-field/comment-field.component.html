@@ -21,6 +21,13 @@
                     [disabled]="sending"
                     [(ngModel)]="text"></textarea>
             </mat-form-field>
+
+            <div *ngIf="chatMessageAttachments && chatMessageAttachments.length" class="message-attachments-container">
+                <div *ngFor="let attachment of chatMessageAttachments" class="message-attachment">
+                    <img [src]="attachment.url" alt="">
+                </div>
+            </div>
+
             <div #autocompleteContainer class="autocomplete-container">
                 <div #autocomplete class="autocomplete" [class.visible]="autocompleteVisible">
 
@@ -49,6 +56,7 @@
             class="top-right"
             (selected)="insertEmoji($event)"
             ></emoji-selector-button>
+        <comment-attachments *ngIf="allowAttachments"></comment-attachments>
     </div>
     <div class="actions">
         <ng-container *ngIf="!user">

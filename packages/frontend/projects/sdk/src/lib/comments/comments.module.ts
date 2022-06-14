@@ -18,6 +18,7 @@ import { CommentFieldComponent } from './comment-field/comment-field.component';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {CommentSortComponent} from "./comment-sort/comment-sort.component";
 import {MatSelectModule} from "@angular/material/select";
+import { AttachmentComponent } from './attachment/attachment.component';
 
 const COMPONENTS = [
     CommentComponent,
@@ -25,7 +26,8 @@ const COMPONENTS = [
     BantaCommentsComponent,
     LiveCommentComponent,
     CommentFieldComponent,
-    CommentSortComponent
+    CommentSortComponent,
+	AttachmentComponent
 ];
 
 @NgModule({

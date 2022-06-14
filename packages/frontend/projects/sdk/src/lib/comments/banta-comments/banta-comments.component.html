@@ -44,6 +44,7 @@
                 [shouldInterceptMessageSend]="shouldInterceptMessageSend"
                 [user]="user"
                 [label]="postReplyLabel"
+				[allowAttachments]="allowAttachments"
                 ></banta-comment-field>
         </ng-container>
     </div>
@@ -65,6 +66,7 @@
         [permissionDeniedLabel]="permissionDeniedLabel"
         (permissionDeniedError)="showPermissionDenied()"
         [shouldInterceptMessageSend]="shouldInterceptMessageSend"
+		[allowAttachments]="allowAttachments"
         ></banta-comment-field>
 
     <banta-comment-sort

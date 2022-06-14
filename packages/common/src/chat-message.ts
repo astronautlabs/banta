@@ -1,5 +1,11 @@
 import { User } from './user';
 
+export interface ChatMessageAttachments {
+	type: string;
+	url?: string;
+	file?: File;
+}
+
 export interface ChatMessage {
     id? : string;
     user : User;
@@ -12,4 +18,5 @@ export interface ChatMessage {
     message : string;
     submessages? : ChatMessage[];
     upvotes : number;
+    attachments?: ChatMessageAttachments[]
 }

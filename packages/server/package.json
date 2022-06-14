@@ -28,6 +28,7 @@
     "@types/serve-static": "^1.13.10",
     "@types/uuid": "^3.4.6",
     "aws-sdk": "^2.579.0",
+    "copy": "^0.3.2",
     "firebase": "^7.5.0",
     "firebase-admin": "^9.4.2",
     "jsonwebtoken": "^8.5.1",

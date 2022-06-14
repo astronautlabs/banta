@@ -173,6 +173,8 @@ export class BantaCommentsComponent implements AfterViewInit {
     @Input() postCommentLabel = 'Post a comment';
     @Input() postReplyLabel = 'Post a reply';
 
+	@Input() allowAttachments = false;
+
     private _signInSelected = new Subject<void>();
     private _permissionDeniedError = new Subject<void>();
     private _editAvatarSelected = new Subject<void>();

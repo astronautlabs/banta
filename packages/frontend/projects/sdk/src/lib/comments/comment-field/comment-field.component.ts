@@ -23,6 +23,7 @@ export class CommentFieldComponent {
     @Input() source : ChatSource;
     @Input() user : User;
     @Input() canComment = true;
+    @Input() allowAttachments = false;
 
     @Output() signInSelected = new Subject<void>();
     @Output() editAvatarSelected = new Subject<void>();
@@ -256,7 +257,8 @@ export class CommentFieldComponent {
                 sentAt: Date.now(),
                 url: location.href,
                 upvotes: 0,
-                message: text
+                message: text,
+                attachments: this.chatMessageAttachments
             };
 
             try {
@@ -273,6 +275,16 @@ export class CommentFieldComponent {
         } finally {
             this.sending = false;
         }
+    }
+
+    chatMessageAttachments: ChatMessage['attachments'];
+    addedAttachment(file: File) {
+        // TODO: process image after selection
+
+        this.chatMessageAttachments.push({
+            type: file.type,
+            url: URL.createObjectURL(file)
+        });
     }
 
 }
