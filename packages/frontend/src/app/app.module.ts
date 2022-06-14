@@ -17,11 +17,11 @@ import { MarkdownModule } from 'ngx-markdown';
 import { DevComponent } from './dev/dev.component';
 
 // KEEP [see below]
-import { MockBackend, MockCDNProvider } from './mock-backend';
+import { MockBackend } from './mock-backend';
 import { FirebaseAuthenticationProvider, FirebaseChatBackend, FirebaseNotificationsProvider, FirebaseStoreRef } from '@banta/firebase';
 import { BantaServiceChatBackend } from '@banta/client';
 import { TryChatComponent } from './try-chat/try-chat.component';
-import { CDNProvider } from '@banta/common';
+import { CDNProvider, DataURICDNProvider } from '@banta/common';
 
 
 @NgModule({
@@ -51,7 +51,7 @@ import { CDNProvider } from '@banta/common';
     // Regardless of Firebase, we'll use the 
     {
       provide: CDNProvider,
-      useFactory: () => new MockCDNProvider()
+      useFactory: () => new DataURICDNProvider()
     },
 
     //** <-- Add another slash to configure for Firebase
