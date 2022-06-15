@@ -1,4 +1,4 @@
-import { ChatMessage, ChatSource, User, ChatBackend, Notification, Vote, ChatSourceOptions, CommentsOrder } from "@banta/common";
+import { ChatMessage, ChatSource, User, ChatBackend, Notification, Vote, ChatSourceOptions, CommentsOrder, CDNProvider } from "@banta/common";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";

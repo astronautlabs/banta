@@ -16,6 +16,10 @@
     </div>
     <div class="content">
         {{message.message}}
+
+        <div class="attachments-row" *ngIf="message.attachments && message.attachments.length">
+            <img *ngFor="let attachment of message.attachments"  [src]="attachment.url | safeURL" alt="">
+        </div>
     </div>
 
     <div class="actions">

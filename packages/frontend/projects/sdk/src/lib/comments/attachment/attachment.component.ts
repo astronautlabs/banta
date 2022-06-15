@@ -1,4 +1,5 @@
-import { Component, ElementRef, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, Output, ViewChild } from '@angular/core';
+import { CDNProvider, ChatMessageAttachments } from '@banta/common';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -8,25 +9,33 @@ import { Subject } from 'rxjs';
 })
 export class AttachmentComponent {
 
-  @ViewChild('fileUpload', {static: false}) fileInput: ElementRef;
+  constructor(
+    private cdnProvider: CDNProvider,
+  ) { }
 
-  private _addAttachment = new Subject<File>();
+  @ViewChild('fileUpload', { static: false }) fileInput: ElementRef;
+  _addedAttachment = new Subject<ChatMessageAttachments>();
 
   @Output()
-  get addAttachment() {
-    return this._addAttachment.asObservable();
+  get addedAttachment() {
+    return this._addedAttachment.asObservable();
   }
-  
+
   show() {
     (this.fileInput.nativeElement as HTMLInputElement).click();
   }
 
-  fileChange(event: Event): void {
-      const element = (event.currentTarget as HTMLInputElement);
-      if (element.files.length) {
-        console.log('[Banta] File Added to comment');
-        this._addAttachment.next(element.files[0]);
-      }
+  async fileChange(event: Event): Promise<void> {
+    const element = (event.currentTarget as HTMLInputElement);
+    if (element.files.length) {
+      console.log('[Banta] File Added to comment');
+      const file = element.files[0];
+      const publicURL = await this.cdnProvider.uploadImage(file);
+      this._addedAttachment.next({
+        type: file.type,
+        url: publicURL
+      })
+    }
 
   }
 

@@ -3,7 +3,6 @@ import { User } from './user';
 export interface ChatMessageAttachments {
 	type: string;
 	url?: string;
-	file?: File;
 }
 
 export interface ChatMessage {

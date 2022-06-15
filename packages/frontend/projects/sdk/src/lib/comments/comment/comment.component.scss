@@ -35,12 +35,25 @@
             margin-left: 60px;
             margin-right: 0.5em;
         }
+
+		.attachments-row {
+			margin-top: 15px;
+			display: flex;
+			gap: 10px;
+
+			img {
+				border-radius: 10px;
+				max-width: 300px;
+			}
+
+		}
+
     }
 
     &.abbreviated {
         .message-content {
             .content {
-                max-height: 8.5em;
+                // max-height: 8.5em;
                 text-overflow: ellipsis;
                 overflow-y: hidden;
             }
