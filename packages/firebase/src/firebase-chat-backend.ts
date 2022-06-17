@@ -151,6 +151,6 @@ export class FirebaseChatBackend implements ChatBackend {
             `/bantaTopics/${topicId}/counters/messages`
         );
 
-        return data.value;
+        return data ? data.value : 0;
     }
 }
