@@ -1,6 +1,6 @@
 {
   "name": "@banta/server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -42,7 +42,7 @@
     "@astronautlabs/datastore": "^3.1.4",
     "@astronautlabs/datastore-firestore": "^3.1.6",
     "@astronautlabs/jwt": "^1.1.0",
-    "@banta/firebase": "^1.0.1",
+    "@banta/firebase": "^1.0.2",
     "@types/express": "^4.17.13",
     "@types/jsonwebtoken": "^8.3.5",
     "cpy": "^9.0.1",
