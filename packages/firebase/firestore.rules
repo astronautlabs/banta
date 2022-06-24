@@ -38,7 +38,7 @@ service cloud.firestore {
     }
     
     match /bantaUsers/{userId}/notifications/{notifId} {
-      allow read: if canAccessUser(userId);
+      allow read;
     }
     
     match /bantaTopics/{topicID}/messages/{messageID} {
