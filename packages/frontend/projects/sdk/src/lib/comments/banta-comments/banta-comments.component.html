@@ -65,7 +65,9 @@
         [permissionDeniedLabel]="permissionDeniedLabel"
         (permissionDeniedError)="showPermissionDenied()"
         [shouldInterceptMessageSend]="shouldInterceptMessageSend"
-        ></banta-comment-field>
+        >
+      <ng-content select=".reply-send-options"></ng-content>
+    </banta-comment-field>
 
     <banta-comment-sort
         [(sort)]="sortOrder"></banta-comment-sort>
