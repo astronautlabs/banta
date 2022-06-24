@@ -44,7 +44,9 @@
                 [shouldInterceptMessageSend]="shouldInterceptMessageSend"
                 [user]="user"
                 [label]="postReplyLabel"
-                ></banta-comment-field>
+                >
+                <ng-content select=".reply-send-options"></ng-content>
+            </banta-comment-field>
         </ng-container>
     </div>
 </div>
@@ -66,7 +68,7 @@
         (permissionDeniedError)="showPermissionDenied()"
         [shouldInterceptMessageSend]="shouldInterceptMessageSend"
         >
-      <ng-content select=".reply-send-options"></ng-content>
+      
     </banta-comment-field>
 
     <banta-comment-sort
