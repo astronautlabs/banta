@@ -14,7 +14,20 @@ export class FirebaseChatSource implements ChatSource {
         readonly parentIdentifier: string,
         private auth: AuthenticationProvider,
         private notif: NotificationsProvider,
+
+        /**
+         * A path in firebase for recording sent messages and counters (the topic path for a 
+         * topic chat source, the comment path for a thread chat source).
+         */
         private collectionPath: string,
+
+        /**
+         * An additional path in firebase to increment the "messages" counter. Can be undefined.
+         * 
+         * This will allow the top level comment counters to increment as replies are sent to comments,
+         * not just the top level comments.
+         */
+        private additionalCollectionPath: string,
         private options: ChatSourceOptions
     ) {
         this.datastore = createDataStore();
@@ -169,7 +182,13 @@ export class FirebaseChatSource implements ChatSource {
             this.datastore.update<Counter>(
                 `${topicPath}/counters/messages`,
                 { value: <any>this.datastore.sentinels.increment(1) }
-            )
+            ),
+            this.additionalCollectionPath 
+                ? this.datastore.update<Counter>(
+                    `${this.additionalCollectionPath}/counters/messages`,
+                    { value: <any>this.datastore.sentinels.increment(1) }
+                )
+                : Promise.resolve()
         ]);
 
         return message;

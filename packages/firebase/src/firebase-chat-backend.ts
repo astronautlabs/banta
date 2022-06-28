@@ -37,15 +37,35 @@ export class FirebaseChatBackend implements ChatBackend {
     //private firestore : firebaseAdmin.firestore.Firestore;
 
     async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSource> {
-        return await this.getSourceForCollection(topicId, undefined, `/bantaTopics/${topicId}`, options);
+        return await this.getSourceForCollection(topicId, undefined, `/bantaTopics/${topicId}`, undefined, options);
     }
 
-    async getSourceForThread(topicId : string, id : string, options?: ChatSourceOptions): Promise<ChatSource> {
-        return await this.getSourceForCollection(topicId, id, `/bantaTopics/${topicId}/messages/${id}`, options);
+    async getSourceForThread(topicId: string, id: string, options?: ChatSourceOptions): Promise<ChatSource> {
+        return await this.getSourceForCollection(
+            topicId, 
+            id, 
+            `/bantaTopics/${topicId}/messages/${id}`, 
+            `/bantaTopics/${topicId}`, 
+            options
+        );
     }
 
-    protected async getSourceForCollection(identifier : string, parentIdentifier: string, collectionPath : string, options: ChatSourceOptions): Promise<ChatSource> {
-        return new FirebaseChatSource(identifier, parentIdentifier, this.auth, this.notif, collectionPath, options);
+    protected async getSourceForCollection(
+        identifier: string, 
+        parentIdentifier: string, 
+        collectionPath: string, 
+        additionalCollectionPath: string, 
+        options: ChatSourceOptions
+    ): Promise<ChatSource> {
+        return new FirebaseChatSource(
+            identifier,
+            parentIdentifier,
+            this.auth,
+            this.notif,
+            collectionPath,
+            additionalCollectionPath,
+            options
+        );
     }
 
     async refreshMessage(message: ChatMessage): Promise<ChatMessage> {
