@@ -115,9 +115,6 @@ export class CommentFieldComponent {
     }
 
     async onKeyDown(event : KeyboardEvent) {
-        console.log(event.key);
-
-
         if (this.autocompleteVisible) {
             if (event.key === 'Escape') {
                 this.dismissAutoComplete();
