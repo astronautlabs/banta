@@ -3,10 +3,11 @@ import { Observable } from 'rxjs';
 
 export class BantaServiceChatSource implements ChatSource {
     constructor(
-        readonly identifier : string,
-        private underlyingChatSource : ChatSource,
-        private backend : BantaServiceChatBackend,
-        private collectionPath : string
+        readonly identifier: string,
+        readonly parentIdentifier: string,
+        private underlyingChatSource: ChatSource,
+        private backend: BantaServiceChatBackend,
+        private collectionPath: string
     ) {
     }
 
@@ -84,6 +85,7 @@ export class BantaServiceChatBackend implements ChatBackend {
     async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSource> {
         return new BantaServiceChatSource(
             topicId,
+            undefined,
             await this._underlyingChatBackend.getSourceForTopic(topicId, options),
             this,
             `/topics/${topicId}/messages`
@@ -93,6 +95,7 @@ export class BantaServiceChatBackend implements ChatBackend {
     async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSource> {
         return new BantaServiceChatSource(
             topicId,
+            messageId,
             await this._underlyingChatBackend.getSourceForThread(topicId, messageId, options),
             this,
             `/topics/${topicId}/messages/${messageId}/messages`

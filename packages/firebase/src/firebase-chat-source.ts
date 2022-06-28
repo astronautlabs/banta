@@ -10,10 +10,11 @@ import { lazyConnection } from "./lazy-connection";
 
 export class FirebaseChatSource implements ChatSource {
     constructor(
-        readonly identifier : string,
-        private auth : AuthenticationProvider,
-        private notif : NotificationsProvider,
-        private collectionPath : string,
+        readonly identifier: string,
+        readonly parentIdentifier: string,
+        private auth: AuthenticationProvider,
+        private notif: NotificationsProvider,
+        private collectionPath: string,
         private options: ChatSourceOptions
     ) {
         this.datastore = createDataStore();

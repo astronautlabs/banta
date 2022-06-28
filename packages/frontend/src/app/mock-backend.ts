@@ -21,31 +21,31 @@ export class MockBackend implements ChatBackend {
         this.sources.delete(`${source.identifier}:${source.sortOrder}`);
     }
 
-    private getSourceForId(id : string, options: ChatSourceOptions) {
+    private getSourceForId(topicId: string, messageId: string, options: ChatSourceOptions) {
 
-        let key = `${id}:${options.sortOrder}`;
+        let key = `${topicId}:${options.sortOrder}`;
         if (this.sources.has(key))
             return this.sources.get(key);
 
         let source : ChatSource;
 
-        if (id.endsWith('_comments'))
-            source = new MockCommentsSource(this, id, options.sortOrder ?? CommentsOrder.NEWEST);
-        else if (id.endsWith('_chat'))
-            source = new MockChatSource(this, id, options.sortOrder ?? CommentsOrder.NEWEST);
-        else if (id.endsWith('_replies'))
-            source = new MockReplySource(this, id, options.sortOrder ?? CommentsOrder.NEWEST);
+        if (messageId)
+            source = new MockReplySource(this, topicId, messageId, options.sortOrder ?? CommentsOrder.NEWEST);
+        else if (topicId.endsWith('_comments'))
+            source = new MockCommentsSource(this, topicId, options.sortOrder ?? CommentsOrder.NEWEST);
+        else if (topicId.endsWith('_chat'))
+            source = new MockChatSource(this, topicId, options.sortOrder ?? CommentsOrder.NEWEST);
 
         this.sources.set(key, source);
         return source;
     }
 
     async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSource> {
-        return this.getSourceForId(topicId, options);
+        return this.getSourceForId(topicId, undefined, options);
     }
 
     async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSource> {
-        return this.getSourceForId(messageId, options);
+        return this.getSourceForId(topicId, messageId, options);
     }
 
     async getSourceCountForTopic(topicId: string): Promise<number> {
@@ -187,7 +187,7 @@ export class SimulatedSource extends MockSource {
             user.avatarUrl = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
         let message = <ChatMessage>{
-            id: `${uuid()}_replies`,
+            id: uuid(),
             user,
             sentAt: Date.now(),
             upvotes: 0,
@@ -283,6 +283,7 @@ export class MockReplySource extends SimulatedSource {
     constructor(
         readonly backend : MockBackend,
         readonly identifier : string,
+        readonly parentIdentifier: string,
         readonly sortOrder: CommentsOrder
     ) {
         super(backend, identifier, sortOrder, [
