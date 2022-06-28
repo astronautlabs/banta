@@ -22,19 +22,20 @@ export class MockBackend implements ChatBackend {
     }
 
     private getSourceForId(topicId: string, messageId: string, options: ChatSourceOptions) {
+        let sortOrder = options?.sortOrder ?? CommentsOrder.NEWEST;
 
-        let key = `${topicId}:${options.sortOrder}`;
+        let key = `${topicId}:${sortOrder}`;
         if (this.sources.has(key))
             return this.sources.get(key);
 
         let source : ChatSource;
 
         if (messageId)
-            source = new MockReplySource(this, topicId, messageId, options.sortOrder ?? CommentsOrder.NEWEST);
+            source = new MockReplySource(this, topicId, messageId, sortOrder);
         else if (topicId.endsWith('_comments'))
-            source = new MockCommentsSource(this, topicId, options.sortOrder ?? CommentsOrder.NEWEST);
+            source = new MockCommentsSource(this, topicId, sortOrder);
         else if (topicId.endsWith('_chat'))
-            source = new MockChatSource(this, topicId, options.sortOrder ?? CommentsOrder.NEWEST);
+            source = new MockChatSource(this, topicId, sortOrder);
 
         this.sources.set(key, source);
         return source;
