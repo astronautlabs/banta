@@ -20,8 +20,8 @@ export class TryComponent {
                 return doc.data().value;
             }
         } catch (e) {
-            console.error(`Caught error while fetching demo topic setting:`);
-            console.error(e);
+            console.warn(`Couldn't retrieve setting '${id}':`);
+            console.warn(e);
         }
 
         return defaultValue;
