@@ -38,7 +38,7 @@ export class CommentFieldComponent {
     @Input() signInLabel = 'Sign In';
     @Input() placeholder = '';
 
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage) => boolean | Promise<boolean>;
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSource) => boolean | Promise<boolean>;
 
     @ViewChild('autocomplete') autocompleteEl : ElementRef<HTMLElement>;
     @ViewChild('autocompleteContainer') autocompleteContainerEl : ElementRef<HTMLElement>;
@@ -260,7 +260,7 @@ export class CommentFieldComponent {
             };
 
             try {
-                const intercept = await this.shouldInterceptMessageSend?.(message);
+                const intercept = await this.shouldInterceptMessageSend?.(message, this.source);
                 if (!intercept) {
                     await this.source.send(message);
                 }
