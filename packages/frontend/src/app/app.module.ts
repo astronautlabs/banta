@@ -54,7 +54,7 @@ import { CDNProvider, DataURICDNProvider } from '@banta/common';
       useFactory: () => new DataURICDNProvider()
     },
 
-    //** <-- Add another slash to configure for Firebase
+    /** <-- Add another slash to configure for Firebase
     FirebaseStoreRef,
     {
         provide: FirebaseNotificationsProvider,
