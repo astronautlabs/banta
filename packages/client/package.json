@@ -1,6 +1,6 @@
 {
   "name": "@banta/client",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -20,7 +20,7 @@
   "dependencies": {
     "@astronautlabs/datastore": "^3.1.0",
     "@astronautlabs/datastore-firestore": "^3.1.0",
-    "@banta/common": "^1.0.1"
+    "@banta/common": "^1.0.3"
   },
   "peerDependencies": {
     "rxjs": "^6.5.5"
