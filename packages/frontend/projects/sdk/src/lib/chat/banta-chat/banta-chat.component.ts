@@ -25,7 +25,7 @@ export class BantaChatComponent {
     private _subs = new Subscription();
     user : UserAccount = null;
 
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage) => boolean | Promise<boolean>;
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSource) => boolean | Promise<boolean>;
 
 
     ngOnInit() {
@@ -180,7 +180,7 @@ export class BantaChatComponent {
         };
 
         try {
-            const intercept = await this.shouldInterceptMessageSend?.(message);
+            const intercept = await this.shouldInterceptMessageSend?.(message, this.source);
             if (!intercept) {
                 await this.source.send(message);
             }

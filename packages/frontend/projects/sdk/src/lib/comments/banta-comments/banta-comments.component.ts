@@ -103,7 +103,7 @@ export class BantaCommentsComponent implements AfterViewInit {
     @Input() maxVisibleMessages: number;
     @Input() genericAvatarUrl: string;
 
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage) => boolean | Promise<boolean>;
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSource) => boolean | Promise<boolean>;
 
     @Input()
     get topicID(): string {
