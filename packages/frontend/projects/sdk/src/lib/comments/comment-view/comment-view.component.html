@@ -14,20 +14,22 @@
             Be the first to comment!
         </div>
     </ng-container>
-    <banta-comment
-        *ngFor="let message of messages; trackBy: messageIdentity"
-        class="abbreviated"
-        [message]="message"
-        (click)="isViewingMore = true"
-        [showReplyAction]="allowReplies"
-		(userSelected)="selectMessageUser(message)"
-        (avatarSelected)="selectAvatar($event)"
-		(usernameSelected)="selectUsername($event)"
-        (upvoted)="upvoteMessage(message)"
-        (reported)="reportMessage(message)"
-        (selected)="selectMessage(message)"
-        (shared)="sharedMessage($event)"
-        ></banta-comment>
+    <ng-container *ngFor="let message of messages; trackBy: messageIdentity">
+        <banta-comment
+            *ngIf="!message.hidden"
+            class="abbreviated"
+            [message]="message"
+            (click)="isViewingMore = true"
+            [showReplyAction]="allowReplies"
+            (userSelected)="selectMessageUser(message)"
+            (avatarSelected)="selectAvatar($event)"
+            (usernameSelected)="selectUsername($event)"
+            (upvoted)="upvoteMessage(message)"
+            (reported)="reportMessage(message)"
+            (selected)="selectMessage(message)"
+            (shared)="sharedMessage($event)"
+            ></banta-comment>
+    </ng-container>
 
     <a mat-button class="nav" [class.visible]="hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
 
