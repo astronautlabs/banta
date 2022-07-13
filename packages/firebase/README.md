@@ -1,1 +1,1 @@
-# @/firebase haha
+# @/firebase

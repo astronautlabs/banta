@@ -9,7 +9,8 @@
                 <mat-form-field appearance="outline" floatLabel="always">
                     <mat-label>{{label}}</mat-label>
                     <textarea #textarea name="message" [placeholder]="placeholder" matInput cdkTextareaAutosize
-                        (keydown)="onKeyDown($event)" (blur)="onBlur()" [disabled]="sending" [(ngModel)]="text"></textarea>
+                        (keydown)="onKeyDown($event)" (blur)="onBlur()" [disabled]="sending"
+                        [(ngModel)]="text"></textarea>
                 </mat-form-field>
                 <div>
                     <emoji-selector-button class="top-right" (selected)="insertEmoji($event)"></emoji-selector-button>
@@ -39,7 +40,8 @@
 
 
             <div *ngIf="chatMessageAttachments && chatMessageAttachments.length" class="message-attachments-container">
-                <div *ngFor="let attachment of chatMessageAttachments; index as attachmentIndex" class="message-attachment">
+                <div *ngFor="let attachment of chatMessageAttachments; index as attachmentIndex"
+                    class="message-attachment">
                     <button (click)="removeAttachment(attachmentIndex)" mat-mini-fab color="primary" class="remove-img">
                         <mat-icon>close</mat-icon>
                     </button>
@@ -57,7 +59,8 @@
             <button mat-raised-button color="primary" type="button" (click)="showSignIn()">{{signInLabel}}</button>
         </ng-container>
         <ng-container *ngIf="user">
-            <button *ngIf="canComment" mat-raised-button class="send" color="primary" [disabled]="(!text && !chatMessageAttachments.length) || sending">
+            <button *ngIf="canComment" mat-raised-button class="send" color="primary"
+                [disabled]="(!text && !chatMessageAttachments.length) || sending">
                 <mat-icon *ngIf="!sending">chevron_right</mat-icon>
                 <mat-spinner *ngIf="sending" class="icon" diameter="18" strokeWidth="2"></mat-spinner>
                 <span class="label">

@@ -1,6 +1,6 @@
 import { User } from './user';
 
-export interface ChatMessageAttachments {
+export interface ChatMessageAttachment {
 	type: string;
 	url?: string;
 }
@@ -17,5 +17,5 @@ export interface ChatMessage {
     message : string;
     submessages? : ChatMessage[];
     upvotes : number;
-    attachments?: ChatMessageAttachments[]
+    attachments?: ChatMessageAttachment[]
 }

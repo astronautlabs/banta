@@ -52,9 +52,9 @@ export class BantaCommentsComponent implements AfterViewInit {
     }
 
     @Input() hashtags: HashTag[] = [
-        {hashtag: 'error', description: 'Cause an error'},
-        {hashtag: 'timeout', description: 'Cause a slow timeout error'},
-        {hashtag: 'slow', description: 'Be slow when this message is posted'},
+        { hashtag: 'error', description: 'Cause an error' },
+        { hashtag: 'timeout', description: 'Cause a slow timeout error' },
+        { hashtag: 'slow', description: 'Be slow when this message is posted' },
     ];
 
     @Input() participants: User[] = [];
@@ -71,12 +71,12 @@ export class BantaCommentsComponent implements AfterViewInit {
 
     scrollToComment(commentId: ChatMessage['id']): void {
         setTimeout(() => {
-          const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
-          console.log(comment)
-          if (comment.length > 0) {
-            // comment.item(0).scroll({behavior: 'smooth'});
-            comment.item(0).scrollIntoView();
-          }
+            const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
+            console.log(comment)
+            if (comment.length > 0) {
+                // comment.item(0).scroll({behavior: 'smooth'});
+                comment.item(0).scrollIntoView();
+            }
         }, 1000);
     }
 
@@ -173,7 +173,7 @@ export class BantaCommentsComponent implements AfterViewInit {
     @Input() postCommentLabel = 'Post a comment';
     @Input() postReplyLabel = 'Post a reply';
 
-	@Input() allowAttachments = false;
+    @Input() allowAttachments = false;
 
     private _signInSelected = new Subject<void>();
     private _permissionDeniedError = new Subject<void>();
@@ -348,6 +348,6 @@ export class BantaCommentsComponent implements AfterViewInit {
         let el = this.elementRef.nativeElement.querySelector(`[data-comment-id="${message.id}"]`);
         if (!el)
             return;
-        el.scrollIntoView({block: 'center', inline: 'start'});
+        el.scrollIntoView({ block: 'center', inline: 'start' });
     }
 }
