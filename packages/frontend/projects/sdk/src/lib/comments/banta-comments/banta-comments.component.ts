@@ -335,6 +335,7 @@ export class BantaCommentsComponent implements AfterViewInit {
             upvotes: 0,
             user: this.user,
             submessages: [],
+            submessageCount: 0,
             topicId: this.topicID,
             sentAt: Date.now(),
             updatedAt: Date.now()
