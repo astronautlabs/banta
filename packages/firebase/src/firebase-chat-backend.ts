@@ -158,12 +158,70 @@ export class FirebaseChatBackend implements ChatBackend {
         else
             path = `/bantaTopics/${message.topicId}/messages/${message.id}`;
 
-        await this.datastore.update(path, {
-            ...filterObject(message, [
-                'message', 'hidden'
-            ]),
-            updatedAt: Date.now()
-        });
+        try {
+            await this.datastore.transact(async txn => {
+                let originalMessage = await txn.read<ChatMessage>(path);
+
+                if (!originalMessage) 
+                    throw new Error(`No such message at ${path}`);
+                
+                await txn.update(path, {
+                    ...filterObject(message, [
+                        'message', 'hidden'
+                    ]),
+                    updatedAt: Date.now()
+                });
+
+                // Maintain the counters
+
+                let countDelta = 0;
+
+                if (!originalMessage.hidden && message.hidden)
+                    countDelta = -1;
+                else if (originalMessage.hidden && !message.hidden)
+                    countDelta = 1;
+                
+                if (countDelta !== 0) {
+                    if (message.parentMessageId) {
+                        let parentPath = `/bantaTopics/${message.topicId}/messages/${message.parentMessageId}`;
+
+                        // Update the on-message submessageCount
+
+                        try {
+                            await txn.update<ChatMessage>(parentPath, <any><Partial<ChatMessage>>{
+                                submessageCount: <any>this.datastore.sentinels.increment(countDelta)
+                            });
+                        } catch (e) {
+                            throw new Error(`While updating ${parentPath}#submessageCount: ${e.message}`);
+                        }
+
+                        // Update the separate counter
+
+                        let counterPath = `${parentPath}/counters/messages`;
+                        try {
+                            await txn.update(counterPath, <any>{
+                                value: <any>this.datastore.sentinels.increment(countDelta)
+                            });
+                        } catch (e) {
+                            throw new Error(`While updating ${counterPath}#value: ${e.message}`);
+                        }
+                    }
+                    
+                    let topicCounterPath = `/bantaTopics/${message.topicId}/counters/messages`;
+                    try {
+                        await this.datastore.update(topicCounterPath, <any>{
+                            value: <any>this.datastore.sentinels.increment(countDelta)
+                        });
+                    } catch (e) {
+                        throw new Error(`While updating ${topicCounterPath}#value: ${e.message}`);
+                    }
+                }
+            });
+        } catch (e) {
+            let source = `FirebaseChatBackend#modifyMessage(topic='${message.topicId}', parent='${message.parentMessageId}', id='${message.id}')`;
+            console.error(`Error: ${source}: ${e.message}`);
+            throw new Error(`${source}: ${e.message}`);
+        }
     }
 
     async getSourceCountForTopic(topicId: string) {
