@@ -176,9 +176,12 @@ export class FirebaseChatSource implements ChatSource {
             })
         }
 
-        message = Object.assign(<Partial<ChatMessage>>{}, message, { 
+        message = Object.assign(<Partial<ChatMessage>>{}, message, <Partial<ChatMessage>>{ 
             id,
-            sentAt: Date.now()
+            sentAt: Date.now(),
+            hidden: false,
+            submessageCount: 0,
+            submessages: []
         });
 
         await Promise.all([
