@@ -19,6 +19,7 @@
             *ngIf="!message.hidden"
             class="abbreviated"
             [message]="message"
+            [upvoting]="message['$upvoting']"
             (click)="isViewingMore = true"
             [showReplyAction]="allowReplies"
             (userSelected)="selectMessageUser(message)"

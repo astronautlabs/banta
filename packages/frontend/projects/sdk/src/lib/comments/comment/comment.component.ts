@@ -62,6 +62,8 @@ export class CommentComponent {
         return this._reported.asObservable();
     }
 
+    @Input()
+    upvoting = false;
 
     @Output()
     get upvoted() {

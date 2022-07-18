@@ -274,7 +274,11 @@ export class BantaCommentsComponent implements AfterViewInit {
 
     async upvoteMessage(message: ChatMessage) {
         this._upvoted.next(message);
+        (message as any).$upvoting = true;
+        message.upvotes = (message.upvotes || 0) + 1;
         await this.backend.upvoteMessage(message.topicId, message.parentMessageId ? message.parentMessageId : message.id, message.parentMessageId ? message.id : undefined);
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
+        (message as any).$upvoting = false;
     }
 
     reportMessage(message: ChatMessage) {

@@ -33,8 +33,10 @@
             <div class="count-indicator">
                 {{message.upvotes}}
             </div>
-            <button mat-icon-button matTooltip="Like" matTooltipPosition="below" (click)="upvote()">
-                <mat-icon [inline]="true">thumb_up</mat-icon>
+            <button mat-icon-button [matTooltip]="upvoting ? 'Please wait...' : 'Like'" matTooltipPosition="below" (click)="upvote()">
+
+                <mat-spinner *ngIf="upvoting" [diameter]="15" style="margin-left: 1em;"></mat-spinner>
+                <mat-icon *ngIf="!upvoting" [inline]="true">thumb_up</mat-icon>
             </button>
         </div>
 

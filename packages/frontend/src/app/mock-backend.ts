@@ -71,10 +71,14 @@ export class MockBackend implements ChatBackend {
             throw new Error(`No such message`);
         }
 
-        if (!message.upvotes)
-            message.upvotes = 0;
+        // The UI will increment the like count early for quick user response.
+        // We need to maintain a fake "source of truth" for the upvotes.
+        
+        if (!message['$upvotes'])
+            message['$upvotes'] = 0;
 
-        message.upvotes += 1;
+        message['$upvotes'] += 1;
+        message.upvotes = message['$upvotes'];
     }
 
     watchMessage(message: ChatMessage, handler: (message: ChatMessage) => void): () => void {
