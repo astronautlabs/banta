@@ -23,7 +23,7 @@
         <div class="spacer"></div>
         <div class="counted-action" *ngIf="showReplyAction">
             <div class="count-indicator">
-                {{message.submessages?.length ?? message.submessageCount ?? 0}}
+                {{message.submessages?.length || message.submessageCount || 0}}
             </div>
             <button mat-icon-button matTooltip="Comment" matTooltipPosition="below" (click)="select()">
                 <mat-icon [inline]="true">comment</mat-icon>
