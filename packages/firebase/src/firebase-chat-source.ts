@@ -169,6 +169,13 @@ export class FirebaseChatSource implements ChatSource {
     private async recordMessage(topicPath : string, message : ChatMessage) {
         let id = uuid();
         
+        // Update the submessage count on the parent
+        if (this.parentIdentifier) {
+            this.datastore.update(this.collectionPath, <Partial<ChatMessage>>{
+                submessageCount: <any>this.datastore.sentinels.increment(1)
+            })
+        }
+
         message = Object.assign(<Partial<ChatMessage>>{}, message, { 
             id,
             sentAt: Date.now()

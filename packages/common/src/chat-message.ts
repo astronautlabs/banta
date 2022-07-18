@@ -10,6 +10,7 @@ export interface ChatMessage {
     updatedAt? : number;
     hidden? : boolean;
     message : string;
+    submessageCount: number;
     submessages? : ChatMessage[];
     upvotes : number;
 }
