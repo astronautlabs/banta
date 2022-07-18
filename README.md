@@ -37,6 +37,22 @@ npm start          # start the Angular application
 From here, if you modify a particular package, you will need to rebuild that package by entering it's 
 directory and using `npm build` in order for the Angular app to pick it up.
 
+## Live developing SDK within external apps 
+
+If you wish to use `npm link` to work on the SDK from within the context of your own app, you will need to do:
+
+```shell
+# In banta project:
+cd packages/frontend
+npm run build:lib
+cd dist/sdk             # IMPORTANT!
+npm run start:lib       # will rebuild the SDK package whenever it changes
+
+# In your app project:
+npm link @banta/sdk
+npm start               # will rebuild your project whenever the SDK changes
+```
+
 ## Backend
 
 By default the Angular app uses "MockBackend", which implements Banta's "ChatBackend" interface to provide a constant stream of fake messages. This is sufficient for doing UI development, but it is not sufficient for doing development on Banta's built-in real backends, such as Firebase (`@/firebase`) or the Server/Client system (`@/server` and `@/client`). 
