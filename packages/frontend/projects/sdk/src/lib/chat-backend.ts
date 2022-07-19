@@ -1,5 +1,5 @@
-import { Inject, Injectable, Optional } from "@angular/core";
-import { ChatMessage, CommentsOrder, Notification, Vote } from "@banta/common";
+import { Inject, Injectable } from "@angular/core";
+import { ChatMessage, CommentsOrder, DurableSocket, Notification, User, Vote } from "@banta/common";
 import { Observable } from "rxjs";
 import { ChatBackendBase, ChatSourceOptions } from "./chat-backend-base";
 import { ChatSource } from "./chat-source";
@@ -14,11 +14,9 @@ export class ChatBackend extends ChatBackendBase {
         super();
     }
 
-    userToken = 'abc';
-
     private async connectToService() {
         let serviceUrl = `${this.options?.serviceUrl ?? 'ws://localhost:3422'}/socket`;
-        let socket = new WebSocket(serviceUrl);
+        let socket = new DurableSocket(serviceUrl);
         await new Promise<void>((resolve, reject) => {
             socket.onopen = () => {
                 resolve();
@@ -62,9 +60,6 @@ export class ChatBackend extends ChatBackendBase {
         throw new Error("Method not implemented.");
     }
     watchMessage(message: ChatMessage, handler: (message: ChatMessage) => void): () => void {
-        throw new Error("Method not implemented.");
-    }
-    modifyMessage(message: ChatMessage): Promise<void> {
         throw new Error("Method not implemented.");
     }
     notificationsChanged: Observable<Notification[]>;

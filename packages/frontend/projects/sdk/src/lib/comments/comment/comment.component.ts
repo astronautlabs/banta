@@ -63,8 +63,26 @@ export class CommentComponent {
         return this._reported.asObservable();
     }
 
-    @Input()
-    liking = false;
+    @Input() liking = false;
+    @Input() likeAllowed = true;
+    @Input() editAllowed = true;
+    @Input() mine = false;
+    
+    @Input() editing = false;
+    editedMessage: string;
+
+    saveEdit() {
+        this._edited.next(this.editedMessage);
+    }
+
+    endEditing() {
+        this._editEnded.next();
+    }
+
+    startEdit() {
+        this._editStarted.next();
+        this.editedMessage = this.message.message;
+    }
 
     @Output()
     get liked() {
@@ -79,6 +97,25 @@ export class CommentComponent {
     @Output()
     get selected() {
         return this._selected.asObservable();
+    }
+
+    _editStarted = new Subject<void>();
+    _editEnded = new Subject<void>();
+    _edited = new Subject<string>();
+
+    @Output() 
+    get edited() {
+        return this._edited.asObservable();
+    }
+
+    @Output()
+    get editStarted() {
+        return this._editStarted.asObservable();
+    }
+
+    @Output()
+    get editEnded() {
+        return this._editEnded.asObservable();
     }
 
     @HostBinding('attr.data-comment-id')

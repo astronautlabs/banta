@@ -165,7 +165,15 @@ export class SocketRPC<PeerT = Peer> {
             if (this.getRpcType(message.name) === 'event') {
                 this[message.name](message.object);
                 return;
+            } else {
+                console.error(`Unsupported event type '${message.name}' received.`);
+                return;
             }
+        }
+
+        if (message.type === 'ping') {
+            this.rawSend({ type: 'pong' });
+            return;
         }
 
         console.error(`Unknown message type from server '${message.type}'`);

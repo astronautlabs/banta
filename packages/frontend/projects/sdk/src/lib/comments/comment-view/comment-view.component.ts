@@ -4,6 +4,11 @@ import { Subject, Subscription } from 'rxjs';
 import { ChatBackendBase } from "../../chat-backend-base";
 import { ChatSourceBase } from "../../chat-source-base";
 
+export interface EditEvent {
+    message: ChatMessage;
+    newMessage: string;
+}
+
 @Component({
     selector: 'banta-comment-view',
     templateUrl: './comment-view.component.html',
@@ -26,6 +31,7 @@ export class CommentViewComponent {
     private _usernameSelected = new Subject<User>();
     private _avatarSelected = new Subject<User>();
     private _shared = new Subject<ChatMessage>();
+    private _messageEdited = new Subject<EditEvent>();
 
     @Input()
     showEmptyState = true;
@@ -40,6 +46,15 @@ export class CommentViewComponent {
     @Output()
     get selected() {
         return this._selected;
+    }
+
+    @Output() 
+    get messageEdited() {
+        return this._messageEdited.asObservable();
+    }
+
+    saveEdit(message: ChatMessage, newMessage: string) {
+        this._messageEdited.next({ message, newMessage });
     }
 
     @Output()
@@ -86,6 +101,14 @@ export class CommentViewComponent {
         return this._source;
     }
 
+    get editAllowed() {
+        return this._source?.permissions?.canEdit;
+    }
+
+    get likeAllowed() {
+        return this._source?.permissions?.canLike;
+    }
+
     likeMessage(message: ChatMessage) {
         this._liked.next(message);
     }
@@ -118,6 +141,11 @@ export class CommentViewComponent {
         this._shared.next(message);
     }
 
+    startEditing(message: ChatMessage) {
+        this.messages.forEach(m => m.transientState.editing = false);
+        message.transientState.editing = true;
+    }
+
     set source(value) {
         if (this._sourceSubs) {
             this._sourceSubs.unsubscribe();
@@ -136,11 +164,9 @@ export class CommentViewComponent {
             this._sourceSubs.add(this._source.messageReceived.subscribe(msg => this.messageReceived(msg)));
             this._sourceSubs.add(this._source.messageSent.subscribe(msg => this.messageSent(msg)));
 
-            if (this._source.currentUserChanged) {
-                this._sourceSubs.add(
-                    this._source.currentUserChanged.subscribe(user => this.currentUser = user)
-                );
-            }
+            this._sourceSubs.add(
+                this.backend.userChanged.subscribe(user => this.currentUser = user)
+            );
         }
     }
 
@@ -203,6 +229,10 @@ export class CommentViewComponent {
     }
 
     private addMessage(message: ChatMessage) {
+
+        if (!message.transientState)
+            message.transientState = {};
+        
         let destination = this.messages;
         let bucket = this.olderMessages;
 

@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";
 import { MOCK_USERS } from "./mock-users";
 import * as pmq from 'popular-movie-quotes';
-import { ChatBackendBase, ChatSourceBase, ChatSourceOptions } from "@banta/sdk";
+import { ChatBackendBase, ChatSourceBase, ChatSourceOptions, ChatSourcePermissions } from "@banta/sdk";
 
 const GENERIC_AVATAR_URL = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
@@ -94,8 +94,21 @@ export class MockSource implements ChatSourceBase {
     messageSent = new Subject<ChatMessage>();
     messages: ChatMessage[] = [];
 
+    permissions: ChatSourcePermissions = {
+        canEdit: true,
+        canLike: true,
+        canPost: true
+    }
     async getCount() {
         return 0; // TODO
+    }
+
+    async modifyMessage(messageId: string, text: string) : Promise<void> {
+        this.backend.messages.get(messageId).message = text;
+    }
+
+    async get(id: string) {
+        return this.backend.messages.get(id);
     }
 
     async likeMessage(messageId: string): Promise<void> {
@@ -112,6 +125,10 @@ export class MockSource implements ChatSourceBase {
 
         message['$upvotes'] += 1;
         message.upvotes = message['$upvotes'];
+    }
+
+    async loadAfter(message: ChatMessage, count: number) {
+        return [];
     }
 
     async unlikeMessage(messageId: string): Promise<void> {

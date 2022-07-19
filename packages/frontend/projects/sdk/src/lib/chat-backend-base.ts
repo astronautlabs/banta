@@ -1,5 +1,5 @@
-import { Observable } from 'rxjs';
-import { ChatMessage, Vote, CommentsOrder, Notification } from '@banta/common';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { ChatMessage, Vote, CommentsOrder, Notification, User } from '@banta/common';
 import { ChatSourceBase } from './chat-source-base';
 
 export interface ChatSourceOptions {
@@ -14,8 +14,23 @@ export abstract class ChatBackendBase {
     abstract getMessage(topicId : string, messageId : string): Promise<ChatMessage>;
     abstract getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
     abstract watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void;
-    abstract modifyMessage(message : ChatMessage) : Promise<void>;
 
     readonly notificationsChanged : Observable<Notification[]>;
     readonly newNotification : Observable<Notification>;
+    
+    private _userChanged = new BehaviorSubject<User>(null);
+    private _user : User;
+    
+    get userChanged() : Observable<User> {
+        return this._userChanged;
+    }
+    
+    set user(user : User) {
+        this._user = user;
+        this._userChanged.next(user);
+    }
+
+    get user() {
+        return this._user;
+    }
 }

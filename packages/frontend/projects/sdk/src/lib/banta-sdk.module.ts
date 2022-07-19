@@ -16,7 +16,6 @@ import { MatDialogModule } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { BantaService } from './common';
 import { ChatBackend } from './chat-backend';
 import { SdkOptions } from './sdk-options';
 import { BANTA_SDK_OPTIONS } from './sdk-options';
@@ -58,7 +57,6 @@ export class BantaSdkModule {
         return {
             ngModule: BantaSdkModule,
             providers: [
-                BantaService,
                 { 
                     provide: BANTA_SDK_OPTIONS, 
                     useValue: options || {}

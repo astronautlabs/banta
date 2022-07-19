@@ -1,7 +1,7 @@
 import { ChatMessage, CommentsOrder, User } from "@banta/common";
-import { Observable, Subject } from "rxjs";
+import { Observable, Subject, Subscription } from "rxjs";
 import { RpcEvent, SocketRPC } from "@banta/common";
-import { ChatSourceBase } from "./chat-source-base";
+import { ChatSourceBase, ChatSourcePermissions } from "./chat-source-base";
 import { ChatBackend } from "./chat-backend";
 
 export class ChatSource extends SocketRPC implements ChatSourceBase {
@@ -14,14 +14,46 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         super();
     }
 
+    private subscription = new Subscription();
+
+    permissions: ChatSourcePermissions;
+
     bind(socket: WebSocket): this {
         super.bind(socket);
 
-        if (this.backend.userToken)
-            this.peer.authenticate(this.backend.userToken);
-        this.peer.subscribe(this.identifier, this.parentIdentifier);
+        this.subscribeToTopic();
+        this.subscription.add(this.backend.userChanged.subscribe(() => this.authenticate()));
+
+        socket.addEventListener('restore', async () => {
+            await this.authenticate();
+            await this.subscribeToTopic();
+        });
 
         return this;
+    }
+
+    async modifyMessage(messageId: string, text: string): Promise<void> {
+        this.peer.modifyMessage(messageId, text);
+    }
+
+    async subscribeToTopic() {
+        await this.peer.subscribe(this.identifier, this.parentIdentifier);
+    }
+
+    async authenticate() {
+        this.permissions = await this.peer.authenticate(this.backend.user?.token);
+    }
+
+    close(): void {
+        super.close();
+        this.subscription.unsubscribe();
+    }
+
+    @RpcEvent()
+    onPermissions(permissions: ChatSourcePermissions) {
+        console.log(`New permissions:`);
+        console.dir(permissions);
+        this.permissions = permissions;
     }
 
     @RpcEvent()
@@ -42,7 +74,6 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     get messageSent() { return this._messageSent.asObservable(); }
 
     messages: ChatMessage[] = [];
-    currentUserChanged?: Observable<User>;
 
     async send(message: ChatMessage): Promise<ChatMessage> {
         return this.peer.sendMessage(message);

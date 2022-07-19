@@ -1,11 +1,18 @@
 import { Observable } from 'rxjs';
 import { ChatMessage, User, CommentsOrder } from '@banta/common';
 
-export abstract class ChatSourceBase {
+export interface ChatSourcePermissions {
+    canPost: boolean;
+    canEdit: boolean;
+    canLike: boolean;
+}
+
+export interface ChatSourceBase {
     /**
      * The topic identifier for the current chat/comments
      */
     identifier : string;
+    permissions: ChatSourcePermissions;
 
     /**
      * The ID of the parent message that this thread chat source is for.
@@ -17,16 +24,12 @@ export abstract class ChatSourceBase {
     messageReceived : Observable<ChatMessage>;
     messageSent : Observable<ChatMessage>;
     messages : ChatMessage[];
-    currentUserChanged? : Observable<User>;
-    abstract send(message : ChatMessage) : Promise<ChatMessage>;
-    abstract close();
-    abstract getCount(): Promise<number>;
-
-    // v2
-    abstract loadAfter?(message : ChatMessage, count : number) : Promise<ChatMessage[]>;
-    abstract get?(id : string) : Promise<ChatMessage>;
-    abstract resolveUserState?(message: ChatMessage, userId: string): Promise<void>;
-
-    abstract likeMessage(messageId: string): Promise<void>;
-    abstract unlikeMessage(messageId: string): Promise<void>;
+    send(message : ChatMessage) : Promise<ChatMessage>;
+    close();
+    getCount(): Promise<number>;
+    loadAfter(message : ChatMessage, count : number) : Promise<ChatMessage[]>;
+    get(id : string) : Promise<ChatMessage>;
+    likeMessage(messageId: string): Promise<void>;
+    unlikeMessage(messageId: string): Promise<void>;
+    modifyMessage(messageId: string, text: string) : Promise<void>;
 }

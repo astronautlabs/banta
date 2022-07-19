@@ -1,7 +1,7 @@
 
 <mat-menu #pointItemMenu="matMenu">
     <button mat-menu-item (click)="report()">Report</button>
-    <button mat-menu-item>Help</button>
+    <button *ngIf="mine" [disabled]="!editAllowed" mat-menu-item (click)="startEdit()">Edit</button>
 </mat-menu>
 
 <div class="message-content">
@@ -14,8 +14,18 @@
         <a href="javascript:;" class="display-name" (click)="selectUser()">{{message.user.displayName}}</a>
         <a href="javascript:;" class="username" (click)="selectUsername(message.user)">@{{message.user.username}}</a>
     </div>
-    <div class="content">
+    <div class="content" *ngIf="!editing">
         {{message.message}}
+    </div>
+    <div class="content" *ngIf="editing" style="padding-bottom: 2em;">
+        <div>
+            <mat-form-field floatLabel="always" appearance="outline" style="width: 100%;">
+                <mat-label>Edit Message</mat-label>
+                <textarea matInput [(ngModel)]="editedMessage"></textarea>
+            </mat-form-field>
+        </div>
+        <button mat-raised-button (click)="saveEdit()">Save</button> &nbsp;
+        <button mat-button (click)="endEditing()">Cancel</button>
     </div>
 
     <div class="actions">
@@ -36,7 +46,7 @@
             <button mat-icon-button [disabled]="true" [matTooltip]="upvoting ? 'Please wait...' : message.userState?.liked ? 'Unlike' : 'Like'" matTooltipPosition="below" *ngIf="liking">
                 <mat-spinner [diameter]="15" style="margin-left: 1em;"></mat-spinner>
             </button>
-            <button mat-icon-button [matTooltip]="upvoting ? 'Please wait...' : 'Like'" matTooltipPosition="below" (click)="message.userState?.liked ? unlike() : like()" *ngIf="!liking">
+            <button mat-icon-button [disabled]="!likeAllowed" [matTooltip]="upvoting ? 'Please wait...' : 'Like'" matTooltipPosition="below" (click)="message.userState?.liked ? unlike() : like()" *ngIf="!liking">
                 <mat-icon [inline]="true">thumb_up</mat-icon>
             </button>
         </div>

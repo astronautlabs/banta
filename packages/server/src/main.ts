@@ -7,6 +7,8 @@ WebServerEngine.default = ExpressEngine;
 import { CORSMiddleware } from "./cors";
 import { ChatModule } from "./chat.module";
 import { ChatController } from "./chat.controller";
+import { AuthorizableAction, ChatService } from "./chat.service";
+import { User } from "@banta/common";
 
 globalThis.fetch = require('node-fetch');
 
@@ -20,6 +22,19 @@ globalThis.fetch = require('node-fetch');
     ]
 })
 class BantaService {
+    constructor(
+        readonly chat: ChatService
+    ) {
+    }
+
+    altOnInit() {
+        this.chat.authorizeAction = (user: User, token: string, action: AuthorizableAction) => {
+            // if (action.action === 'editMessage')
+            //     throw new Error(`You cannot edit your messages at this time.`);
+            //throw new Error('Not allowed');
+        };
+    }
+
     @Mount() banta : ChatController;
 
     @Get('/healthz')

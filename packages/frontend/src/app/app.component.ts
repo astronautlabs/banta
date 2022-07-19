@@ -1,5 +1,4 @@
-import { Component, HostBinding, Optional } from '@angular/core';
-import { BantaService } from '@banta/sdk';
+import { Component, HostBinding } from '@angular/core';
 import { User } from '@banta/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -15,8 +14,7 @@ export class AppComponent {
   constructor(
     private backend : ChatBackendBase,
     private router : Router,
-    private matDialog : MatDialog,
-    private banta : BantaService
+    private matDialog : MatDialog
   ) {
     this.year = new Date().getFullYear();
   }
@@ -36,13 +34,23 @@ export class AppComponent {
   }
 
   ngOnInit() {
-      // mock mode
-      this.banta.user = {
-        username: 'me',
-        displayName: 'Me',
+    this.backend.user = {
+      id: 'abc',
+      username: 'bob',
+      displayName: 'Bob',
+      avatarUrl: `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`,
+      token: 'abc123'
+    };
+
+    (window as any).becomeAlice = () => {
+      this.backend.user = {
+        id: 'def',
+        username: 'alice',
+        displayName: 'Alice',
         avatarUrl: `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`,
-        token: 'abc123'
+        token: 'def321'
       };
+    };
 
     this.router.events.subscribe(ev => {
       if (ev instanceof NavigationEnd) {

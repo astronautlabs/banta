@@ -84,6 +84,7 @@
         (userSelected)="selectMessageUser($event)"
         (selected)="selectMessage($event)"
         (liked)="likeMessage($event)"
+        (messageEdited)="editMessage($event.message, $event.newMessage)"
         (unliked)="unlikeMessage($event)"
         (reported)="reportMessage($event)"
         (usernameSelected)="selectUsername($event)"

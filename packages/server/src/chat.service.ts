@@ -36,6 +36,7 @@ export interface Like {
 
 export interface Topic {
     id: string;
+    createdAt: number;
     description?: string;
     url?: string;
     messageCount: number;
@@ -90,7 +91,17 @@ export class ChatService {
         }
         throw new Error(`The Banta integration must specify validateToken()`); 
     };
+
     authorizeAction: AuthorizeAction = () => {};
+
+    checkAuthorization(user: User, token: string, action: AuthorizableAction) {
+        try {
+            this.authorizeAction(user, token, action);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
 
     get messages() { return this.db.collection<ChatMessage>('messages'); }
     get likes() { return this.db.collection<Like>('likes'); }
@@ -100,6 +111,17 @@ export class ChatService {
 
     get events() {
         return this._events;
+    }
+
+    async getOrCreateTopic(id: string) {
+        await this.topics.updateOne({ id }, {
+            $setOnInsert: {
+                id,
+                createdAt: Date.now()
+            }
+        }, { upsert: true });
+
+        return await this.topics.findOne({ id });
     }
 
     async postMessage(message : ChatMessage) {

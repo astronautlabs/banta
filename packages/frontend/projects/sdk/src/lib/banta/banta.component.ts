@@ -3,7 +3,6 @@ import { NewMessageForm, ChatMessage, User, Notification } from '@banta/common';
 import { Subject, Observable, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { BantaChatComponent } from '../chat';
-import { BantaService } from '../common';
 import { Output } from "@angular/core";
 import { ChatBackendBase } from "../chat-backend-base";
 import { ChatSourceBase } from "../chat-source-base";
@@ -18,7 +17,6 @@ import { ChatSourceBase } from "../chat-source-base";
 })
 export class BantaComponent {
     constructor(
-        private banta : BantaService,
         private backend : ChatBackendBase,
         private matDialog : MatDialog
     ) {
@@ -35,7 +33,7 @@ export class BantaComponent {
     auxMode = 'notifications';
 
     ngOnInit() {
-        this._subs.add(this.banta.userChanged.subscribe(user => this.currentUser = user));
+        this._subs.add(this.backend.userChanged.subscribe(user => this.currentUser = user));
         this._subs.add(this.backend.notificationsChanged.subscribe(notifs => this.notifications = notifs));
         this._subs.add(this.backend.newNotification.subscribe(notif => {
                 this.newNotifications = true;

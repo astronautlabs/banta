@@ -2,7 +2,6 @@ import { AfterViewInit, Component, ElementRef, Input, Output } from '@angular/co
 import { User, ChatMessage, CommentsOrder } from '@banta/common';
 import { HashTag } from '../comment-field/comment-field.component';
 import { Subject, Observable, Subscription } from 'rxjs';
-import { BantaService } from '../../common';
 import { ActivatedRoute } from '@angular/router';
 import { ChatBackendBase } from '../../chat-backend-base';
 import { ChatSourceBase } from '../../chat-source-base';
@@ -17,7 +16,6 @@ import { ChatSourceBase } from '../../chat-source-base';
 })
 export class BantaCommentsComponent implements AfterViewInit {
     constructor(
-        private banta: BantaService,
         private backend: ChatBackendBase,
         private elementRef: ElementRef<HTMLElement>,
         private activatedRoute: ActivatedRoute
@@ -62,7 +60,7 @@ export class BantaCommentsComponent implements AfterViewInit {
 
     ngOnInit() {
         this._subs.add(
-            this.banta.userChanged.subscribe(user => this.user = user)
+            this.backend.userChanged.subscribe(user => this.user = user)
         );
     }
 
@@ -365,5 +363,17 @@ export class BantaCommentsComponent implements AfterViewInit {
         if (!el)
             return;
         el.scrollIntoView({block: 'center', inline: 'start'});
+    }
+
+    async editMessage(message: ChatMessage, newText: string) {
+        try {
+            await this.source.modifyMessage(message.id, newText);
+        } catch (e) {
+            alert(e.message);
+            return;
+        }
+
+        message.message = newText;
+        message.transientState.editing = false;
     }
 }
