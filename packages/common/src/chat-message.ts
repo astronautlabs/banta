@@ -66,9 +66,9 @@ export interface ChatMessage {
     submessages? : ChatMessage[];
 
     /**
-     * Number of upvotes this message has.
+     * Number of likes this message has.
      */
-    upvotes : number;
+    likes : number;
 
     /**
      * Information specific to the current user.

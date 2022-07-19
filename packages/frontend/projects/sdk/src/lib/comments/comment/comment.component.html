@@ -41,7 +41,7 @@
         </div>
         <div class="counted-action" [class.active]="message.userState?.liked">
             <div class="count-indicator">
-                {{message.upvotes}}
+                {{message.likes}}
             </div>
             <button mat-icon-button [disabled]="true" [matTooltip]="upvoting ? 'Please wait...' : message.userState?.liked ? 'Unlike' : 'Like'" matTooltipPosition="below" *ngIf="liking">
                 <mat-spinner [diameter]="15" style="margin-left: 1em;"></mat-spinner>

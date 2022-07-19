@@ -94,6 +94,14 @@ export class ChatService {
 
     authorizeAction: AuthorizeAction = () => {};
 
+    /**
+     * Transform the message at the moment before it is posted or edited.
+     * Any property of the message can be edited, some useful ideas:
+     * - Replacing bad words
+     * - Hiding at time of post (hidden = true)
+     */
+    transformMessage: (message: ChatMessage, action: 'post' | 'edit', previousMessage?: string) => void;
+
     checkAuthorization(user: User, token: string, action: AuthorizableAction) {
         try {
             this.authorizeAction(user, token, action);
@@ -126,6 +134,7 @@ export class ChatService {
 
     async postMessage(message : ChatMessage) {
         message.id = uuid();
+        message.hidden = false;
 
         if (!message.user || !message.user.id)
             throw new Error(`Message must include a valid user reference`);
@@ -137,6 +146,11 @@ export class ChatService {
             if (!parentMessage)
                 throw new Error(`No such parent message with ID '${message.parentMessageId}'`);
         }
+
+        // Definitely keeping this message at this point.
+
+        if (this.transformMessage)
+            this.transformMessage(message, 'post');
 
         await this.messages.insertOne(message);
         this._events.next(<PostMessageEvent>{ type: 'post', message });
@@ -151,6 +165,23 @@ export class ChatService {
         return message;
     }
 
+    async editMessage(message: ChatMessage, newText: string) {
+        let previousMessage = message.message;
+        message.message = newText;
+
+        if (this.transformMessage)
+            this.transformMessage(message, 'edit', previousMessage);
+
+        await this.messages.updateOne({ id: message.id }, {
+            $set: {
+                message: newText
+            }
+        });
+
+        message.message = newText;
+        this.pubsubs.publish(message.topicId, { message });
+    }
+
     async like(message : ChatMessage, user : User) {
         if (!message)
             throw new Error(`Message cannot be null`);
@@ -159,8 +190,8 @@ export class ChatService {
         if (like) 
             return;
 
-        message.upvotes += 1;
-        await this.messages.updateOne({ id: message.id }, { $inc: { upvotes: 1 } });
+        message.likes += 1;
+        await this.messages.updateOne({ id: message.id }, { $inc: { likes: 1 } });
         this.pubsubs.publish(message.topicId, { message });
 
         console.log(`Saving a new like!`);
@@ -187,8 +218,8 @@ export class ChatService {
 
         await this.likes.deleteOne({ messageId: message.id, userId: user.id });
 
-        message.upvotes -= 1;
-        await this.messages.updateOne({ id: message.id }, { $inc: { upvotes: -1 } });
+        message.likes -= 1;
+        await this.messages.updateOne({ id: message.id }, { $inc: { likes: -1 } });
         this.pubsubs.publish(message.topicId, { message });
 
         this._events.next(<UpvoteEvent>{ type: 'upvote', message, user });

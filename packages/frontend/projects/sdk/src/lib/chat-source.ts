@@ -32,12 +32,12 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         return this;
     }
 
-    async modifyMessage(messageId: string, text: string): Promise<void> {
-        this.peer.modifyMessage(messageId, text);
+    async editMessage(messageId: string, text: string): Promise<void> {
+        this.peer.editMessage(messageId, text);
     }
 
     async subscribeToTopic() {
-        await this.peer.subscribe(this.identifier, this.parentIdentifier);
+        await this.peer.subscribe(this.identifier, this.parentIdentifier, this.sortOrder);
     }
 
     async authenticate() {
@@ -80,8 +80,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     async loadAfter(message: ChatMessage, count: number): Promise<ChatMessage[]> {
-        // TODO
-        return [];
+        return this.peer.loadAfter(message.id, count);
     }
 
     async get(id: string): Promise<ChatMessage> {

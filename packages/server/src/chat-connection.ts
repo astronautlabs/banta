@@ -1,4 +1,4 @@
-import { ChatMessage, RpcCallable, SocketRPC, User } from "@banta/common";
+import { ChatMessage, CommentsOrder, RpcCallable, SocketRPC, User } from "@banta/common";
 import { ChatService, Like, Topic } from "./chat.service";
 import { PubSub } from "./pubsub";
 
@@ -66,6 +66,11 @@ export class ChatConnection extends SocketRPC {
             liked: false
         };
 
+        // Don't send hidden messages.
+
+        if (message.hidden)
+            return;
+
         if (this.user) {
             let like = await this.chat.likes.findOne({ messageId: message.id, userId: this.user.id });
             message.userState.liked = !!like;
@@ -77,7 +82,12 @@ export class ChatConnection extends SocketRPC {
     topic: Topic;
 
     @RpcCallable()
-    async modifyMessage(messageId: string, newText: string) {
+    async loadAfter(messageId: string, count: number) {
+        // TODO: This needs to be rethunk.
+    }
+
+    @RpcCallable()
+    async editMessage(messageId: string, newText: string) {
         if (!this.user)
             throw new Error(`You must be signed in to edit your messages.`);
 
@@ -93,18 +103,15 @@ export class ChatConnection extends SocketRPC {
             message: message
         });
 
-        await this.chat.messages.updateOne({ id: message.id }, {
-            $set: {
-                message: newText
-            }
-        });
-
-        message.message = newText;
-        this.pubsub.publish({ message });
+        await this.chat.editMessage(message, newText);
     }
 
+    sortOrder: CommentsOrder;
+
     @RpcCallable()
-    async subscribe(topicId: string, parentMessageId?: string) {
+    async subscribe(topicId: string, parentMessageId: string, order: CommentsOrder) {
+        this.sortOrder = order ?? CommentsOrder.NEWEST;
+
         if (parentMessageId) {
             let parentMessage = await this.chat.getMessage(parentMessageId);
             if (!parentMessage) {
@@ -154,15 +161,41 @@ export class ChatConnection extends SocketRPC {
         });
 
         // Get the initial batch of messages
+        let sort = this.getSortOrder();
 
-        let initialMessages = await this.chat.messages.find({ 
-            topicId: this.topicId, 
-            parentMessageId: this.parentMessage?.id 
-        }, { limit: 100 }).toArray();
+        let initialMessages = await this.chat.messages.find(
+            this.getFilter(), 
+            { 
+                limit: 100,
+                sort
+            }).toArray();
 
         for (let item of initialMessages) {
+            console.log(`MESSAGE: ${item.message}`);
             await this.sendChatMessage(item);
         }
+    }
+
+    private getFilter(): any {
+        return { 
+            topicId: this.topicId, 
+            parentMessageId: this.parentMessage?.id,
+            $or: [
+                { hidden: undefined },
+                { hidden: false }
+            ]
+        }
+    }
+    private getSortOrder(): any {
+        if (this.sortOrder === CommentsOrder.NEWEST) {
+            return { sentAt: 1 };
+        } else if (this.sortOrder === CommentsOrder.LIKES) {
+            return { likes: 1 }
+        } else if (this.sortOrder === CommentsOrder.OLDEST) {
+            return { sentAt: -1 }
+        }
+
+        return { sentAt: 1 };
     }
 
     pubsub: PubSub<ChatPubSubEvent>;

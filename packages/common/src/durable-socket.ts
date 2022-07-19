@@ -71,7 +71,11 @@
 
         this.lastPong = Date.now();
         this.pingTimer = setInterval(() => {
-
+            if (this._closed) {
+                clearInterval(this.pingTimer);
+                return;
+            }
+            
             try {
                 this.send(JSON.stringify({ type: 'ping' }));
             } catch (e) {
@@ -105,7 +109,11 @@
         this.dispatchEvent(ev);
     }
 
+    private _closed = false;
     private handleLost() {
+        if (this._closed)
+            return;
+        
         if (this._ready) {
             console.log(`[Socket] Connection Lost [${this.url}]`);
         }
@@ -230,6 +238,7 @@
     get readyState() { return this._socket.readyState; }
 
     close(code?: number, reason?: string): void {
+        this._closed = true;
         this._socket.close(code, reason);
         this.dispatchEvent({
             type: 'close', 

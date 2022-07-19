@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild, ElementRef, Output, HostBinding } from "@angular/core";
-import { User, ChatMessage } from '@banta/common';
+import { User, ChatMessage, CommentsOrder } from '@banta/common';
 import { Subject, Subscription } from 'rxjs';
 import { ChatBackendBase } from "../../chat-backend-base";
 import { ChatSourceBase } from "../../chat-source-base";
@@ -146,7 +146,13 @@ export class CommentViewComponent {
         message.transientState.editing = true;
     }
 
+    customSortEnabled = false;
+
     set source(value) {
+        this.customSortEnabled = value?.sortOrder !== CommentsOrder.NEWEST;
+        this.newMessages = [];
+        this.olderMessages = [];
+
         if (this._sourceSubs) {
             this._sourceSubs.unsubscribe();
             this._sourceSubs = null;
@@ -196,7 +202,15 @@ export class CommentViewComponent {
         return chatMessage.id;
     }
 
+    @Output()
+    sortOrderChanged = new Subject<CommentsOrder>();
+
     async showNew() {
+        if (this.source && this.source.sortOrder !== CommentsOrder.NEWEST) {
+            this.sortOrderChanged.next(CommentsOrder.NEWEST);
+            return;
+        }
+
         this.isViewingMore = false;
         this.messages = this.newMessages.splice(0, this.newMessages.length).concat(this.messages);
         let overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
@@ -241,7 +255,12 @@ export class CommentViewComponent {
             bucket = null;
         }
 
-        if (this.newestLast) {
+        let newestLast = this.newestLast;
+
+        // if (this.source.sortOrder === CommentsOrder.OLDEST)
+        //     newestLast = true;
+        
+        if (newestLast) {
             destination.push(message);
             let overflow = destination.splice(this.maxVisibleMessages, destination.length);
             bucket?.push(...overflow);

@@ -52,7 +52,7 @@ export class BantaComponent {
         let message : ChatMessage = {
             user: null,
             sentAt: Date.now(),
-            upvotes: 0,
+            likes: 0,
             message: text
         };
 

@@ -8,7 +8,7 @@ import { CORSMiddleware } from "./cors";
 import { ChatModule } from "./chat.module";
 import { ChatController } from "./chat.controller";
 import { AuthorizableAction, ChatService } from "./chat.service";
-import { User } from "@banta/common";
+import { ChatMessage, User } from "@banta/common";
 
 globalThis.fetch = require('node-fetch');
 
@@ -28,6 +28,13 @@ class BantaService {
     }
 
     altOnInit() {
+        this.chat.transformMessage = (message: ChatMessage, action: 'post' | 'edit', previousMessage: string) => {
+            message.message = message.message
+                .replace(/crap/g, 'shit')
+                .replace(/eff/g, 'fuck')
+            ;
+        }
+
         this.chat.authorizeAction = (user: User, token: string, action: AuthorizableAction) => {
             // if (action.action === 'editMessage')
             //     throw new Error(`You cannot edit your messages at this time.`);

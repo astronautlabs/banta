@@ -22,10 +22,6 @@ export class MockBackend extends ChatBackendBase {
         this.sources.delete(`${source.identifier}:${source.sortOrder}`);
     }
 
-    async modifyMessage(message: ChatMessage): Promise<void> {
-        // do nothing
-    }
-
     private getSourceForId(topicId: string, messageId: string, options: ChatSourceOptions) {
         let sortOrder = options?.sortOrder ?? CommentsOrder.NEWEST;
 
@@ -103,7 +99,7 @@ export class MockSource implements ChatSourceBase {
         return 0; // TODO
     }
 
-    async modifyMessage(messageId: string, text: string) : Promise<void> {
+    async editMessage(messageId: string, text: string) : Promise<void> {
         this.backend.messages.get(messageId).message = text;
     }
 
@@ -118,13 +114,13 @@ export class MockSource implements ChatSourceBase {
         }
 
         // The UI will increment the like count early for quick user response.
-        // We need to maintain a fake "source of truth" for the upvotes.
+        // We need to maintain a fake "source of truth" for the likes.
         
-        if (!message['$upvotes'])
-            message['$upvotes'] = 0;
+        if (!message['$likes'])
+            message['$likes'] = 0;
 
-        message['$upvotes'] += 1;
-        message.upvotes = message['$upvotes'];
+        message['$likes'] += 1;
+        message.likes = message['$likes'];
     }
 
     async loadAfter(message: ChatMessage, count: number) {
@@ -138,13 +134,13 @@ export class MockSource implements ChatSourceBase {
         }
 
         // The UI will increment the like count early for quick user response.
-        // We need to maintain a fake "source of truth" for the upvotes.
+        // We need to maintain a fake "source of truth" for the likes.
         
-        if (!message['$upvotes'])
-            message['$upvotes'] = 0;
+        if (!message['$likes'])
+            message['$likes'] = 0;
 
-        message['$upvotes'] -= 1;
-        message.upvotes = message['$upvotes'];
+        message['$likes'] -= 1;
+        message.likes = message['$likes'];
     }
 
     async send(message: ChatMessage) {
@@ -237,14 +233,14 @@ export class SimulatedSource extends MockSource {
             id: uuid(),
             user,
             sentAt: Date.now(),
-            upvotes: 0,
+            likes: 0,
             message: messageText,
             submessages: [
                 {
                     user: this.currentUser,
                     message: `Good point!`,
                     sentAt: Date.now(),
-                    upvotes: 0
+                    likes: 0
                 },
                 {
                     user: {
@@ -255,25 +251,25 @@ export class SimulatedSource extends MockSource {
                     },
                     sentAt: Date.now(),
                     message: `What would this mean for Buttigieg?`,
-                    upvotes: 0
+                    likes: 0
                 },
                 {
                     user,
                     sentAt: Date.now(),
                     message: `Klobucharino`,
-                    upvotes: 0
+                    likes: 0
                 },
                 {
                     user: this.currentUser,
                     sentAt: Date.now(),
                     message: `Good question!`,
-                    upvotes: 0
+                    likes: 0
                 },
                 {
                     user,
                     sentAt: Date.now(),
                     message: `But whyigieg`,
-                    upvotes: 0
+                    likes: 0
                 }
             ]
         }

@@ -237,6 +237,9 @@ export class CommentFieldComponent {
         this.editAvatarSelected.next();
     }
 
+    @Input()
+    submit: (message: ChatMessage) => boolean;
+
     async sendMessage() {
         if (!this.source)
             return;
@@ -253,20 +256,12 @@ export class CommentFieldComponent {
                 user: this.user,
                 sentAt: Date.now(),
                 url: location.href,
-                upvotes: 0,
+                likes: 0,
                 message: text
             };
 
-            try {
-                const intercept = await this.shouldInterceptMessageSend?.(message, this.source);
-                if (!intercept) {
-                    await this.source.send(message);
-                }
+            if (await this.submit(message)) {
                 this.text = '';
-            } catch (e) {
-                this.indicateError(`Could not send: ${e.message}`);
-                console.error(`Failed to send message: `, message);
-                console.error(e);
             }
         } finally {
             this.sending = false;

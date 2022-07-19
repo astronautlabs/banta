@@ -31,5 +31,5 @@ export interface ChatSourceBase {
     get(id : string) : Promise<ChatMessage>;
     likeMessage(messageId: string): Promise<void>;
     unlikeMessage(messageId: string): Promise<void>;
-    modifyMessage(messageId: string, text: string) : Promise<void>;
+    editMessage(messageId: string, text: string) : Promise<void>;
 }

@@ -20,6 +20,39 @@ export class BantaCommentsComponent implements AfterViewInit {
         private elementRef: ElementRef<HTMLElement>,
         private activatedRoute: ActivatedRoute
     ) {
+        this.sendMessage = async (message: ChatMessage) => {
+            try {
+                const intercept = await this.shouldInterceptMessageSend?.(message, this.source);
+                if (!intercept) {
+                    await this.source.send(message);
+                }
+
+                if (this.source.sortOrder !== CommentsOrder.NEWEST) {
+                    this.sortOrder = CommentsOrder.NEWEST;
+                }
+                return true;
+            } catch (e) {
+                this.indicateError(`Could not send: ${e.message}`);
+                console.error(`Failed to send message: `, message);
+                console.error(e);
+                return false;
+            }
+        }
+
+        this.sendReply = async (message: ChatMessage) => {
+            try {
+                const intercept = await this.shouldInterceptMessageSend?.(message, this.source);
+                if (!intercept) {
+                    await this.selectedMessageThread.send(message);
+                }
+                return true;
+            } catch (e) {
+                this.indicateError(`Could not send reply: ${e.message}`);
+                console.error(`Failed to send message: `, message);
+                console.error(e);
+                return false;
+            }
+        }
     }
 
     private _upvoted = new Subject<ChatMessage>();
@@ -49,6 +82,9 @@ export class BantaCommentsComponent implements AfterViewInit {
             });
         }
     }
+
+    sendMessage: (message: ChatMessage) => void;
+    sendReply: (message: ChatMessage) => void;
 
     @Input() hashtags: HashTag[] = [
         {hashtag: 'error', description: 'Cause an error'},
@@ -119,12 +155,15 @@ export class BantaCommentsComponent implements AfterViewInit {
     }
 
     private async setSourceFromTopicID(topicID: string) {
-        this._source?.close?.();
-        this._source = null;
+        if (this._source) {
+            this._source.close();
+            this._source = null;
+        }
+
         setTimeout(async () => {
+            console.log(`[banta-comments] Subscribing to source for topic '${topicID}'`);
             this._source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder });
 
-            console.log(`[banta-comments] Subscribing to source for topic '${topicID}'`);
 
             this._source.messageReceived.subscribe(m => this.addParticipant(m));
             this._source.messageSent.subscribe(m => this.addParticipant(m));
@@ -277,7 +316,7 @@ export class BantaCommentsComponent implements AfterViewInit {
     async likeMessage(message: ChatMessage) {
         this._upvoted.next(message);
         (message as any).$liking = true;
-        message.upvotes = (message.upvotes || 0) + 1;
+        message.likes = (message.likes || 0) + 1;
         await this.source.likeMessage(message.id);
         await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
         (message as any).$liking = false;
@@ -286,7 +325,7 @@ export class BantaCommentsComponent implements AfterViewInit {
     async unlikeMessage(message: ChatMessage) {
         this._upvoted.next(message);
         (message as any).$liking = true;
-        message.upvotes = (message.upvotes || 0) + 1;
+        message.likes = (message.likes || 0) + 1;
         await this.source.unlikeMessage(message.id);
         await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
         (message as any).$liking = false;
@@ -343,21 +382,6 @@ export class BantaCommentsComponent implements AfterViewInit {
         this._shared.next(message);
     }
 
-    async sendReply() {
-        await this.selectedMessageThread.send({
-            message: this.replyMessage,
-            parentMessageId: this.selectedMessage.id,
-            upvotes: 0,
-            user: this.user,
-            submessages: [],
-            submessageCount: 0,
-            topicId: this.topicID,
-            sentAt: Date.now(),
-            updatedAt: Date.now()
-        })
-        this.replyMessage = '';
-    }
-
     scrollToMessage(message: ChatMessage) {
         let el = this.elementRef.nativeElement.querySelector(`[data-comment-id="${message.id}"]`);
         if (!el)
@@ -367,7 +391,7 @@ export class BantaCommentsComponent implements AfterViewInit {
 
     async editMessage(message: ChatMessage, newText: string) {
         try {
-            await this.source.modifyMessage(message.id, newText);
+            await this.source.editMessage(message.id, newText);
         } catch (e) {
             alert(e.message);
             return;

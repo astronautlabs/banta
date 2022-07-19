@@ -44,6 +44,7 @@
                 [shouldInterceptMessageSend]="shouldInterceptMessageSend"
                 [user]="user"
                 [label]="postReplyLabel"
+                [submit]="sendReply"
                 >
                 <ng-content select=".reply-send-options"></ng-content>
             </banta-comment-field>
@@ -67,6 +68,7 @@
         [permissionDeniedLabel]="permissionDeniedLabel"
         (permissionDeniedError)="showPermissionDenied()"
         [shouldInterceptMessageSend]="shouldInterceptMessageSend"
+        [submit]="sendMessage"
         >
       
     </banta-comment-field>
@@ -82,6 +84,7 @@
         [maxVisibleMessages]="maxVisibleMessages"
         [genericAvatarUrl]="genericAvatarUrl"
         (userSelected)="selectMessageUser($event)"
+        (sortOrderChanged)="sortOrder = $event"
         (selected)="selectMessage($event)"
         (liked)="likeMessage($event)"
         (messageEdited)="editMessage($event.message, $event.newMessage)"
