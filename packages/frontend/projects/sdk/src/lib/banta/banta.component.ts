@@ -1,11 +1,12 @@
-import { Component, Input, ViewChild, ElementRef, HostBinding } from "@angular/core";
-import { NewMessageForm, ChatMessage, User, ChatSource, Notification } from '@banta/common';
-import { Subject, BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { Component, Input, ViewChild, HostBinding } from "@angular/core";
+import { NewMessageForm, ChatMessage, User, Notification } from '@banta/common';
+import { Subject, Observable, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { BantaChatComponent } from '../chat';
 import { BantaService } from '../common';
-import { ChatBackendService } from "../common";
 import { Output } from "@angular/core";
+import { ChatBackendBase } from "../chat-backend-base";
+import { ChatSourceBase } from "../chat-source-base";
 
 /**
  * Unified chat and comments component
@@ -18,13 +19,13 @@ import { Output } from "@angular/core";
 export class BantaComponent {
     constructor(
         private banta : BantaService,
-        private backend : ChatBackendService,
+        private backend : ChatBackendBase,
         private matDialog : MatDialog
     ) {
     }
 
-    firehoseSource : ChatSource;
-    pointSource : ChatSource;
+    firehoseSource : ChatSourceBase;
+    pointSource : ChatSourceBase;
 
     private _topicID : string;
     private _subs = new Subscription();
@@ -184,7 +185,7 @@ export class BantaComponent {
     }
 
     pointOpen : ChatMessage = null;
-    pointSubChat : ChatSource = null;
+    pointSubChat : ChatSourceBase = null;
 
     closeAux() {
         this.auxOpen = false;
@@ -201,11 +202,8 @@ export class BantaComponent {
     }
 
     async upvoteMessage(message : ChatMessage) {
-        if (message.parentMessageId)
-            await this.backend.upvoteMessage(message.topicId, message.parentMessageId, message.id);
-        else
-            await this.backend.upvoteMessage(message.topicId, message.id);
-        //message.upvotes += 1;
+        // TODO
+        //await this.backend.likeMessage(message.id);
     }
 
     showProfile(user : User) {

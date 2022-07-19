@@ -1,6 +1,6 @@
 import { ModuleWithProviders, NgModule } from '@angular/core';
-import { BantaCommentsComponent, CommentsModule } from './comments';
-import { BantaChatComponent, ChatModule } from './chat';
+import { CommentsModule } from './comments';
+import { ChatModule } from './chat';
 import { EmojiModule } from './emoji';
 import { BantaComponent } from './banta/banta.component';
 import { BantaLogoComponent } from './banta-logo.component';
@@ -17,6 +17,10 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { BantaService } from './common';
+import { ChatBackend } from './chat-backend';
+import { SdkOptions } from './sdk-options';
+import { BANTA_SDK_OPTIONS } from './sdk-options';
+import { ChatBackendBase } from './chat-backend-base';
 
 @NgModule({
     imports: [
@@ -50,11 +54,16 @@ import { BantaService } from './common';
     ]
 })
 export class BantaSdkModule {
-    static forRoot(): ModuleWithProviders<BantaSdkModule> {
+    static configure(options?: SdkOptions): ModuleWithProviders<BantaSdkModule> {
         return {
             ngModule: BantaSdkModule,
             providers: [
-                BantaService
+                BantaService,
+                { 
+                    provide: BANTA_SDK_OPTIONS, 
+                    useValue: options || {}
+                },
+                { provide: ChatBackendBase, useClass: ChatBackend }
             ]
         }
     }

@@ -1,6 +1,7 @@
 import { Component, ElementRef, Input, Output, ViewChild } from "@angular/core";
-import { ChatMessage, ChatSource, User } from "@banta/common";
+import { ChatMessage, User } from "@banta/common";
 import { Observable, Subject } from "rxjs";
+import { ChatSourceBase } from "../../chat-source-base";
 import { EMOJIS } from "../../emoji";
 
 export interface AutoCompleteOption {
@@ -20,7 +21,7 @@ export interface HashTag {
 })
 export class CommentFieldComponent {
 
-    @Input() source : ChatSource;
+    @Input() source : ChatSourceBase;
     @Input() user : User;
     @Input() canComment = true;
 
@@ -38,7 +39,7 @@ export class CommentFieldComponent {
     @Input() signInLabel = 'Sign In';
     @Input() placeholder = '';
 
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSource) => boolean | Promise<boolean>;
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
 
     @ViewChild('autocomplete') autocompleteEl : ElementRef<HTMLElement>;
     @ViewChild('autocompleteContainer') autocompleteContainerEl : ElementRef<HTMLElement>;

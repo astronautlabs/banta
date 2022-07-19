@@ -1,6 +1,7 @@
 import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
-import { ChatSource, User, ChatMessage } from '@banta/common';
+import { User, ChatMessage } from '@banta/common';
 import { Subject, Subscription } from 'rxjs';
+import { ChatSourceBase } from "../../chat-source-base";
 
 @Component({
     selector: 'banta-chat-view',
@@ -15,7 +16,7 @@ export class ChatViewComponent {
     }
 
     private _sourceSubs = new Subscription();
-    private _source : ChatSource;
+    private _source : ChatSourceBase;
 
     @Input()
     get source() {

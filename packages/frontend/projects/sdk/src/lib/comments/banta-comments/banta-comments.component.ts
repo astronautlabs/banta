@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, ElementRef, Input, Output } from '@angular/core';
-import { User, ChatSource, ChatMessage, UserAccount, CommentsOrder } from '@banta/common';
+import { User, ChatMessage, CommentsOrder } from '@banta/common';
 import { HashTag } from '../comment-field/comment-field.component';
 import { Subject, Observable, Subscription } from 'rxjs';
-import { ChatBackendService } from '../../common';
 import { BantaService } from '../../common';
 import { ActivatedRoute } from '@angular/router';
+import { ChatBackendBase } from '../../chat-backend-base';
+import { ChatSourceBase } from '../../chat-source-base';
 
 /**
  * Comments component
@@ -17,7 +18,7 @@ import { ActivatedRoute } from '@angular/router';
 export class BantaCommentsComponent implements AfterViewInit {
     constructor(
         private banta: BantaService,
-        private backend: ChatBackendService,
+        private backend: ChatBackendBase,
         private elementRef: ElementRef<HTMLElement>,
         private activatedRoute: ActivatedRoute
     ) {
@@ -32,7 +33,7 @@ export class BantaCommentsComponent implements AfterViewInit {
     private _usernameSelected = new Subject<User>();
     private _avatarSelected = new Subject<User>();
 
-    private _source: ChatSource;
+    private _source: ChatSourceBase;
 
     private _subs = new Subscription();
 
@@ -90,7 +91,7 @@ export class BantaCommentsComponent implements AfterViewInit {
     }
 
     @Input()
-    get source(): ChatSource {
+    get source(): ChatSourceBase {
         return this._source;
     }
 
@@ -103,7 +104,7 @@ export class BantaCommentsComponent implements AfterViewInit {
     @Input() maxVisibleMessages: number;
     @Input() genericAvatarUrl: string;
 
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSource) => boolean | Promise<boolean>;
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
 
     @Input()
     get topicID(): string {
@@ -151,7 +152,7 @@ export class BantaCommentsComponent implements AfterViewInit {
         this._editAvatarSelected.next();
     }
 
-    user: UserAccount;
+    user: User;
 
     private _newMessageText: string;
 
@@ -200,13 +201,16 @@ export class BantaCommentsComponent implements AfterViewInit {
         if (!this.user)
             return false;
 
-        if (!this.user.permissions)
-            return true;
+        return true;
 
-        if (!this.user.permissions.canComment)
-            return true;
+        // TODO
+        // if (!this.user.permissions)
+        //     return true;
 
-        return this.user.permissions?.canComment(this.source);
+        // if (!this.user.permissions.canComment)
+        //     return true;
+
+        // return this.user.permissions?.canComment(this.source);
     }
 
     @Output()
@@ -272,13 +276,22 @@ export class BantaCommentsComponent implements AfterViewInit {
         });
     }
 
-    async upvoteMessage(message: ChatMessage) {
+    async likeMessage(message: ChatMessage) {
         this._upvoted.next(message);
-        (message as any).$upvoting = true;
+        (message as any).$liking = true;
         message.upvotes = (message.upvotes || 0) + 1;
-        await this.backend.upvoteMessage(message.topicId, message.parentMessageId ? message.parentMessageId : message.id, message.parentMessageId ? message.id : undefined);
+        await this.source.likeMessage(message.id);
         await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
-        (message as any).$upvoting = false;
+        (message as any).$liking = false;
+    }
+
+    async unlikeMessage(message: ChatMessage) {
+        this._upvoted.next(message);
+        (message as any).$liking = true;
+        message.upvotes = (message.upvotes || 0) + 1;
+        await this.source.unlikeMessage(message.id);
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
+        (message as any).$liking = false;
     }
 
     reportMessage(message: ChatMessage) {
@@ -286,7 +299,7 @@ export class BantaCommentsComponent implements AfterViewInit {
     }
 
     selectedMessage: ChatMessage;
-    selectedMessageThread: ChatSource;
+    selectedMessageThread: ChatSourceBase;
 
     replyMessage: string;
 

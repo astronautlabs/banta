@@ -13,27 +13,13 @@ export class TryChatComponent {
 
     allowChangingTopic = false;
 
-    private async getSetting<T>(id : string, defaultValue : T): Promise<T> {
-        try {
-            let doc = await firebase.firestore().doc(`/settings/${id}`).get();
-            if (doc.exists) {
-                return doc.data().value;
-            }
-        } catch (e) {
-            console.error(`Caught error while fetching demo topic setting:`);
-            console.error(e);
-        }
-
-        return defaultValue;
-    }
-
     alert(message: string) {
         alert(message);
     }
 
     async ngOnInit() {
-        this.allowChangingTopic = await this.getSetting('allowChangingTopic', false);
-        this.topicID = await this.getSetting('demoTopic', 'home4');
+        this.allowChangingTopic = true;
+        this.topicID = 'home';
         this.newTopicID = this.topicID;
     }
 

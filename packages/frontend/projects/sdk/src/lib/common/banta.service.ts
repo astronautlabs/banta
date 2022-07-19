@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core';
+import { User } from '@banta/common';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { UserAccount } from '@banta/common';
 
 @Injectable()
 export class BantaService {
-    private _userChanged = new BehaviorSubject<UserAccount>(null);
-    private _user : UserAccount;
+    private _userChanged = new BehaviorSubject<User>(null);
+    private _user : User;
     
-    get userChanged() : Observable<UserAccount> {
+    get userChanged() : Observable<User> {
         return this._userChanged;
     }
     
-    set user(user : UserAccount) {
+    set user(user : User) {
         this._user = user;
         this._userChanged.next(user);
     }

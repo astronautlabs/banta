@@ -1,12 +1,11 @@
 import "@alterior/platform-nodejs";
 import { Application } from "@alterior/runtime";
 import { WebService, Mount, Get, WebServerEngine } from "@alterior/web-server";
+import { ChatController, ChatModule } from "@banta/server";
 import { ExpressEngine } from '@alterior/express';
 
 WebServerEngine.default = ExpressEngine;
 import { CORSMiddleware } from "./cors";
-import { ChatModule } from "./chat.module";
-import { ChatController } from "./chat.controller";
 
 globalThis.fetch = require('node-fetch');
 
@@ -19,7 +18,7 @@ globalThis.fetch = require('node-fetch');
         ChatModule
     ]
 })
-class BantaService {
+class ExampleService {
     @Mount() banta : ChatController;
 
     @Get('/healthz')
@@ -28,4 +27,4 @@ class BantaService {
     }
 }
 
-Application.bootstrap(BantaService);
+Application.bootstrap(ExampleService);

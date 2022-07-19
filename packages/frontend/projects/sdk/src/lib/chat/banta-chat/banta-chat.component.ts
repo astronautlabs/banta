@@ -1,9 +1,11 @@
 import { Component, Input, Output, ElementRef, ViewChild } from "@angular/core";
 import { Subject, Observable, Subscription } from 'rxjs';
 
-import { User, ChatSource, ChatMessage, NewMessageForm, UserAccount } from '@banta/common';
+import { User, ChatMessage, NewMessageForm } from '@banta/common';
 import { ChatViewComponent } from '../chat-view/chat-view.component';
-import { BantaService, ChatBackendService } from "../../common";
+import { BantaService } from "../../common";
+import { ChatBackendBase } from "../../chat-backend-base";
+import { ChatSourceBase } from "../../chat-source-base";
 
 /**
  * Chat component
@@ -16,16 +18,16 @@ import { BantaService, ChatBackendService } from "../../common";
 export class BantaChatComponent {
     constructor(
         private banta : BantaService,
-        private backend : ChatBackendService,
+        private backend : ChatBackendBase,
         private elementRef : ElementRef<HTMLElement>
     ) {
     }
 
-    private _source : ChatSource;
+    private _source : ChatSourceBase;
     private _subs = new Subscription();
-    user : UserAccount = null;
+    user : User = null;
 
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSource) => boolean | Promise<boolean>;
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
 
 
     ngOnInit() {
@@ -37,7 +39,7 @@ export class BantaChatComponent {
     }
 
     @Input()
-    get source() : ChatSource {
+    get source() : ChatSourceBase {
         return this._source;
     }
 
@@ -150,13 +152,16 @@ export class BantaChatComponent {
         if (!this.user)
             return false;
 
-        if (!this.user.permissions)
-            return true;
+        // TODO
+        // if (!this.user.permissions)
+        //     return true;
 
-        if (!this.user.permissions.canChat)
-            return true;
+        // if (!this.user.permissions.canChat)
+        //     return true;
 
-        return this.user.permissions?.canChat(this.source);
+        // return this.user.permissions?.canChat(this.source);
+        
+        return true;
     }
 
     newMessage : NewMessageForm = {};

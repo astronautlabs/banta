@@ -1,24 +1,29 @@
-import { ChatMessage, ChatSource, User, ChatBackend, Notification, Vote, ChatSourceOptions, CommentsOrder } from "@banta/common";
+import { ChatMessage, User, Notification, Vote, CommentsOrder } from "@banta/common";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";
 import { MOCK_USERS } from "./mock-users";
 import * as pmq from 'popular-movie-quotes';
+import { ChatBackendBase, ChatSourceBase, ChatSourceOptions } from "@banta/sdk";
 
 const GENERIC_AVATAR_URL = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
 @Injectable()
-export class MockBackend implements ChatBackend {
+export class MockBackend extends ChatBackendBase {
     messages = new Map<string, ChatMessage>();
     userAvatars = new Map<string, string>();
 
-    private sources = new Map<string, ChatSource>();
+    private sources = new Map<string, MockSource>();
 
     /**
      * @internal
      */
     sourceWasClosed(source: MockSource) {
         this.sources.delete(`${source.identifier}:${source.sortOrder}`);
+    }
+
+    async modifyMessage(message: ChatMessage): Promise<void> {
+        // do nothing
     }
 
     private getSourceForId(topicId: string, messageId: string, options: ChatSourceOptions) {
@@ -28,7 +33,7 @@ export class MockBackend implements ChatBackend {
         if (this.sources.has(key))
             return this.sources.get(key);
 
-        let source : ChatSource;
+        let source : MockSource;
 
         if (messageId)
             source = new MockReplySource(this, topicId, messageId, sortOrder);
@@ -41,11 +46,11 @@ export class MockBackend implements ChatBackend {
         return source;
     }
 
-    async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSource> {
+    async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSourceBase> {
         return this.getSourceForId(topicId, undefined, options);
     }
 
-    async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSource> {
+    async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSourceBase> {
         return this.getSourceForId(topicId, messageId, options);
     }
 
@@ -65,8 +70,36 @@ export class MockBackend implements ChatBackend {
         return this.messages.get(messageId);
     }
 
-    async upvoteMessage(topicId: string, messageId: string, submessageId: string, vote: Vote): Promise<void> {
-        let message = this.messages.get(messageId);
+    watchMessage(message: ChatMessage, handler: (message: ChatMessage) => void): () => void {
+        // TODO
+        return () => {};
+    }
+
+    notificationsChanged = new Subject<Notification[]>();
+    newNotification = new Subject<Notification>();
+
+}
+
+export class MockSource implements ChatSourceBase {
+    constructor(
+        readonly backend : MockBackend,
+        readonly identifier: string,
+        public sortOrder: CommentsOrder
+    ) {
+        this.currentUserChanged.next(this.currentUser);
+    }
+
+    currentUserChanged = new BehaviorSubject<User>(null);
+    messageReceived = new Subject<ChatMessage>();
+    messageSent = new Subject<ChatMessage>();
+    messages: ChatMessage[] = [];
+
+    async getCount() {
+        return 0; // TODO
+    }
+
+    async likeMessage(messageId: string): Promise<void> {
+        let message = this.backend.messages.get(messageId);
         if (!message) {
             throw new Error(`No such message`);
         }
@@ -81,29 +114,21 @@ export class MockBackend implements ChatBackend {
         message.upvotes = message['$upvotes'];
     }
 
-    watchMessage(message: ChatMessage, handler: (message: ChatMessage) => void): () => void {
-        // TODO
-        return () => {};
+    async unlikeMessage(messageId: string): Promise<void> {
+        let message = this.backend.messages.get(messageId);
+        if (!message) {
+            throw new Error(`No such message`);
+        }
+
+        // The UI will increment the like count early for quick user response.
+        // We need to maintain a fake "source of truth" for the upvotes.
+        
+        if (!message['$upvotes'])
+            message['$upvotes'] = 0;
+
+        message['$upvotes'] -= 1;
+        message.upvotes = message['$upvotes'];
     }
-
-    notificationsChanged = new Subject<Notification[]>();
-    newNotification = new Subject<Notification>();
-
-}
-
-export class MockSource implements ChatSource {
-    constructor(
-        readonly backend : MockBackend,
-        readonly identifier: string,
-        public sortOrder: CommentsOrder
-    ) {
-        this.currentUserChanged.next(this.currentUser);
-    }
-
-    currentUserChanged = new BehaviorSubject<User>(null);
-    messageReceived = new Subject<ChatMessage>();
-    messageSent = new Subject<ChatMessage>();
-    messages: ChatMessage[] = [];
 
     async send(message: ChatMessage) {
         if (message.message.includes('#error'))

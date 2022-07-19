@@ -10,7 +10,8 @@ import { ChatMessage, User } from '@banta/common';
 export class CommentComponent {
     private _reported = new Subject<void>();
     private _selected = new Subject<void>();
-    private _upvoted = new Subject<void>();
+    private _liked = new Subject<void>();
+    private _unliked = new Subject<void>();
 
     private _shared = new Subject<ChatMessage>();
 
@@ -63,11 +64,16 @@ export class CommentComponent {
     }
 
     @Input()
-    upvoting = false;
+    liking = false;
 
     @Output()
-    get upvoted() {
-        return this._upvoted.asObservable();
+    get liked() {
+        return this._liked.asObservable();
+    }
+
+    @Output()
+    get unliked() {
+        return this._unliked.asObservable();
     }
 
     @Output()
@@ -89,8 +95,12 @@ export class CommentComponent {
         this._reported.next();
     }
 
-    upvote() {
-        this._upvoted.next();
+    like() {
+        this._liked.next();
+    }
+
+    unlike() {
+        this._unliked.next();
     }
 
     share() {

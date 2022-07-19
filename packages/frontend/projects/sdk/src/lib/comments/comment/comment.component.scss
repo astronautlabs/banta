@@ -108,6 +108,12 @@
 .counted-action {
     display: flex;
     align-items: center;
+
+    &.active {
+        button, .count-indicator {
+            color: #00a5ff;
+        }
+    }
 }
 
 .count-indicator {

@@ -1,7 +1,8 @@
 import { Component, Input, ViewChild, ElementRef, Output, HostBinding } from "@angular/core";
-import { User, ChatMessage, ChatSource } from '@banta/common';
+import { User, ChatMessage } from '@banta/common';
 import { Subject, Subscription } from 'rxjs';
-import { ChatBackendService } from "../../common";
+import { ChatBackendBase } from "../../chat-backend-base";
+import { ChatSourceBase } from "../../chat-source-base";
 
 @Component({
     selector: 'banta-comment-view',
@@ -10,15 +11,16 @@ import { ChatBackendService } from "../../common";
 })
 export class CommentViewComponent {
     constructor(
-        private backend: ChatBackendService
+        private backend: ChatBackendBase
     ) {
 
     }
 
     private _sourceSubs = new Subscription();
-    private _source: ChatSource;
+    private _source: ChatSourceBase;
     private _selected = new Subject<ChatMessage>();
-    private _upvoted = new Subject<ChatMessage>();
+    private _liked = new Subject<ChatMessage>();
+    private _unliked = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
     private _usernameSelected = new Subject<User>();
@@ -51,8 +53,13 @@ export class CommentViewComponent {
     }
 
     @Output()
-    get upvoted() {
-        return this._upvoted;
+    get liked() {
+        return this._liked;
+    }
+
+    @Output()
+    get unliked() {
+        return this._unliked;
     }
 
     @Output()
@@ -79,8 +86,12 @@ export class CommentViewComponent {
         return this._source;
     }
 
-    upvoteMessage(message: ChatMessage) {
-        this._upvoted.next(message);
+    likeMessage(message: ChatMessage) {
+        this._liked.next(message);
+    }
+
+    unlikeMessage(message: ChatMessage) {
+        this._unliked.next(message);
     }
 
     reportMessage(message: ChatMessage) {
@@ -119,7 +130,7 @@ export class CommentViewComponent {
             const messages = (value.messages || []).slice();
             this.messages = messages;
             this.olderMessages = messages.splice(this.maxVisibleMessages, messages.length);
-            this.hasMore = this.olderMessages.length > 0;
+            this.hasMore = !!this.source.loadAfter; //this.olderMessages.length > 0;
 
             this._sourceSubs = new Subscription();
             this._sourceSubs.add(this._source.messageReceived.subscribe(msg => this.messageReceived(msg)));
@@ -185,6 +196,7 @@ export class CommentViewComponent {
                     this.hasMore = false;
 
             } else {
+                console.warn(`Source does not have ability to present more.`);
                 this.hasMore = false;
             }
         }
@@ -210,7 +222,7 @@ export class CommentViewComponent {
         }
 
         if (bucket?.length > 0)
-            this.hasMore = true;
+            this.hasMore = !!this.source?.loadAfter;
     }
 
     private messageReceived(message: ChatMessage) {

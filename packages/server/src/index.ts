@@ -1,7 +1,4 @@
-export * from './accounts';
-export * from './chat';
-export * from './common';
+export * from './chat.controller';
+export * from './chat.service';
 
-export * from './chat-backend-service';
-export * from './banta-backend.controller';
-export * from './banta-backend.module';
+export * from './chat.module';

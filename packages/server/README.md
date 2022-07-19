@@ -41,7 +41,7 @@ You will also need to configure the `frontend` package (which is the Angular app
         useFactory: (auth, notifs, storeRef) => new FirebaseChatBackend(auth, notifs, storeRef)
     },
     {
-        provide: ChatBackendService, 
+        provide: ChatBackendBase, 
         deps: [ FirebaseChatBackend ],
         useFactory: (firebaseBackend) => 
             new BantaServiceChatBackend(firebaseBackend, 'http://localhost:3422')

@@ -29,14 +29,15 @@
                 <mat-icon [inline]="true">comment</mat-icon>
             </button>
         </div>
-        <div class="counted-action">
+        <div class="counted-action" [class.active]="message.userState?.liked">
             <div class="count-indicator">
                 {{message.upvotes}}
             </div>
-            <button mat-icon-button [matTooltip]="upvoting ? 'Please wait...' : 'Like'" matTooltipPosition="below" (click)="upvote()">
-
-                <mat-spinner *ngIf="upvoting" [diameter]="15" style="margin-left: 1em;"></mat-spinner>
-                <mat-icon *ngIf="!upvoting" [inline]="true">thumb_up</mat-icon>
+            <button mat-icon-button [disabled]="true" [matTooltip]="upvoting ? 'Please wait...' : message.userState?.liked ? 'Unlike' : 'Like'" matTooltipPosition="below" *ngIf="liking">
+                <mat-spinner [diameter]="15" style="margin-left: 1em;"></mat-spinner>
+            </button>
+            <button mat-icon-button [matTooltip]="upvoting ? 'Please wait...' : 'Like'" matTooltipPosition="below" (click)="message.userState?.liked ? unlike() : like()" *ngIf="!liking">
+                <mat-icon [inline]="true">thumb_up</mat-icon>
             </button>
         </div>
 
