@@ -206,22 +206,6 @@ export class BantaCommentsComponent {
     selectedMessage: ChatMessage;
     selectedMessageThread: ChatSourceBase;
     selectedMessageVisible = false;
-    
-    get canComment() {
-        if (!this.user)
-            return false;
-
-        return true;
-
-        // TODO
-        // if (!this.user.permissions)
-        //     return true;
-
-        // if (!this.user.permissions.canComment)
-        //     return true;
-
-        // return this.user.permissions?.canComment(this.source);
-    }
 
     // Inputs
 
@@ -336,7 +320,7 @@ export class BantaCommentsComponent {
             message.transientState.highlighted = true;
             console.dir(message);
             await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
-            
+
         } else {
             this.selectMessage(message);
         }
