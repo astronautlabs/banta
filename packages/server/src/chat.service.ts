@@ -285,13 +285,60 @@ export class ChatService {
         if (message.hidden === hidden)
             return;
         
+        // Update the message itself to reflect the new status.
         this.messages.updateOne({ id: message.id }, { $set: { hidden }});
         message.hidden = hidden;
-        await this.modifyTopicMessageCount(message.topicId, hidden ? -1 : +1);
-        if (message.parentMessageId)
-            await this.modifySubmessageCount(message.parentMessageId, hidden ? -1 : +1);
+
+        // Address the effect this operation will have on cached message counters.
+
+        let affectedMessages: number;
+        if (message.parentMessageId) {
+            // If this is a submessage, assume that this operation affects a maximum of one message since 
+            // nesting is only supported 1-level deep.
+            affectedMessages = 1;
+
+            // Update the parent message's submessage count.
+            await this.modifySubmessageCount(message.parentMessageId, hidden ? -1 : 1);
+
+            // We also need to check if the parent message is already hidden, if so then this operation 
+            // does not affect the topic's message counter at all.
+            let parentMessage = await this.getMessage(message.parentMessageId, false);
+            let parentHidden: boolean = parentMessage ? parentMessage?.hidden : true;
+            if (parentHidden)
+                affectedMessages = 0;
+        } else {
+            // If this is a top-level message, count the visible subchildren to determine how many messages will no longer
+            // be visible.
+            affectedMessages = 1 + await this.countVisibleSubMessages(message.id);
+        }
+
+        // Update the topic's message counter, if necessary
+
+        if (affectedMessages !== 0) {
+            await this.modifyTopicMessageCount(
+                message.topicId, 
+                (hidden ? -1 : 1) * affectedMessages
+            );
+        }
+
+        // Notify all listeners of the change to this method.
 
         this.notifyMessageChange(message);
+    }
+
+    /**
+     * Count how many submessages are visible for the given message.
+     * @param parentMessageId The parent message to check
+     * @returns The number of actual visible submessages
+     */
+    async countVisibleSubMessages(parentMessageId: string): Promise<number> {
+        return await this.messages.countDocuments({
+            parentMessageId,
+            $or: [
+                { hidden: true },
+                { hidden: undefined }
+            ]
+        })
     }
 
     /**

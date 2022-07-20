@@ -1,5 +1,17 @@
+<h1>Comments</h1>
+
+<div class="property">
+    <label>Topic:</label>
+    <code>{{topicID}}</code>
+</div>
+
+<div class="property">
+    <label>Message Count:</label>
+    <code>{{messageCount === undefined ? 'Unknown' : messageCount}}</code>
+</div>
+
 <banta-comments
-    topicID="{{topicID}}_comments"
+    [topicID]="topicID"
     [maxVisibleMessages]="5"
     [maxMessages]="2000"
     (usernameSelected)="alert('Username was selected')"

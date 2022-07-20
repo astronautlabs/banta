@@ -33,6 +33,10 @@ export class ChatController {
 
     @Get('/topics/:id')
     async getTopic(id: string) {
-        return await this.chat.getTopic(id, false);
+        let topic = await this.chat.getTopic(id, false);
+        if (!topic)
+            throw new HttpError(404, { error: `not-found` });
+
+        return topic;
     }
 }

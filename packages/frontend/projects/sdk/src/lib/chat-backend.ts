@@ -14,9 +14,12 @@ export class ChatBackend extends ChatBackendBase {
         super();
     }
 
+    get serviceUrl() {
+        return `${this.options?.serviceUrl ?? 'http://localhost:3422'}`;
+    }
+
     private async connectToService() {
-        let serviceUrl = `${this.options?.serviceUrl ?? 'ws://localhost:3422'}/socket`;
-        let socket = new DurableSocket(serviceUrl);
+        let socket = new DurableSocket(`${this.serviceUrl.replace(/^http/, 'ws')}/socket`);
         await new Promise<void>((resolve, reject) => {
             socket.onopen = () => {
                 resolve();
@@ -46,11 +49,13 @@ export class ChatBackend extends ChatBackendBase {
     }
 
     async getSourceCountForTopic(topicId: string): Promise<number> {
-        console.log(`Get count for topic ${topicId}...`);
-        let source = await new ChatSource(this, topicId, undefined, CommentsOrder.NEWEST)
-            .bind(await this.connectToService());
+        let response = await fetch(`${this.serviceUrl}/topics/${topicId}`)
 
-        return await source.getCount();
+        if (response.status >= 400)
+            return 0;
+
+        let topic = await response.json();
+        return topic.messageCount || 0;
     }
 
     refreshMessage(message: ChatMessage): Promise<ChatMessage> {

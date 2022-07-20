@@ -87,3 +87,19 @@ mat-spinner.icon {
 .mat-button-base mat-spinner.icon {
     margin-right: 8px;
 }
+
+div.property {
+    display: flex;
+    align-items: flex-start;
+
+    label {
+        min-width: 10em;
+        font-weight: bold;
+        font-size: 12px;
+        padding: 3px;
+    }
+
+    > :not(label) {
+        flex-grow: 1;
+    }
+}

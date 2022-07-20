@@ -26,7 +26,7 @@ export class ChatConnection extends SocketRPC {
         let user = this.chat.validateToken(token);
         user.ipAddress = this.ipAddress;
         user.userAgent = this.userAgent;
-        
+
         this.user = user;
         this.user.token = token;
         this.userToken = token;
@@ -288,6 +288,9 @@ export class ChatConnection extends SocketRPC {
             throw notFound;
 
         if (!this.ownsMessage(message, true))
+            throw notFound;
+        
+        if (message.hidden)
             throw notFound;
         
         this.chat.authorizeAction(this.user, this.userToken, { 

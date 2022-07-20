@@ -2,14 +2,21 @@ import { Component } from '@angular/core';
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import {ChatMessage} from "@banta/common";
+import { ChatBackendBase } from '@banta/sdk';
 
 @Component({
     templateUrl: './try.component.html',
     styleUrls: ['./try.component.scss']
 })
 export class TryComponent {
-    topicID : string;
-    newTopicID : string;
+    constructor(
+        private chatBackend: ChatBackendBase
+    ) {
+    }
+
+    topicID: string;
+    newTopicID: string;
+    messageCount: number;
 
     allowChangingTopic = false;
 
@@ -19,8 +26,11 @@ export class TryComponent {
 
     async ngOnInit() {
         this.allowChangingTopic = true;
-        this.topicID = 'home';
+        this.topicID = 'home_comments';
         this.newTopicID = this.topicID;
+        
+        this.messageCount = await this.chatBackend.getSourceCountForTopic(this.topicID);
+        console.log(this.messageCount);
     }
 
     changeTopic() {

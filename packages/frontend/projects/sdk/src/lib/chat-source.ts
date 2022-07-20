@@ -91,21 +91,10 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     onChatMessage(message: ChatMessage) {
         if (this.messageMap.has(message.id)) {
             Object.assign(this.messageMap.get(message.id), message);
-            console.log(`[${this.parentIdentifier ? 'ROOT' : 'THREAD'}] Message changed:`);
-            console.dir(this.messageMap.get(message.id));
-
-            if (message.hidden) {
-                console.log(`MESSAGE IS NOW HIDDEN`);
-                console.dir(message);
-
-            }
         } else if (!message.hidden) {
             // Only process non-hidden messages through here. 
             // Hidden messages may be sent to us when they become hidden (ie moderation is occurring).
             // But if we never had the message to begin with, we should discard it.
-
-            console.log(`[${this.parentIdentifier ? 'ROOT' : 'THREAD'}] New message:`);
-            console.dir(message);
             this.messageMap.set(message.id, message);
             this._messageReceived.next(message);
         }
