@@ -30,4 +30,9 @@ export class ChatController {
 
         conn.bind(await WebServer.startSocket());
     }
+
+    @Get('/topics/:id')
+    async getTopic(id: string) {
+        return await this.chat.getTopic(id, false);
+    }
 }
