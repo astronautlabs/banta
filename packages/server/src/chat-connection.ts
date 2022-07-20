@@ -1,12 +1,6 @@
-import { ChatMessage, CommentsOrder, RpcCallable, SocketRPC, User } from "@banta/common";
+import { ChatMessage, ChatPermissions, CommentsOrder, RpcCallable, SocketRPC, User } from "@banta/common";
 import { ChatService, Like, Topic } from "./chat.service";
 import { PubSub } from "./pubsub";
-
-export interface ChatSourcePermissions {
-    canEdit: boolean;
-    canPost: boolean;
-    canLike: boolean;
-}
 
 export interface ChatPubSubEvent {
     message?: ChatMessage;
@@ -15,7 +9,9 @@ export interface ChatPubSubEvent {
 
 export class ChatConnection extends SocketRPC {
     constructor(
-        readonly chat: ChatService
+        readonly chat: ChatService,
+        readonly ipAddress: string,
+        readonly userAgent: string
     ) {
         super();
     }
@@ -28,6 +24,9 @@ export class ChatConnection extends SocketRPC {
     @RpcCallable()
     async authenticate(token: string) {
         let user = this.chat.validateToken(token);
+        user.ipAddress = this.ipAddress;
+        user.userAgent = this.userAgent;
+        
         this.user = user;
         this.user.token = token;
         this.userToken = token;
@@ -36,15 +35,16 @@ export class ChatConnection extends SocketRPC {
 
     private sendPermissions() {
         if (!this.user || !this.topic) {
-            this.sendEvent('onPermissions', <ChatSourcePermissions>{
+            this.sendEvent('onPermissions', <ChatPermissions>{
                 canEdit: false,
                 canLike: false,
-                canPost: false
+                canPost: false,
+                canDelete: false
             });
             return;
         }
 
-        this.sendEvent('onPermissions', <ChatSourcePermissions>{
+        this.sendEvent('onPermissions', <ChatPermissions>{
             canPost: this.chat.checkAuthorization(this.user, this.userToken, {
                 action: 'postMessage',
                 topic: this.topic
@@ -56,34 +56,53 @@ export class ChatConnection extends SocketRPC {
             canLike: this.chat.checkAuthorization(this.user, this.userToken, {
                 action: 'likeMessage',
                 topic: this.topic
+            }),
+            canDelete: this.chat.checkAuthorization(this.user, this.userToken, {
+                action: 'deleteMessage',
+                topic: this.topic
             })
         });
     }
 
     private async sendChatMessage(message: ChatMessage) {
+        message = await this.prepareMessage(message);
+        this.sendEvent('onChatMessage', message);
+    }
+
+    private async prepareMessage(message: ChatMessage) {
         message = Object.assign({}, message);
         message.userState = {
             liked: false
         };
 
-        // Don't send hidden messages.
-
-        if (message.hidden)
-            return;
+        // Remove any private information from the user object
+        // before sending to the chat participants.
+        delete message.user?.token;
+        delete message.user?.ipAddress;
+        delete message.user?.userAgent;
 
         if (this.user) {
             let like = await this.chat.likes.findOne({ messageId: message.id, userId: this.user.id });
             message.userState.liked = !!like;
         }
 
-        this.sendEvent('onChatMessage', message);
+        return message;
     }
 
     topic: Topic;
 
     @RpcCallable()
-    async loadAfter(messageId: string, count: number) {
-        // TODO: This needs to be rethunk.
+    async loadAfter(offset: number, count: number) {
+        return Promise.all(
+            (await this.chat.messages.find(this.getFilter(), { 
+                sort: this.getSortOrder(),
+                skip: offset + 1,
+                limit: Math.min(100, count)
+            })
+            .toArray())
+            .map((m, i) => (m.pagingCursor = String(offset + 1 + i), m))
+            .map(m => this.prepareMessage(m))
+        );
     }
 
     @RpcCallable()
@@ -107,6 +126,26 @@ export class ChatConnection extends SocketRPC {
     }
 
     sortOrder: CommentsOrder;
+
+    @RpcCallable()
+    async deleteMessage(messageId: string) {
+        let message = await this.chat.getMessage(messageId);
+
+        if (!this.user)
+            throw new Error(`You must be signed in to delete your messages.`);
+
+        if (message.user?.id !== this.user.id)
+            throw new Error(`You can only delete your own messages.`);
+
+        this.chat.authorizeAction(this.user, this.userToken, {
+            action: 'deleteMessage',
+            message,
+            parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId, false) : null,
+            topic: await this.chat.getTopic(message.topicId, false)
+        });
+
+        await this.chat.setMessageHiddenStatus(messageId, true);
+    }
 
     @RpcCallable()
     async subscribe(topicId: string, parentMessageId: string, order: CommentsOrder) {
@@ -133,13 +172,8 @@ export class ChatConnection extends SocketRPC {
                 // A message has been created/updated
 
                 let chatMessage = message.message;
-                if (this.parentMessage) {
-                    if (chatMessage.parentMessageId !== this.parentMessage.id)
-                        return;
-                } else {
-                    if (chatMessage.parentMessageId)
-                        return;
-                }
+                if (!this.ownsMessage(chatMessage))
+                    return;
 
                 if (chatMessage.topicId !== topicId)
                     return;
@@ -154,26 +188,42 @@ export class ChatConnection extends SocketRPC {
                     // Send an updated message down to the client so it knows that it has liked a message.
 
                     let message = await this.chat.getMessage(like.messageId);
-                    if (message)
+                    
+                    if (message && this.ownsMessage(message))
                         this.sendChatMessage(message);
                 }
             }
         });
+    }
 
-        // Get the initial batch of messages
-        let sort = this.getSortOrder();
+    private ownsMessage(chatMessage: ChatMessage, allowSubMessages = false) {
+        if (allowSubMessages && !this.parentMessage && chatMessage.topicId === this.topicId)
+            return true;
 
-        let initialMessages = await this.chat.messages.find(
-            this.getFilter(), 
-            { 
-                limit: 100,
-                sort
-            }).toArray();
-
-        for (let item of initialMessages) {
-            console.log(`MESSAGE: ${item.message}`);
-            await this.sendChatMessage(item);
+        if (this.parentMessage) {
+            if (chatMessage.parentMessageId !== this.parentMessage.id)
+                return false;
+        } else {
+            if (chatMessage.parentMessageId)
+                return false;
         }
+
+        return chatMessage.topicId === this.topicId;
+    }
+
+    @RpcCallable()
+    async getExistingMessages() {
+        let sort = this.getSortOrder();
+        let initialMessages = <ChatMessage[]>await this.chat.messages.find(
+            this.getFilter(), { limit: 20, sort }).toArray();
+
+        initialMessages = await Promise.all(initialMessages.map(async (m, i) => {
+            let message = await this.prepareMessage(m);
+            message.pagingCursor = String(i);
+            return <ChatMessage>message;
+        }));
+
+        return initialMessages;
     }
 
     private getFilter(): any {
@@ -188,11 +238,11 @@ export class ChatConnection extends SocketRPC {
     }
     private getSortOrder(): any {
         if (this.sortOrder === CommentsOrder.NEWEST) {
-            return { sentAt: 1 };
+            return { sentAt: -1 };
         } else if (this.sortOrder === CommentsOrder.LIKES) {
-            return { likes: 1 }
+            return { likes: -1 }
         } else if (this.sortOrder === CommentsOrder.OLDEST) {
-            return { sentAt: -1 }
+            return { sentAt: 1 }
         }
 
         return { sentAt: 1 };
@@ -237,15 +287,9 @@ export class ChatConnection extends SocketRPC {
         if (!message)
             throw notFound;
 
-        if (message.topicId !== this.topicId)
+        if (!this.ownsMessage(message, true))
             throw notFound;
         
-        if (!!this.parentMessage != !!message.parentMessageId)
-            throw notFound;
-        
-        if (this.parentMessage && this.parentMessage.id !== message.parentMessageId)
-            throw notFound;
-
         this.chat.authorizeAction(this.user, this.userToken, { 
             action: 'viewTopic', 
             topic: await this.chat.getTopic(message.topicId),
@@ -253,6 +297,7 @@ export class ChatConnection extends SocketRPC {
             parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId) : null
         });
 
+        message = await this.prepareMessage(message);
         return message;
     }
 

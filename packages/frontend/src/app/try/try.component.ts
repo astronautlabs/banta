@@ -30,4 +30,8 @@ export class TryComponent {
     sharedMessage(message: ChatMessage) {
         this.alert(`messsage id: ${message.id} has been shared `)
     }
+
+    reportedMessage(message: ChatMessage) {
+        alert(`Message ${message.id} was reported`);
+    }
 }

@@ -1,6 +1,6 @@
 import "@alterior/platform-nodejs";
 import { Application } from "@alterior/runtime";
-import { WebService, Mount, Get, WebServerEngine } from "@alterior/web-server";
+import { WebService, Mount, Get, WebServerEngine, WebEvent, WebServer } from "@alterior/web-server";
 import { ExpressEngine } from '@alterior/express';
 
 WebServerEngine.default = ExpressEngine;
@@ -29,15 +29,12 @@ class BantaService {
 
     altOnInit() {
         this.chat.transformMessage = (message: ChatMessage, action: 'post' | 'edit', previousMessage: string) => {
-            message.message = message.message
-                .replace(/crap/g, 'shit')
-                .replace(/eff/g, 'fuck')
-            ;
+            message.message = message.message.toUpperCase();
         }
 
         this.chat.authorizeAction = (user: User, token: string, action: AuthorizableAction) => {
-            // if (action.action === 'editMessage')
-            //     throw new Error(`You cannot edit your messages at this time.`);
+            // if (action.action === 'postMessage' && action.message)
+            //     throw new Error(`You cannot post THIS message at this time.`);
             //throw new Error('Not allowed');
         };
     }

@@ -1,7 +1,7 @@
-import { ChatMessage, CommentsOrder, User } from "@banta/common";
+import { ChatMessage, ChatPermissions, CommentsOrder, User } from "@banta/common";
 import { Observable, Subject, Subscription } from "rxjs";
 import { RpcEvent, SocketRPC } from "@banta/common";
-import { ChatSourceBase, ChatSourcePermissions } from "./chat-source-base";
+import { ChatSourceBase } from "./chat-source-base";
 import { ChatBackend } from "./chat-backend";
 
 export class ChatSource extends SocketRPC implements ChatSourceBase {
@@ -12,24 +12,56 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         readonly sortOrder: CommentsOrder
     ) {
         super();
+        this.ready = new Promise<void>(resolve => this.markReady = resolve);
     }
 
     private subscription = new Subscription();
+    private markReady: () => void;
 
-    permissions: ChatSourcePermissions;
+    ready: Promise<void>;
 
-    bind(socket: WebSocket): this {
+    permissions: ChatPermissions;
+    state: 'connected' | 'connecting' | 'lost' | 'restored' = 'connecting';
+
+    async bind(socket: WebSocket): Promise<this> {
         super.bind(socket);
+        this.state = 'connected';
+        this.markReady();
 
-        this.subscribeToTopic();
+        await this.subscribeToTopic();
         this.subscription.add(this.backend.userChanged.subscribe(() => this.authenticate()));
 
+        socket.addEventListener('open', async () => {
+            this.state = 'connected';
+        });
+
+        socket.addEventListener('lost', async () => {
+            this.state = 'lost';
+        });
+
         socket.addEventListener('restore', async () => {
+            this.state = 'restored';
             await this.authenticate();
             await this.subscribeToTopic();
         });
 
         return this;
+    }
+
+    async getExistingMessages(): Promise<ChatMessage[]> {
+        let messages = await this.peer.getExistingMessages();
+        messages = messages.map(message => {
+            let existingMessage = this.messageMap.get(message.id);
+
+            if (existingMessage)
+                message = Object.assign(existingMessage, message);
+            else
+                this.messageMap.set(message.id, message);
+
+            return message;
+        });
+
+        return messages;
     }
 
     async editMessage(messageId: string, text: string): Promise<void> {
@@ -41,7 +73,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     async authenticate() {
-        this.permissions = await this.peer.authenticate(this.backend.user?.token);
+        await this.peer.authenticate(this.backend.user?.token);
     }
 
     close(): void {
@@ -50,9 +82,8 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     @RpcEvent()
-    onPermissions(permissions: ChatSourcePermissions) {
-        console.log(`New permissions:`);
-        console.dir(permissions);
+    onPermissions(permissions: ChatPermissions) {
+        (window as any).bantaPermissionsDebug = permissions;
         this.permissions = permissions;
     }
 
@@ -60,7 +91,21 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     onChatMessage(message: ChatMessage) {
         if (this.messageMap.has(message.id)) {
             Object.assign(this.messageMap.get(message.id), message);
-        } else {
+            console.log(`[${this.parentIdentifier ? 'ROOT' : 'THREAD'}] Message changed:`);
+            console.dir(this.messageMap.get(message.id));
+
+            if (message.hidden) {
+                console.log(`MESSAGE IS NOW HIDDEN`);
+                console.dir(message);
+
+            }
+        } else if (!message.hidden) {
+            // Only process non-hidden messages through here. 
+            // Hidden messages may be sent to us when they become hidden (ie moderation is occurring).
+            // But if we never had the message to begin with, we should discard it.
+
+            console.log(`[${this.parentIdentifier ? 'ROOT' : 'THREAD'}] New message:`);
+            console.dir(message);
             this.messageMap.set(message.id, message);
             this._messageReceived.next(message);
         }
@@ -76,15 +121,27 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     messages: ChatMessage[] = [];
 
     async send(message: ChatMessage): Promise<ChatMessage> {
-        return this.peer.sendMessage(message);
+        return await this.peer.sendMessage(message);
     }
 
     async loadAfter(message: ChatMessage, count: number): Promise<ChatMessage[]> {
-        return this.peer.loadAfter(message.id, count);
+        if (!message)
+            return;
+
+        if (!message.pagingCursor)
+            return [];
+        
+        return this.peer.loadAfter(Number(message.pagingCursor), count);
     }
 
     async get(id: string): Promise<ChatMessage> {
-        return await this.peer.getChatMessage(id);
+        if (this.messageMap.has(id))
+            return this.messageMap.get(id);
+        
+        let message = await this.peer.getMessage(id);
+        this.messageMap.set(id, message);
+
+        return message;
     }
 
     async getCount(): Promise<number> {
@@ -97,6 +154,10 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     async unlikeMessage(messageId: string): Promise<void> {
         return await this.peer.unlikeMessage(messageId);
+    }
+
+    async deleteMessage(messageId: string): Promise<void> {
+        return await this.peer.deleteMessage(messageId);
     }
 
 }

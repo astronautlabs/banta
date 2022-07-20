@@ -63,7 +63,7 @@ export class SocketRPC<PeerT = Peer> {
         })
     }
 
-    bind(socket: WebSocket): this {
+    async bind(socket: WebSocket): Promise<this> {
         if (this._socket)
             throw new Error(`Already bound`);
 

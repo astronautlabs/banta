@@ -29,8 +29,8 @@ export class CommentFieldComponent {
     @Output() editAvatarSelected = new Subject<void>();
 
     sending = false;
-    sendError : Error;
-    expandError = false;
+    @Input() sendError : Error;
+    @Input() expandError = false;
     text : string = '';
     @Input() sendLabel = 'Send';
     @Input() sendingLabel = 'Sending';
@@ -38,7 +38,7 @@ export class CommentFieldComponent {
     @Input() permissionDeniedLabel = 'Unavailable';
     @Input() signInLabel = 'Sign In';
     @Input() placeholder = '';
-
+    @Output() textChanged = new Subject<void>();
     @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
 
     @ViewChild('autocomplete') autocompleteEl : ElementRef<HTMLElement>;
@@ -90,14 +90,17 @@ export class CommentFieldComponent {
         this.completionPrefix = '';
     }
 
+    private errorTimeout;
     indicateError(message : string) {
         this.sendError = new Error(message);
-        setTimeout(() => {
+        this.expandError = false;
+        clearTimeout(this.errorTimeout);
+        this.errorTimeout = setTimeout(() => {
             this.expandError = true;
-            setTimeout(() => {
+            this.errorTimeout = setTimeout(() => {
                 this.expandError = false;
             }, 5*1000);
-        });
+        }, 100);
     }
 
     completionFunc : (str : string) => AutoCompleteOption[];
@@ -260,8 +263,12 @@ export class CommentFieldComponent {
                 message: text
             };
 
-            if (await this.submit(message)) {
+            try {
+                await this.submit(message);
                 this.text = '';
+            } catch (e) {
+                await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
+                this.indicateError(e.message);
             }
         } finally {
             this.sending = false;

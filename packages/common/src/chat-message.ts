@@ -82,4 +82,22 @@ export interface ChatMessage {
      * return the field as an empty array when retrieving messages.
      */
     transientState? : Record<string,any>;
+
+    /**
+     * A log of the edits made to this chat message. 
+     */
+    edits?: ChatMessageEdit[];
+
+    pagingCursor?: string;
+}
+
+export interface ChatMessageEdit {
+    newText: string;
+    previousText: string;
+    createdAt: number;
+
+    /**
+     * The user who edited this message, if it was not the message author themselves.
+     */
+    user?: User;
 }

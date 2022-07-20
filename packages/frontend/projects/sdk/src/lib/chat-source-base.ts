@@ -1,18 +1,13 @@
 import { Observable } from 'rxjs';
-import { ChatMessage, User, CommentsOrder } from '@banta/common';
-
-export interface ChatSourcePermissions {
-    canPost: boolean;
-    canEdit: boolean;
-    canLike: boolean;
-}
+import { ChatMessage, CommentsOrder, ChatPermissions } from '@banta/common';
 
 export interface ChatSourceBase {
     /**
      * The topic identifier for the current chat/comments
      */
     identifier : string;
-    permissions: ChatSourcePermissions;
+    permissions: ChatPermissions;
+    ready: Promise<void>;
 
     /**
      * The ID of the parent message that this thread chat source is for.
@@ -27,9 +22,13 @@ export interface ChatSourceBase {
     send(message : ChatMessage) : Promise<ChatMessage>;
     close();
     getCount(): Promise<number>;
+    getExistingMessages(): Promise<ChatMessage[]>;
     loadAfter(message : ChatMessage, count : number) : Promise<ChatMessage[]>;
     get(id : string) : Promise<ChatMessage>;
     likeMessage(messageId: string): Promise<void>;
     unlikeMessage(messageId: string): Promise<void>;
     editMessage(messageId: string, text: string) : Promise<void>;
+    deleteMessage(messageId: string): Promise<void>;
+
+    state?: 'connecting' | 'connected' | 'lost' | 'restored';
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, WebServer } from "@alterior/web-server";
+import { Controller, Get, WebEvent, WebServer } from "@alterior/web-server";
 import { ChatService } from "./chat.service";
 import * as bodyParser from 'body-parser';
 import { HttpError } from "@alterior/common";
@@ -22,7 +22,12 @@ export class ChatController {
 
     @Get('/socket')
     async socket() {
-        new ChatConnection(this.chat)
-            .bind(await WebServer.startSocket());
+        let conn = new ChatConnection(
+            this.chat, 
+            (WebEvent.request as express.Request).ip,
+            (WebEvent.request as express.Request).header('user-agent')
+        );
+
+        conn.bind(await WebServer.startSocket());
     }
 }

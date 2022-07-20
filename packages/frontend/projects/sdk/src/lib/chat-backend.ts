@@ -22,8 +22,11 @@ export class ChatBackend extends ChatBackendBase {
                 resolve();
             }
 
-            socket.onerror = e => {
-                reject(new Error(`Failed to connect to ${serviceUrl}`));
+            socket.onclose = e => {
+                if (e.code === 503) {
+                    console.error(`Failed to connect to chat service!`);
+                    reject(e);
+                }
             }
         });
 
@@ -33,17 +36,18 @@ export class ChatBackend extends ChatBackendBase {
     }
 
     async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSourceBase> {
-        return new ChatSource(this, topicId, undefined, options?.sortOrder || CommentsOrder.NEWEST)
+        return await new ChatSource(this, topicId, undefined, options?.sortOrder || CommentsOrder.NEWEST)
             .bind(await this.connectToService());
     }
 
     async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSource> {
-        return new ChatSource(this, topicId, messageId, options?.sortOrder || CommentsOrder.NEWEST)
+        return await new ChatSource(this, topicId, messageId, options?.sortOrder || CommentsOrder.NEWEST)
             .bind(await this.connectToService());
     }
 
     async getSourceCountForTopic(topicId: string): Promise<number> {
-        let source = new ChatSource(this, topicId, undefined, CommentsOrder.NEWEST)
+        console.log(`Get count for topic ${topicId}...`);
+        let source = await new ChatSource(this, topicId, undefined, CommentsOrder.NEWEST)
             .bind(await this.connectToService());
 
         return await source.getCount();

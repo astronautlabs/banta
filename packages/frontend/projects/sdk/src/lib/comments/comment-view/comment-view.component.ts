@@ -31,6 +31,7 @@ export class CommentViewComponent {
     private _usernameSelected = new Subject<User>();
     private _avatarSelected = new Subject<User>();
     private _shared = new Subject<ChatMessage>();
+    private _deleted = new Subject<ChatMessage>();
     private _messageEdited = new Subject<EditEvent>();
 
     @Input()
@@ -57,40 +58,14 @@ export class CommentViewComponent {
         this._messageEdited.next({ message, newMessage });
     }
 
-    @Output()
-    get userSelected() {
-        return this._userSelected;
-    }
-
-    @Output()
-    get reported() {
-        return this._reported;
-    }
-
-    @Output()
-    get liked() {
-        return this._liked;
-    }
-
-    @Output()
-    get unliked() {
-        return this._unliked;
-    }
-
-    @Output()
-    get usernameSelected() {
-        return this._usernameSelected;
-    }
-
-    @Output()
-    get avatarSelected() {
-        return this._avatarSelected;
-    }
-
-    @Output()
-    get shared() {
-        return this._shared;
-    }
+    @Output() get userSelected() { return this._userSelected; }
+    @Output() get reported() { return this._reported; }
+    @Output() get liked() { return this._liked; }
+    @Output() get unliked() { return this._unliked; }
+    @Output() get usernameSelected() { return this._usernameSelected; }
+    @Output() get avatarSelected() { return this._avatarSelected; }
+    @Output() get shared() { return this._shared; }
+    @Output() get deleted() { return this._deleted; }
 
     menuMessage: ChatMessage = null;
     messages: ChatMessage[] = [];
@@ -99,14 +74,6 @@ export class CommentViewComponent {
     @Input()
     get source() {
         return this._source;
-    }
-
-    get editAllowed() {
-        return this._source?.permissions?.canEdit;
-    }
-
-    get likeAllowed() {
-        return this._source?.permissions?.canLike;
     }
 
     likeMessage(message: ChatMessage) {
@@ -146,12 +113,18 @@ export class CommentViewComponent {
         message.transientState.editing = true;
     }
 
+    deleteMessage(message: ChatMessage) {
+        this._deleted.next(message);
+    }
+
     customSortEnabled = false;
 
     set source(value) {
         this.customSortEnabled = value?.sortOrder !== CommentsOrder.NEWEST;
         this.newMessages = [];
         this.olderMessages = [];
+
+        (window as any).bantaSourceDebug = value;
 
         if (this._sourceSubs) {
             this._sourceSubs.unsubscribe();
@@ -160,11 +133,10 @@ export class CommentViewComponent {
         this._source = value;
 
         if (value) {
-            console.log(`[banta-comment-view] Subscribing to source...`);
             const messages = (value.messages || []).slice();
             this.messages = messages;
             this.olderMessages = messages.splice(this.maxVisibleMessages, messages.length);
-            this.hasMore = !!this.source.loadAfter; //this.olderMessages.length > 0;
+            this.hasMore = true; //this.olderMessages.length > 0;
 
             this._sourceSubs = new Subscription();
             this._sourceSubs.add(this._source.messageReceived.subscribe(msg => this.messageReceived(msg)));
@@ -173,7 +145,15 @@ export class CommentViewComponent {
             this._sourceSubs.add(
                 this.backend.userChanged.subscribe(user => this.currentUser = user)
             );
+
+            this.getInitialMessages();
         }
+    }
+
+    private async getInitialMessages() {
+        let messages = (await this._source.getExistingMessages());
+        messages.forEach(m => m.transientState ??= {});
+        this.messages = messages;
     }
 
     @Input()
@@ -225,18 +205,26 @@ export class CommentViewComponent {
             this.isLoadingMore = false;
             this.messages = this.messages.concat(this.olderMessages.splice(0, 50));
         } else {
-            if (this.source.loadAfter) {
-                this.isLoadingMore = true;
+            this.isLoadingMore = true;
 
-                let lastMessage = this.messages[this.messages.length - 1];
-                let messages = await this.source.loadAfter(lastMessage, 100);
-                this.messages = this.messages.concat(messages);
+            let nextPageSize = 20;
+            let lastMessage: ChatMessage;
+
+            lastMessage = this.messages[this.messages.length - 1];
+
+            if (!lastMessage) {
                 this.isLoadingMore = false;
-                if (messages.length === 0)
-                    this.hasMore = false;
+                this.hasMore = false;
+                return;
+            }
 
-            } else {
-                console.warn(`Source does not have ability to present more.`);
+            let messages = await this.source.loadAfter(lastMessage, nextPageSize);
+            messages.forEach(m => m.transientState ??= {});
+
+            this.messages = this.messages.concat(messages);
+            this.isLoadingMore = false;
+            if (messages.length === 0) {
+                console.log(`Reached the end of the list.`);
                 this.hasMore = false;
             }
         }
@@ -245,7 +233,7 @@ export class CommentViewComponent {
     private addMessage(message: ChatMessage) {
 
         if (!message.transientState)
-            message.transientState = {};
+            message.transientState ??= {};
         
         let destination = this.messages;
         let bucket = this.olderMessages;
@@ -256,9 +244,6 @@ export class CommentViewComponent {
         }
 
         let newestLast = this.newestLast;
-
-        // if (this.source.sortOrder === CommentsOrder.OLDEST)
-        //     newestLast = true;
         
         if (newestLast) {
             destination.push(message);
@@ -271,7 +256,7 @@ export class CommentViewComponent {
         }
 
         if (bucket?.length > 0)
-            this.hasMore = !!this.source?.loadAfter;
+            this.hasMore = true;
     }
 
     private messageReceived(message: ChatMessage) {

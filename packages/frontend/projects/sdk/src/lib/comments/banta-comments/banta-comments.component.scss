@@ -52,3 +52,32 @@ banta-comment-view {
         }
     }
 }
+
+.loading-screen {
+    text-align: center;
+    opacity: 0;
+    transition: 250ms ease-in-out opacity;
+    &.visible {
+        opacity: 1;
+    }
+
+    h1 {
+        font-weight: 100;
+    }
+
+    mat-spinner {
+        margin: 5em auto;
+    }
+
+    .loading-message {
+        opacity: 0;
+        transition: 250ms ease-in-out opacity;
+        width: 500px;
+        max-width: 100%;
+        margin: 0 auto;
+        
+        &.visible {
+            opacity: 1;
+        }
+    }
+}

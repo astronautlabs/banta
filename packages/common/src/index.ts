@@ -13,3 +13,4 @@ export * from './filter-object';
 export * from './comments-order';
 export * from './rpc';
 export * from './durable-socket';
+export * from './permissions';

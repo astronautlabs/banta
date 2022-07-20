@@ -5,6 +5,7 @@ import { Subject, Observable, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { ChatBackendBase } from '../../chat-backend-base';
 import { ChatSourceBase } from '../../chat-source-base';
+import { EditEvent } from '../comment-view/comment-view.component';
 
 /**
  * Comments component
@@ -14,7 +15,7 @@ import { ChatSourceBase } from '../../chat-source-base';
     templateUrl: './banta-comments.component.html',
     styleUrls: ['./banta-comments.component.scss']
 })
-export class BantaCommentsComponent implements AfterViewInit {
+export class BantaCommentsComponent {
     constructor(
         private backend: ChatBackendBase,
         private elementRef: ElementRef<HTMLElement>,
@@ -32,10 +33,10 @@ export class BantaCommentsComponent implements AfterViewInit {
                 }
                 return true;
             } catch (e) {
-                this.indicateError(`Could not send: ${e.message}`);
                 console.error(`Failed to send message: `, message);
                 console.error(e);
-                return false;
+
+                throw new Error(`Could not send: ${e.message}`);
             }
         }
 
@@ -47,111 +48,41 @@ export class BantaCommentsComponent implements AfterViewInit {
                 }
                 return true;
             } catch (e) {
-                this.indicateError(`Could not send reply: ${e.message}`);
                 console.error(`Failed to send message: `, message);
                 console.error(e);
-                return false;
+
+                throw new Error(`Could not send reply: ${e.message}`);
             }
         }
     }
 
-    private _upvoted = new Subject<ChatMessage>();
-    private _reported = new Subject<ChatMessage>();
-    private _selected = new Subject<ChatMessage>();
-    private _userSelected = new Subject<ChatMessage>();
-    private _shared = new Subject<ChatMessage>();
+    // Lifecycle Events / Initialization
 
-    private _usernameSelected = new Subject<User>();
-    private _avatarSelected = new Subject<User>();
+    ngOnInit() {
+        this._subs.add(this.backend.userChanged.subscribe(user => this.user = user));
+        this.startLoading();
 
-    private _source: ChatSourceBase;
+        console.log(`Checking...`);
+        if (typeof window !== 'undefined') {
+            let queryString = window.location.search.substring(1);
+            let query = queryString.split('&')
+                .map(s => s.split('='))
+                .reduce((o, [k, v]) => (o[k] = v, o), {})
+            ;
 
-    private _subs = new Subscription();
-
-    _sortOrder: CommentsOrder = CommentsOrder.NEWEST;
-
-    get sortOrder() {
-        return this._sortOrder;
-    }
-
-    set sortOrder(value) {
-        if (this._sortOrder !== value) {
-            this._sortOrder = value;
-            setTimeout(() => {
-                this.setSourceFromTopicID(this.topicID);
-            });
+            console.log('here:');
+            console.dir(query);
+            const commentID = query['comment'];
+            if (commentID) {
+                this.sharedCommentID = commentID;
+            }
         }
     }
 
-    sendMessage: (message: ChatMessage) => void;
-    sendReply: (message: ChatMessage) => void;
-
-    @Input() hashtags: HashTag[] = [
-        {hashtag: 'error', description: 'Cause an error'},
-        {hashtag: 'timeout', description: 'Cause a slow timeout error'},
-        {hashtag: 'slow', description: 'Be slow when this message is posted'},
-    ];
-
-    @Input() participants: User[] = [];
-
-    ngOnInit() {
-        this._subs.add(
-            this.backend.userChanged.subscribe(user => this.user = user)
-        );
-    }
-
-    ngAfterViewInit() {
-        if (typeof window !== 'undefined') this.checkForSharedComment();
-    }
-
-    scrollToComment(commentId: ChatMessage['id']): void {
-        setTimeout(() => {
-          const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
-          console.log(comment)
-          if (comment.length > 0) {
-            // comment.item(0).scroll({behavior: 'smooth'});
-            comment.item(0).scrollIntoView();
-          }
-        }, 1000);
-    }
-
-    checkForSharedComment(): void {
-        const commentID = this.activatedRoute.snapshot.queryParamMap.get('comment');
-        if (commentID) this.scrollToComment(commentID);
-    }
+    sharedCommentID: string;
 
     ngOnDestroy() {
         this._subs.unsubscribe();
-    }
-
-    @Input()
-    get source(): ChatSourceBase {
-        return this._source;
-    }
-
-    set source(value) {
-        this._source = value;
-    }
-
-    @Input() fixedHeight: boolean;
-    @Input() maxMessages: number;
-    @Input() maxVisibleMessages: number;
-    @Input() genericAvatarUrl: string;
-
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
-
-    @Input()
-    get topicID(): string {
-        return this._topicID;
-    }
-
-    private _topicID: string;
-
-    set topicID(value) {
-        if (this._topicID !== value) {
-            this._topicID = value;
-            setTimeout(() => this.setSourceFromTopicID(value));
-        }
     }
 
     private async setSourceFromTopicID(topicID: string) {
@@ -161,9 +92,13 @@ export class BantaCommentsComponent implements AfterViewInit {
         }
 
         setTimeout(async () => {
-            console.log(`[banta-comments] Subscribing to source for topic '${topicID}'`);
+            console.log(`[banta-comments] Subscribing to topic source '${topicID}'`);
             this._source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder });
 
+            if (this.sharedCommentID) {
+                this.navigateToSharedComment(this.sharedCommentID);
+                this.sharedCommentID = null;
+            }
 
             this._source.messageReceived.subscribe(m => this.addParticipant(m));
             this._source.messageSent.subscribe(m => this.addParticipant(m));
@@ -171,69 +106,107 @@ export class BantaCommentsComponent implements AfterViewInit {
         });
     }
 
-    private addParticipant(message: ChatMessage) {
-        if (!message || !message.user || !message.user.id)
-            return;
+    // Loading Screen
+    private _loadingMessage = '';
+    loadingMessageVisible = false;
 
-        let existing = this.participants.find(x => x.id === message.user.id);
-        if (existing)
-            return;
-        this.participants.push(message.user);
+    get loadingMessage() {
+        return this._loadingMessage;
     }
 
-    showSignIn() {
-        this._signInSelected.next();
+    set loadingMessage(value) {
+        this.loadingMessageVisible = false;
+        setTimeout(() => {
+            this._loadingMessage = value;
+            this._loadingMessage = value;
+            setTimeout(() => {
+                this.loadingMessageVisible = true;
+            })
+        }, 500);
     }
 
-    showEditAvatar() {
-        this._editAvatarSelected.next();
+    loading: boolean = true;
+    showLoadingScreen = false;
+    loadingStartedAt: number;
+    messageChangedAt: number;
+
+    private async startLoading() {
+        this.loadingStartedAt = this.messageChangedAt = Date.now();
+
+        if (this.updateLoading()) return;
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 100));
+        if (this.updateLoading()) return;
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
+        if (this.updateLoading()) return;
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
+        if (this.updateLoading()) return;
+
+        console.log(`[Banta] Loading is taking a long time! Showing loading screen.`);
+        this.showLoadingScreen = true;
+        if (typeof window !== 'undefined')
+            this._loadingTimer = setInterval(() => this.updateLoading(), 1000);
+    }
+    
+    private _loadingTimer;
+    private _loadingMessageIndex = 0;
+
+    @Input() loadingMessages: string[] = [
+        `Just a second...`,
+        `We're definitely working on it.`,
+        `There's no need to refresh.`,
+        `It's definitely worth the wait!`,
+        `This has never happened before.`,
+        `We'll keep trying, but it's not looking great. 
+            Commenting & chat services may be down. 
+            If you continue to experience issues, please contact support.
+        `
+    ];
+
+    private updateLoading(): boolean {
+        if (this.source?.state && this.source?.state !== 'connecting') {
+            clearInterval(this._loadingTimer);
+            this.loadingMessage = `Here we go!`;
+            setTimeout(() => {
+                this.loading = false;
+            }, 750);
+            return true;
+        }
+
+        console.log(`[Banta] Status check: ${this.source?.state || 'connecting'}`);
+
+        let messageSwitchTime = 5*1000;
+        if (this.messageChangedAt + messageSwitchTime < Date.now()) {
+            if (this.loadingMessages[this._loadingMessageIndex]) {
+                this.loadingMessage = this.loadingMessages[this._loadingMessageIndex++];
+                this.messageChangedAt = Date.now();
+            }
+        }
+
+        return false;
     }
 
-    user: User;
-
-    private _newMessageText: string;
-
-    get newMessageText(): string {
-        return this._newMessageText;
-    }
-
-    set newMessageText(value) {
-        this._newMessageText = value;
-        if (this._newMessageText === '' && this.sendError)
-            setTimeout(() => this.sendError = null);
-    }
-
-    @Input() signInLabel = 'Sign In';
-    @Input() sendLabel = 'Send';
-    @Input() replyLabel = 'Reply';
-    @Input() sendingLabel = 'Sending';
-    @Input() permissionDeniedLabel = 'Send';
-    @Input() postCommentLabel = 'Post a comment';
-    @Input() postReplyLabel = 'Post a reply';
+    // Properties
 
     private _signInSelected = new Subject<void>();
     private _permissionDeniedError = new Subject<void>();
     private _editAvatarSelected = new Subject<void>();
-
-    @Output()
-    get signInSelected(): Observable<void> {
-        return this._signInSelected;
-    }
-
-    @Output()
-    get editAvatarSelected() {
-        return this._editAvatarSelected;
-    }
-
-    @Output()
-    get permissionDeniedError(): Observable<void> {
-        return this._permissionDeniedError;
-    }
-
-    showPermissionDenied() {
-        this._permissionDeniedError.next();
-    }
-
+    private _upvoted = new Subject<ChatMessage>();
+    private _reported = new Subject<ChatMessage>();
+    private _selected = new Subject<ChatMessage>();
+    private _userSelected = new Subject<ChatMessage>();
+    private _shared = new Subject<ChatMessage>();
+    private _usernameSelected = new Subject<User>();
+    private _avatarSelected = new Subject<User>();
+    private _source: ChatSourceBase;
+    private _subs = new Subscription();
+    private _sortOrder: CommentsOrder = CommentsOrder.NEWEST;
+    private _topicID: string;
+    
+    user: User;
+    selectedMessage: ChatMessage;
+    selectedMessageThread: ChatSourceBase;
+    selectedMessageVisible = false;
+    
     get canComment() {
         if (!this.user)
             return false;
@@ -250,95 +223,187 @@ export class BantaCommentsComponent implements AfterViewInit {
         // return this.user.permissions?.canComment(this.source);
     }
 
-    @Output()
-    get upvoted() {
-        return this._upvoted.asObservable();
+    // Inputs
+
+    @Input() signInLabel = 'Sign In';
+    @Input() sendLabel = 'Send';
+    @Input() replyLabel = 'Reply';
+    @Input() sendingLabel = 'Sending';
+    @Input() permissionDeniedLabel = 'Send';
+    @Input() postCommentLabel = 'Post a comment';
+    @Input() postReplyLabel = 'Post a reply';
+    @Input() fixedHeight: boolean;
+    @Input() maxMessages: number;
+    @Input() maxVisibleMessages: number;
+    @Input() genericAvatarUrl: string;
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
+    @Input() participants: User[] = [];
+
+    @Input()
+    get source(): ChatSourceBase { return this._source; }
+    set source(value) { 
+        this._source = value;
+        if (value && this.sharedCommentID) {
+            this.navigateToSharedComment(this.sharedCommentID);
+            this.sharedCommentID = null;
+        }
+    }
+    @Input() 
+    hashtags: HashTag[] = [
+        {hashtag: 'error', description: 'Cause an error'},
+        {hashtag: 'timeout', description: 'Cause a slow timeout error'},
+        {hashtag: 'slow', description: 'Be slow when this message is posted'},
+    ];
+    @Input()
+    get topicID(): string { return this._topicID; }
+    set topicID(value) {
+        if (this._topicID !== value) {
+            this._topicID = value;
+            setTimeout(() => this.setSourceFromTopicID(value));
+        }
     }
 
-    @Output()
-    get reported() {
-        return this._reported.asObservable();
-    }
+    // Outputs
 
-    @Output()
-    get selected() {
-        return this._selected.asObservable();
-    }
+    @Output() get signInSelected(): Observable<void> { return this._signInSelected; }
+    @Output() get editAvatarSelected() { return this._editAvatarSelected; }
+    @Output() get permissionDeniedError(): Observable<void> { return this._permissionDeniedError; }
+    @Output() get upvoted() { return this._upvoted.asObservable(); }
+    @Output() get reported() { return this._reported.asObservable(); }
+    @Output() get selected() { return this._selected.asObservable(); }
+    @Output() get userSelected() { return this._userSelected.asObservable(); }
+    @Output() get usernameSelected() { return this._usernameSelected.asObservable(); }
+    @Output() get avatarSelected() { return this._avatarSelected.asObservable(); }
+    @Output() get shared() { return this._shared.asObservable(); }
 
-    @Output()
-    get userSelected() {
-        return this._userSelected.asObservable();
-    }
-
-    @Output()
-    get usernameSelected() {
-        return this._usernameSelected.asObservable();
-    }
-
-    @Output()
-    get avatarSelected() {
-        return this._avatarSelected.asObservable();
-    }
-
-    @Output()
-    get shared() {
-        return this._shared.asObservable();
-    }
-
-    onKeyDown(event: KeyboardEvent) {
-    }
-
-    insertEmoji(text: string) {
-        this.newMessageText += text;
-    }
-
-    onReplyKeyDown(event: KeyboardEvent) {
-    }
-
-    insertReplyEmoji(text: string) {
-        this.replyMessage += text;
-    }
-
-    sending = false;
-    sendError: Error;
-    expandError = false;
-
-    indicateError(message: string) {
-        this.sendError = new Error(message);
-        setTimeout(() => {
-            this.expandError = true;
+    get sortOrder() { return this._sortOrder; }
+    set sortOrder(value) {
+        if (this._sortOrder !== value) {
+            this._sortOrder = value;
             setTimeout(() => {
-                this.expandError = false;
-            }, 5 * 1000);
-        });
+                this.setSourceFromTopicID(this.topicID);
+            });
+        }
     }
 
-    async likeMessage(message: ChatMessage) {
+    sendMessage: (message: ChatMessage) => void;
+    sendReply: (message: ChatMessage) => void;
+
+    // UI Interactions
+
+    scrollToComment(commentId: ChatMessage['id']): void {
+        setTimeout(() => {
+          const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
+          console.dir(comment)
+          if (comment.length > 0) {
+            // comment.item(0).scroll({behavior: 'smooth'});
+            comment.item(0).scrollIntoView();
+          }
+        }, 1000);
+    }
+
+    async navigateToSharedComment(id: string) {
+        let source = this.source;
+
+        await source.ready;
+
+        console.log(`Navigating to shared comment with ID '${id}'...`);
+        let message: ChatMessage;
+        
+        try {
+            message = await this.source.get(id);
+        } catch (e) {
+            console.error(`Failed to find comment from URL: ${e.message}`);
+            return;
+        }
+
+        message.transientState ??= {};
+
+        // If there is a parent message, we should instead focus that and let the 
+        // scrollToComment and highlight do the work.
+
+        if (message.parentMessageId) {
+
+            let parentMessage = await this.source.get(message.parentMessageId);
+            parentMessage.transientState ??= {};
+            let thread = await this.selectMessage(parentMessage); 
+
+            // Need to re-retrieve the message within the new chat source to affect its
+            // transient state.
+            await thread.ready;
+            message = await thread.get(message.id);
+            message.transientState ??= {};
+            message.transientState.highlighted = true;
+            console.dir(message);
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
+            
+        } else {
+            this.selectMessage(message);
+        }
+
+        this.scrollToComment(id);
+    }
+
+    showPermissionDenied() {
+        this._permissionDeniedError.next();
+    }
+
+    scrollToMessage(message: ChatMessage) {
+        let el = this.elementRef.nativeElement.querySelector(`[data-comment-id="${message.id}"]`);
+        if (!el)
+            return;
+        el.scrollIntoView({block: 'center', inline: 'start'});
+    }
+
+    private addParticipant(message: ChatMessage) {
+        if (!message || !message.user || !message.user.id)
+            return;
+
+        let existing = this.participants.find(x => x.id === message.user.id);
+        if (existing)
+            return;
+        this.participants.push(message.user);
+    }
+
+    // Actions
+
+    async likeMessage(source: ChatSourceBase, message: ChatMessage) {
         this._upvoted.next(message);
-        (message as any).$liking = true;
-        message.likes = (message.likes || 0) + 1;
-        await this.source.likeMessage(message.id);
+        message.transientState.liking = true;
+
+        if (!message.userState?.liked)
+            message.likes = (message.likes || 0) + 1;
+        try {
+            await source.likeMessage(message.id);
+        } catch (e) {
+            alert(`Could not like this message: ${e.message}`);
+            return;
+        }
+        
         await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
-        (message as any).$liking = false;
+        message.transientState.liking = false;
     }
 
-    async unlikeMessage(message: ChatMessage) {
+    async unlikeMessage(source: ChatSourceBase, message: ChatMessage) {
         this._upvoted.next(message);
-        (message as any).$liking = true;
-        message.likes = (message.likes || 0) + 1;
-        await this.source.unlikeMessage(message.id);
+        message.transientState.liking = true;
+
+        if (message.userState?.liked)
+            message.likes = (message.likes || 0) - 1;
+
+        try {
+            await source.unlikeMessage(message.id);
+        } catch (e) {
+            alert(`Failed to unlike message: ${e.message}`);
+        }
+
         await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
-        (message as any).$liking = false;
+        message.transientState.liking = false;
     }
 
-    reportMessage(message: ChatMessage) {
+    async reportMessage(message: ChatMessage) {
         this._reported.next(message);
     }
-
-    selectedMessage: ChatMessage;
-    selectedMessageThread: ChatSourceBase;
-
-    replyMessage: string;
 
     async unselectMessage() {
         let message = this.selectedMessage;
@@ -355,43 +420,53 @@ export class BantaCommentsComponent implements AfterViewInit {
             setTimeout(() => this.scrollToMessage(message));
     }
 
-    selectedMessageVisible = false;
-
     async selectMessage(message: ChatMessage) {
         this._selected.next(message);
         this.selectedMessage = message;
+        let selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id);
+
         setTimeout(() => this.selectedMessageVisible = true);
         setTimeout(async () => {
-            this.selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id);
+            this.selectedMessageThread = selectedMessageThread;
         }, 250);
+
+        return selectedMessageThread;
     }
 
-    selectMessageUser(message: ChatMessage) {
+    async showSignIn() {
+        this._signInSelected.next();
+    }
+
+    async showEditAvatar() {
+        this._editAvatarSelected.next();
+    }
+
+    async selectMessageUser(message: ChatMessage) {
         this._userSelected.next(message);
     }
 
-    selectUsername(user: User) {
+    async selectUsername(user: User) {
         this._usernameSelected.next(user);
     }
 
-    selectAvatar(user: User) {
+    async selectAvatar(user: User) {
         this._avatarSelected.next(user);
     }
 
-    shareMessage(message: ChatMessage) {
+    async shareMessage(message: ChatMessage) {
         this._shared.next(message);
     }
 
-    scrollToMessage(message: ChatMessage) {
-        let el = this.elementRef.nativeElement.querySelector(`[data-comment-id="${message.id}"]`);
-        if (!el)
+    async deleteMessage(message: ChatMessage) {
+        if (!confirm("Are you sure you want to delete this comment? You cannot undo this action."))
             return;
-        el.scrollIntoView({block: 'center', inline: 'start'});
+
+        this.source.deleteMessage(message.id);
     }
 
-    async editMessage(message: ChatMessage, newText: string) {
+    async editMessage(source: ChatSourceBase, message: ChatMessage, newText: string) {
         try {
-            await this.source.editMessage(message.id, newText);
+            await source.editMessage(message.id, newText);
         } catch (e) {
             alert(e.message);
             return;
@@ -399,5 +474,19 @@ export class BantaCommentsComponent implements AfterViewInit {
 
         message.message = newText;
         message.transientState.editing = false;
+    }
+
+    async startEditing(message: ChatMessage) {
+        this.selectedMessage.transientState.editing = false;
+        message.transientState.editing = true;
+    }
+
+    async saveEdit(message: ChatMessage, text: string) {
+        try {
+            await this.source.editMessage(message.id, text);
+            message.transientState.editing = false;
+        } catch (e) {
+            alert(`Could not edit message: ${e.message}`);
+        }
     }
 }

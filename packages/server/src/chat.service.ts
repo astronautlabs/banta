@@ -43,7 +43,7 @@ export interface Topic {
 }
 
 export interface AuthorizableAction {
-    action: 'viewTopic' | 'postMessage' | 'reply' | 'editMessage' | 'likeMessage' | 'unlikeMessage';
+    action: 'viewTopic' | 'postMessage' | 'reply' | 'editMessage' | 'likeMessage' | 'unlikeMessage' | 'deleteMessage';
     topic?: Topic;
     parentMessage?: ChatMessage;
     message?: ChatMessage;
@@ -80,18 +80,31 @@ export class ChatService {
     readonly db: mongodb.Db;
     readonly pubsubs: PubSubManager;
 
+    /**
+     * Handle validation of a token sent by the client, and resolution of that token into a User object.
+     * Pluggable so that particular sites can modify.
+     * 
+     * @param token 
+     * @returns 
+     */
     validateToken: ValidateToken = (token: string) => { 
         if (process.env.IS_DEMO) {
             console.log(`[!!] Demo authentication for token '${token}'`);
             return {
                 id: 'abc',
                 displayName: 'Bob',
-                username: 'bob'
+                username: 'bob',
+                tag: 'El Heffe'
             }
         }
         throw new Error(`The Banta integration must specify validateToken()`); 
     };
 
+    /**
+     * Check if a user is allowed to perform a specific action or a class of actions.
+     * Should be provided by the site integrating Banta. If the user is not allowed,
+     * then an error should be thrown.
+     */
     authorizeAction: AuthorizeAction = () => {};
 
     /**
@@ -102,6 +115,15 @@ export class ChatService {
      */
     transformMessage: (message: ChatMessage, action: 'post' | 'edit', previousMessage?: string) => void;
 
+    /**
+     * Check whether authorizeAction() throws with the given arguments.
+     * Provides a way to do a soft permission check.
+     * 
+     * @param user 
+     * @param token 
+     * @param action 
+     * @returns 
+     */
     checkAuthorization(user: User, token: string, action: AuthorizableAction) {
         try {
             this.authorizeAction(user, token, action);
@@ -111,17 +133,40 @@ export class ChatService {
         }
     }
 
+    /**
+     * The MongoDB `messages` collection
+     */
     get messages() { return this.db.collection<ChatMessage>('messages'); }
+
+    /**
+     * The MongoDB `likes` collection
+     */
     get likes() { return this.db.collection<Like>('likes'); }
+
+    /**
+     * The MongoDB `topics` collection
+     */
     get topics() { return this.db.collection<Topic>('topics'); }
 
     private _events = new Subject<ChatEvent>();
 
+    /**
+     * Listen for events as they happen within the chat service.
+     */
     get events() {
         return this._events;
     }
 
-    async getOrCreateTopic(id: string) {
+    /**
+     * Get or create a topic with the given identifier.
+     * @param id 
+     * @returns 
+     */
+    async getOrCreateTopic(topicOrId: Topic | string): Promise<Topic> {
+        if (typeof topicOrId === 'object')
+            return topicOrId;
+        
+        let id = <string>topicOrId;
         await this.topics.updateOne({ id }, {
             $setOnInsert: {
                 id,
@@ -132,6 +177,11 @@ export class ChatService {
         return await this.topics.findOne({ id });
     }
 
+    /**
+     * Post a new ChatMessage to a topic (or a thread)
+     * @param message 
+     * @returns 
+     */
     async postMessage(message : ChatMessage) {
         message.id = uuid();
         message.hidden = false;
@@ -142,7 +192,7 @@ export class ChatService {
         let parentMessage: ChatMessage;
         
         if (message.parentMessageId) {
-            parentMessage = await this.getMessage(message.parentMessageId);
+            parentMessage = await this.getMessage(message.parentMessageId, false);
             if (!parentMessage)
                 throw new Error(`No such parent message with ID '${message.parentMessageId}'`);
         }
@@ -153,28 +203,118 @@ export class ChatService {
             this.transformMessage(message, 'post');
 
         await this.messages.insertOne(message);
+        
+        // Post actions
+        
+        if (!message.hidden)
+            await this.modifyTopicMessageCount(message.topicId, +1);
+
+        // Update the parent's submessage count, if needed
+
+        if (parentMessage)
+            await this.modifySubmessageCount(parentMessage, +1);
+
+        this.notifyMessageChange(message);
         this._events.next(<PostMessageEvent>{ type: 'post', message });
 
-        if (parentMessage) {
-            parentMessage.submessageCount = (parentMessage.submessageCount || 0) + 1;
-            this.messages.updateOne({ id: parentMessage.id }, { $inc: { submessageCount: 1 } });
-            this.pubsubs.publish(message.topicId, { message: parentMessage });
-        }
-        this.pubsubs.publish(message.topicId, { message });
-        
         return message;
     }
 
-    async editMessage(message: ChatMessage, newText: string) {
-        let previousMessage = message.message;
+    /**
+     * Efficiently modify the `messageCount` counter on the given Topic.
+     * 
+     * @param messageOrId The message to modify
+     * @param delta The delta to apply to the likes counter.
+     * @returns 
+     */
+    async modifyTopicMessageCount(topicOrId: Topic | string, delta: number) {
+        let topic = await this.getOrCreateTopic(topicOrId);
+        topic.messageCount += delta;
+        await this.topics.updateOne({ id: topic.id }, { $inc: { messageCount: delta }});
+    }
+
+    /**
+     * Efficiently modify the `submessageCount` counter on the given ChatMessage.
+     * 
+     * @param messageOrId The message to modify
+     * @param delta The delta to apply to the likes counter.
+     * @returns 
+     */
+    async modifySubmessageCount(messageOrId: ChatMessage | string, delta: number) {
+        let message = await this.getMessage(messageOrId, true);
+        message.submessageCount = (message.submessageCount || 0) + delta;
+        this.messages.updateOne({ id: message.id }, { $inc: { submessageCount: 1 } });
+        this.notifyMessageChange(message);
+    }
+
+    /**
+     * Efficiently modify the `likes` counter on the given ChatMessage.
+     * 
+     * @param messageOrId The message to modify
+     * @param delta The delta to apply to the likes counter.
+     * @returns 
+     */
+    async modifyMessageLikesCount(messageOrId: string | ChatMessage, delta: number) {
+        let message = await this.getMessage(messageOrId, true);
+        message.likes += delta;
+        await this.messages.updateOne({ id: message.id }, { $inc: { likes: delta } });
+        this.notifyMessageChange(message);
+        return message;
+    }
+
+    /**
+     * Notify all interested clients that the given message has created/updated.
+     * @param message 
+     */
+    notifyMessageChange(message: ChatMessage) {
+        this.pubsubs.publish(message.topicId, { message });
+    }
+
+    /**
+     * Modify the hidden status of the given ChatMessage.
+     * @param messageId 
+     * @param hidden 
+     * @returns 
+     */
+    async setMessageHiddenStatus(messageOrId: ChatMessage | string, hidden: boolean) {
+        let message = await this.getMessage(messageOrId, true);
+        if (message.hidden === hidden)
+            return;
+        
+        this.messages.updateOne({ id: message.id }, { $set: { hidden }});
+        message.hidden = hidden;
+        await this.modifyTopicMessageCount(message.topicId, hidden ? -1 : +1);
+        if (message.parentMessageId)
+            await this.modifySubmessageCount(message.parentMessageId, hidden ? -1 : +1);
+
+        this.notifyMessageChange(message);
+    }
+
+    /**
+     * Edit the content of the message. No permissioning is applied here.
+     * @param message 
+     * @param newText 
+     */
+    async editMessage(messageOrId: string | ChatMessage, newText: string) {
+        let message = await this.getMessage(messageOrId, true);
+        let previousText = message.message;
         message.message = newText;
 
         if (this.transformMessage)
-            this.transformMessage(message, 'edit', previousMessage);
+            this.transformMessage(message, 'edit', previousText);
 
+        let edits = message.edits || [];
+        edits.push({
+            createdAt: Date.now(),
+            previousText,
+            newText
+        });
+
+        message.edits = edits;
         await this.messages.updateOne({ id: message.id }, {
             $set: {
-                message: newText
+                message: newText,
+                edits: edits
             }
         });
 
@@ -182,6 +322,12 @@ export class ChatService {
         this.pubsubs.publish(message.topicId, { message });
     }
 
+    /**
+     * Mark a message as liked by the given user, if it is not already liked.
+     * @param message 
+     * @param user 
+     * @returns 
+     */
     async like(message : ChatMessage, user : User) {
         if (!message)
             throw new Error(`Message cannot be null`);
@@ -190,11 +336,6 @@ export class ChatService {
         if (like) 
             return;
 
-        message.likes += 1;
-        await this.messages.updateOne({ id: message.id }, { $inc: { likes: 1 } });
-        this.pubsubs.publish(message.topicId, { message });
-
-        console.log(`Saving a new like!`);
         await this.likes.updateOne({ messageId: message.id, user: user.id }, {
             $setOnInsert: {
                 liked: true,
@@ -203,11 +344,18 @@ export class ChatService {
                 userId: user.id
             }
         }, { upsert: true });
-        
+
+        await this.modifyMessageLikesCount(message, +1);
+        await this.pubsubs.publish(message.topicId, { like });
         this._events.next(<UpvoteEvent>{ type: 'upvote', message, user });
-        this.pubsubs.publish(message.topicId, { like });
     }
 
+    /**
+     * Mark a message as not liked by a user, if it is currently liked.
+     * @param message 
+     * @param user 
+     * @returns 
+     */
     async unlike(message : ChatMessage, user : User) {
         if (!message)
             throw new Error(`Message cannot be null`);
@@ -218,24 +366,53 @@ export class ChatService {
 
         await this.likes.deleteOne({ messageId: message.id, userId: user.id });
 
-        message.likes -= 1;
-        await this.messages.updateOne({ id: message.id }, { $inc: { likes: -1 } });
-        this.pubsubs.publish(message.topicId, { message });
-
-        this._events.next(<UpvoteEvent>{ type: 'upvote', message, user });
+        this.modifyMessageLikesCount(message, -1);
         this.pubsubs.publish(message.topicId, {
             like: {
                 ...like,
                 liked: false
             }
-        })
+        });
+        this._events.next(<UpvoteEvent>{ type: 'upvote', message, user });
     }
 
-    async getMessage(id: string) {
-        return await this.messages.findOne({ id });
+    /**
+     * Get a specific message by ID.
+     * @param messageOrId The ID of the message. Can also be a ChatMessage itself, for convenient calling (it will be
+     *                    immediately returned)
+     * @param throwIfMissing If true, throw an error if the message could not be found. Otherwise returns null.
+     * @returns 
+     */
+    async getMessage(messageOrId: ChatMessage | string, throwIfMissing = false) {
+        if (typeof messageOrId !== 'string')
+            return messageOrId;
+
+        let id = <string>messageOrId;
+        let message = await this.messages.findOne({ id });
+
+        if (throwIfMissing && !message)
+            throw new Error(`No such message with ID '${id}'`);
+        
+        return message;
     }
 
-    async getTopic(id: string) {
-        return await this.topics.findOne({ id });
+    /**
+     * Get a topic by ID.
+     * @param topicOrId The ID of the topic. Can also be a Topic itself, for convenient calling (it will be 
+     *                  immediately returned)
+     * @param throwIfMissing If true, throw an error if the message could not be found. Otherwise returns null.
+     * @returns 
+     */
+    async getTopic(topicOrId: string | Topic, throwIfMissing = false) {
+        if (typeof topicOrId !== 'string')
+            return topicOrId;
+
+        let id = <string>topicOrId;
+        let topic = await this.topics.findOne({ id });
+        
+        if (throwIfMissing && !topic)
+            throw new Error(`No such topic with ID '${id}'`);
+        
+        return topic;
     }
 }

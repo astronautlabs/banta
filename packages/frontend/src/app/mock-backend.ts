@@ -1,10 +1,10 @@
-import { ChatMessage, User, Notification, Vote, CommentsOrder } from "@banta/common";
+import { ChatMessage, User, Notification, Vote, CommentsOrder, ChatPermissions } from "@banta/common";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";
 import { MOCK_USERS } from "./mock-users";
 import * as pmq from 'popular-movie-quotes';
-import { ChatBackendBase, ChatSourceBase, ChatSourceOptions, ChatSourcePermissions } from "@banta/sdk";
+import { ChatBackendBase, ChatSourceBase, ChatSourceOptions } from "@banta/sdk";
 
 const GENERIC_AVATAR_URL = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
@@ -85,15 +85,22 @@ export class MockSource implements ChatSourceBase {
         this.currentUserChanged.next(this.currentUser);
     }
 
+    ready = Promise.resolve();
+    
     currentUserChanged = new BehaviorSubject<User>(null);
     messageReceived = new Subject<ChatMessage>();
     messageSent = new Subject<ChatMessage>();
     messages: ChatMessage[] = [];
 
-    permissions: ChatSourcePermissions = {
+    async getExistingMessages(): Promise<ChatMessage[]> {
+        return [];
+    }
+
+    permissions: ChatPermissions = {
         canEdit: true,
         canLike: true,
-        canPost: true
+        canPost: true,
+        canDelete: true
     }
     async getCount() {
         return 0; // TODO
@@ -101,6 +108,10 @@ export class MockSource implements ChatSourceBase {
 
     async editMessage(messageId: string, text: string) : Promise<void> {
         this.backend.messages.get(messageId).message = text;
+    }
+
+    async deleteMessage(messageId: string) {
+        this.backend.messages.delete(messageId);
     }
 
     async get(id: string) {

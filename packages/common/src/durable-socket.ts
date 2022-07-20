@@ -70,7 +70,7 @@
         }
 
         this.lastPong = Date.now();
-        this.pingTimer = setInterval(() => {
+        if (this.enablePing) this.pingTimer = setInterval(() => {
             if (this._closed) {
                 clearInterval(this.pingTimer);
                 return;
@@ -88,17 +88,20 @@
                 return;
             }
 
-            let cutoff = 1000*5;
-            if (this.lastPong < Date.now() - cutoff) {
-                console.log(`[Socket] No keep-alive response in ${cutoff}ms. Forcing reconnect... [${this.url}]`);
+            if (this.lastPong < Date.now() - this.pingKeepAliveInterval) {
+                console.log(`[Socket] No keep-alive response in ${this.pingKeepAliveInterval}ms. Forcing reconnect... [${this.url}]`);
                 try {
                     this._socket.close();
                 } catch (e) {
                     console.error(`[Socket] Failed to close socket after timeout waiting for pong: ${e.message} [${this.url}]`);
                 }
             }
-        }, 1000);
+        }, this.pingInterval);
     }
+
+    enablePing = true;
+    pingInterval = 10000;
+    pingKeepAliveInterval = 25000;
 
     private handleMessage(ev : MessageEvent) {
         let message = JSON.parse(ev.data);
@@ -176,7 +179,7 @@
     }
 
     private _open = false;
-    reconnectTime : number = 2; // 2
+    reconnectTime : number = 500; // 2
     maxReconnectTime : number = 30000; // 10000
     maxAttempts = 0;
     jitter : number = 0.05;
