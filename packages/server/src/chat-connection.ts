@@ -23,7 +23,7 @@ export class ChatConnection extends SocketRPC {
 
     @RpcCallable()
     async authenticate(token: string) {
-        let user = this.chat.validateToken(token);
+        let user = await this.chat.validateToken(token);
         user.ipAddress = this.ipAddress;
         user.userAgent = this.userAgent;
 

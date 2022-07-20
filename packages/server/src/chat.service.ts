@@ -64,7 +64,7 @@ export interface AuthorizableAction {
     message?: ChatMessage;
 }
 
-export type ValidateToken = (token: string) => User;
+export type ValidateToken = (token: string) => Promise<User>;
 
 /**
  * Should throw if user is not allowed to do something. The error will be shown to the user.
@@ -102,7 +102,7 @@ export class ChatService {
      * @param token 
      * @returns 
      */
-    validateToken: ValidateToken = (token: string) => { 
+    validateToken: ValidateToken = async (token: string) => { 
         if (process.env.IS_DEMO) {
             console.log(`[!!] Demo authentication for token '${token}'`);
             return {
