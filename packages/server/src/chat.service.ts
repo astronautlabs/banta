@@ -8,7 +8,7 @@ import { PubSubManager } from "./pubsub";
 import { v4 as uuid } from 'uuid';
 
 export interface ChatEvent {
-    type : 'post' | 'edit' | 'upvote';
+    type : 'post' | 'edit' | 'like' | 'unlike' | 'delete';
 }
 
 export interface PostMessageEvent extends ChatEvent {
@@ -21,8 +21,14 @@ export interface EditMessageEvent extends ChatEvent {
     message : ChatMessage;
 }
 
-export interface UpvoteEvent extends ChatEvent {
-    type: 'upvote';
+export interface LikeEvent extends ChatEvent {
+    type: 'like';
+    message : ChatMessage;
+    user: User;
+}
+
+export interface UnlikeEvent extends ChatEvent {
+    type: 'unlike';
     message : ChatMessage;
     user: User;
 }
@@ -398,7 +404,7 @@ export class ChatService {
 
         await this.modifyMessageLikesCount(message, +1);
         await this.pubsubs.publish(message.topicId, { like });
-        this._events.next(<UpvoteEvent>{ type: 'upvote', message, user });
+        this._events.next(<LikeEvent>{ type: 'like', message, user });
     }
 
     /**
@@ -424,7 +430,7 @@ export class ChatService {
                 liked: false
             }
         });
-        this._events.next(<UpvoteEvent>{ type: 'upvote', message, user });
+        this._events.next(<UnlikeEvent>{ type: 'unlike', message, user });
     }
 
     /**
