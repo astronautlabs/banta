@@ -21,6 +21,11 @@ export interface EditMessageEvent extends ChatEvent {
     message : ChatMessage;
 }
 
+export interface DeleteMessageEvent extends ChatEvent {
+    type : 'delete';
+    message : ChatMessage;
+}
+
 export interface LikeEvent extends ChatEvent {
     type: 'like';
     message : ChatMessage;
