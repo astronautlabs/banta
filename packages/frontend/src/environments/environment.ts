@@ -4,27 +4,7 @@
 
 export const environment = {
   production: false,
-  bantaServiceUrl: 'http://localhost:3000',
-  firebase: {
-    // apiKey: "AIzaSyAyLVhVnAhSblJJ7aRNFrHr9-E8MrvJbN4",
-    // authDomain: "engagechat-dev.firebaseapp.com",
-    // databaseURL: "https://engagechat-dev.firebaseio.com",
-    // projectId: "engagechat-dev",
-    // storageBucket: "engagechat-dev.appspot.com",
-    // messagingSenderId: "411748918221",
-    // appId: "1:411748918221:web:6a966fc5eb47a8cae91a84",
-    // measurementId: "G-TFCMM2WM56"
-
-      
-    apiKey: "AIzaSyAJ1OjZCWrP5VQl29v_2GJmQq2O_kXyYj4",
-    authDomain: "engagechat-prod.firebaseapp.com",
-    databaseURL: "https://engagechat-prod.firebaseio.com",
-    projectId: "engagechat-prod",
-    storageBucket: "engagechat-prod.appspot.com",
-    messagingSenderId: "912945474622",
-    appId: "1:912945474622:web:d787d14e0aeab25961356f",
-    measurementId: "G-E872QV59B0"
-  }
+  bantaServiceUrl: 'http://localhost:3000'
 };
 
 /*

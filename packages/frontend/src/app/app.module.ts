@@ -11,8 +11,6 @@ import { SaasModule } from 'src/saas/saas.module';
 import { NotFoundComponent } from './not-found.component';
 import { SourceComponent } from './source/source.component';
 import { TryComponent } from './try/try.component';
-import { DemoService } from './demo.service';
-import { DemoComponent } from './demo.component';
 import { MarkdownModule } from 'ngx-markdown';
 import { DevComponent } from './dev/dev.component';
 
@@ -31,7 +29,6 @@ import { ChatBackendBase } from 'projects/sdk/src/lib';
     SourceComponent,
     TryComponent,
     TryChatComponent,
-    DemoComponent,
     DevComponent
   ],
   imports: [
@@ -45,7 +42,6 @@ import { ChatBackendBase } from 'projects/sdk/src/lib';
     MarkdownModule.forRoot()
   ],
   providers: [
-    DemoService,
     {
       provide: CDNProvider,
       useFactory: () => new DataURICDNProvider()

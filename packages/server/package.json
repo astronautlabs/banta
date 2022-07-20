@@ -13,9 +13,7 @@
     "build": "npm run build:cjs && npm run build:esm",
     "start": "npm run build && node dist/main",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublishOnly": "npm run build",
-    "fix:firebase:win": "cd ../firebase && npm run build && cd ../server && rimraf node_modules/@banta/firebase && cpy ../firebase node_modules/@banta && rimraf node_modules/@banta/firebase/node_modules",
-    "fix:firebase:mac": "cd ../firebase && npm run build && cd ../server && rimraf node_modules/@banta/firebase && cp -Rf ../firebase node_modules/@banta && rimraf node_modules/@banta/firebase/node_modules"
+    "prepublishOnly": "npm run build"
   },
   "author": "",
   "license": "ISC",
@@ -29,8 +27,6 @@
     "@types/serve-static": "^1.13.10",
     "@types/uuid": "^3.4.6",
     "aws-sdk": "^2.579.0",
-    "firebase": "^7.5.0",
-    "firebase-admin": "^9.4.2",
     "ioredis": "^4.28.5",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.8.0",
@@ -42,10 +38,7 @@
   "devDependencies": {
     "@alterior/express": "^3.0.0-rc.8",
     "@alterior/platform-nodejs": "^3.0.0-rc.7",
-    "@astronautlabs/datastore": "^3.1.4",
-    "@astronautlabs/datastore-firestore": "^3.1.6",
     "@astronautlabs/jwt": "^1.1.0",
-    "@banta/firebase": "^1.0.5",
     "@types/express": "^4.17.13",
     "@types/jsonwebtoken": "^8.3.5",
     "cpy": "^9.0.1",
