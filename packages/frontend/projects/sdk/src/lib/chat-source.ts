@@ -73,7 +73,8 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     async authenticate() {
-        await this.peer.authenticate(this.backend.user?.token);
+        if (this.backend.user)
+            await this.peer.authenticate(this.backend.user?.token);
     }
 
     close(): void {

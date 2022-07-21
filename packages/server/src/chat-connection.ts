@@ -129,10 +129,10 @@ export class ChatConnection extends SocketRPC {
 
     @RpcCallable()
     async deleteMessage(messageId: string) {
-        let message = await this.chat.getMessage(messageId);
-
         if (!this.user)
             throw new Error(`You must be signed in to delete your messages.`);
+
+        let message = await this.chat.getMessage(messageId);
 
         if (message.user?.id !== this.user.id)
             throw new Error(`You can only delete your own messages.`);
@@ -252,14 +252,14 @@ export class ChatConnection extends SocketRPC {
 
     @RpcCallable()
     async sendMessage(message: ChatMessage): Promise<ChatMessage> {
+        if (!this.user)
+            throw new Error(`You must be signed in to send messages.`);
+        
         message.topicId = this.topicId;
         message.parentMessageId = this.parentMessage?.id;
         message.user = { ...this.user };
         delete message.user.token;
 
-        if (!this.user)
-            throw new Error(`You must be signed in to send messages.`);
-        
         if (!message)
             throw new Error(`You must provide a message to send`);
 
@@ -306,6 +306,9 @@ export class ChatConnection extends SocketRPC {
 
     @RpcCallable()
     async likeMessage(id: string) {
+        if (!this.user)
+            throw new Error(`You must be signed in to like a message`);
+        
         let message = await this.chat.getMessage(id);
 
         if (!message) 
@@ -322,6 +325,9 @@ export class ChatConnection extends SocketRPC {
 
     @RpcCallable()
     async unlikeMessage(id: string) {
+        if (!this.user)
+            throw new Error(`You must be signed in to like a message`);
+
         let message = await this.chat.getMessage(id);
 
         if (!message) 
