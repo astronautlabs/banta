@@ -59,6 +59,13 @@ export interface Topic {
 
 export interface AuthorizableAction {
     action: 'viewTopic' | 'postMessage' | 'reply' | 'editMessage' | 'likeMessage' | 'unlikeMessage' | 'deleteMessage';
+
+    /**
+     * If true, this is a precheck: the user has not yet asked to perform the action.
+     * You might want to use this to pass back a user readable error message instead of a
+     * an application-readable `app-handle|...` message.
+     */
+    precheck?: boolean;
     topic?: Topic;
     parentMessage?: ChatMessage;
     message?: ChatMessage;

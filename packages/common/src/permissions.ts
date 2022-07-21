@@ -3,6 +3,7 @@ export interface ChatPermissions {
      * Whether posting is allowed in this context.
      */
     canPost: boolean;
+    canPostErrorMessage?: string;
 
     /**
      * Whether editing messages is allowed in this context.

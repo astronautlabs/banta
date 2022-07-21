@@ -62,31 +62,30 @@
         </ng-container>
         <ng-container *ngIf="user">
             <button
-                *ngIf="canComment"
                 mat-raised-button
                 class="send"
                 color="primary"
-                [disabled]="!text || sending"
+                [disabled]="canComment && (!text || sending)"
                 >
-                <mat-icon *ngIf="!sending">chevron_right</mat-icon>
-                <mat-spinner *ngIf="sending" class="icon" diameter="18" strokeWidth="2"></mat-spinner>
+                <ng-container *ngIf="canComment">
+                    <mat-icon *ngIf="!sending">chevron_right</mat-icon>
+                    <mat-spinner *ngIf="sending" class="icon" diameter="18" strokeWidth="2"></mat-spinner>
+                </ng-container>
+
                 <span class="label">
-                    <ng-container *ngIf="!sending">
-                        {{sendLabel}}
+                    <ng-container *ngIf="!canComment">
+                        {{permissionDeniedLabel}}
                     </ng-container>
-                    <ng-container *ngIf="sending">
-                        {{sendingLabel}}
+                    <ng-container *ngIf="canComment">
+                        <ng-container *ngIf="!sending">
+                            {{sendLabel}}
+                        </ng-container>
+                        <ng-container *ngIf="sending">
+                            {{sendingLabel}}
+                        </ng-container>
                     </ng-container>
                 </span>
-
-                </button>
-            <button
-                *ngIf="!canComment"
-                type="button"
-                (click)="sendPermissionDenied('')"
-                mat-raised-button
-                color="primary"
-                >{{permissionDeniedLabel}}</button>
+            </button>
         </ng-container>
     </div>
 </form>

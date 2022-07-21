@@ -42,4 +42,8 @@ export class TryComponent {
     reportedMessage(message: ChatMessage) {
         alert(`Message ${message.id} was reported`);
     }
+
+    permissionDenied(message: string) {
+        alert(`App should handle: '${message}'`);
+    }
 }

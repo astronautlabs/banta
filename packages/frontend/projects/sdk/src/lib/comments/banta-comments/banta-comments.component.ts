@@ -342,6 +342,20 @@ export class BantaCommentsComponent {
         this.scrollToComment(id);
     }
 
+    handlePermissionDenied(errorMessage: string) {
+        // This is what other components call when handling permission errors
+        
+        if (errorMessage.startsWith(`app-handle|`)) {
+            // If this is an error during authorizeAction on the backend, pass control to the user-provided 
+            // permission-denied handler.
+
+            this.sendPermissionDenied(errorMessage.replace(/^app-handle\|/, ''));
+            return;
+        }
+
+        alert(errorMessage);
+    }
+
     sendPermissionDenied(message: string) {
         this._permissionDeniedError.next(message);
     }
