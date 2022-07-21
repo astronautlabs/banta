@@ -125,7 +125,7 @@ export class ChatService {
     /**
      * @internal
      */
-    async doAuthorizeAction: AuthorizeAction = (user: User, token: string, action: AuthorizableAction) => {
+    doAuthorizeAction: AuthorizeAction = async (user: User, token: string, action: AuthorizableAction) => {
         try {
             await this.authorizeAction(user, token, action);
         } catch (e) {

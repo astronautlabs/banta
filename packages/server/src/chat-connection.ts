@@ -30,10 +30,10 @@ export class ChatConnection extends SocketRPC {
         this.user = user;
         this.user.token = token;
         this.userToken = token;
-        this.sendPermissions();
+        await this.sendPermissions();
     }
 
-    private sendPermissions() {
+    private async sendPermissions() {
         if (!this.user || !this.topic) {
             this.sendEvent('onPermissions', <ChatPermissions>{
                 canEdit: false,
@@ -45,19 +45,19 @@ export class ChatConnection extends SocketRPC {
         }
 
         this.sendEvent('onPermissions', <ChatPermissions>{
-            canPost: this.chat.checkAuthorization(this.user, this.userToken, {
+            canPost: await this.chat.checkAuthorization(this.user, this.userToken, {
                 action: 'postMessage',
                 topic: this.topic
             }),
-            canEdit: this.chat.checkAuthorization(this.user, this.userToken, {
+            canEdit: await this.chat.checkAuthorization(this.user, this.userToken, {
                 action: 'editMessage',
                 topic: this.topic
             }),
-            canLike: this.chat.checkAuthorization(this.user, this.userToken, {
+            canLike: await this.chat.checkAuthorization(this.user, this.userToken, {
                 action: 'likeMessage',
                 topic: this.topic
             }),
-            canDelete: this.chat.checkAuthorization(this.user, this.userToken, {
+            canDelete: await this.chat.checkAuthorization(this.user, this.userToken, {
                 action: 'deleteMessage',
                 topic: this.topic
             })
@@ -164,7 +164,7 @@ export class ChatConnection extends SocketRPC {
         this.topic = await this.chat.getOrCreateTopic(topicId);
         this.topicId = topicId;
 
-        this.sendPermissions();
+        await this.sendPermissions();
 
         this.pubsub = new PubSub<ChatPubSubEvent>(this.chat.pubsubs, topicId);
         this.pubsub.subscribe(async message => {
