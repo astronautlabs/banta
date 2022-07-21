@@ -144,7 +144,7 @@ export class ChatConnection extends SocketRPC {
             topic: await this.chat.getTopic(message.topicId, false)
         });
 
-        await this.chat.setMessageHiddenStatus(messageId, true);
+        await this.chat.deleteMessage(message);
     }
 
     @RpcCallable()

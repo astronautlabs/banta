@@ -385,6 +385,27 @@ export class ChatService {
     }
 
     /**
+     * Called when the author of a message is deleting a message.
+     * Not to be confused with deletion for moderation, that should be done with 
+     * setMessageHiddenStatus() directly. Note though that this method uses 
+     * setMessageHiddenStatus() in its implementation.
+     * 
+     * @param messageOrId 
+     */
+    async deleteMessage(messageOrId: ChatMessage | string) {
+        let message = await this.getMessage(messageOrId, true);
+        await this.setMessageHiddenStatus(message.id, true);
+
+        message.deleted = true;
+        await this.messages.updateOne({ id: message.id }, { $set: { deleted: true }});
+        
+        this._events.next(<DeleteMessageEvent>{
+            type: 'delete',
+            message
+        });
+    }
+
+    /**
      * Mark a message as liked by the given user, if it is not already liked.
      * @param message 
      * @param user 

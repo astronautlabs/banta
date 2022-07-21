@@ -49,10 +49,17 @@ export interface ChatMessage {
 
     /**
      * Whether this comment should be shown to users.
-     * This can be set to true by moderation tooling, otherwise
+     * This can be set to true by moderation tooling as well as 
+     * when the user deletes their own message. Otherwise
      * it defaults to false.
      */
     hidden? : boolean;
+
+    /**
+     * Whether this comment was deleted by the author.
+     * If this is true, then `hidden` should also be true.
+     */
+    deleted? : boolean;
 
     /**
      * The message content itself.
