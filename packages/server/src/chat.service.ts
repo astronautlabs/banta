@@ -123,6 +123,17 @@ export class ChatService {
     authorizeAction: AuthorizeAction = () => {};
 
     /**
+     * @internal
+     */
+    doAuthorizeAction: AuthorizeAction = (user: User, token: string, action: AuthorizableAction) => {
+        try {
+            this.authorizeAction(user, token, action);
+        } catch (e) {
+            throw new Error(`permission-denied|${e.message}`);
+        }
+    }
+
+    /**
      * Transform the message at the moment before it is posted or edited.
      * Any property of the message can be edited, some useful ideas:
      * - Replacing bad words
@@ -141,7 +152,7 @@ export class ChatService {
      */
     checkAuthorization(user: User, token: string, action: AuthorizableAction) {
         try {
-            this.authorizeAction(user, token, action);
+            this.doAuthorizeAction(user, token, action);
             return true;
         } catch (e) {
             return false;

@@ -115,7 +115,7 @@ export class ChatConnection extends SocketRPC {
         if (message.user.id !== this.user.id)
             throw new Error(`You can only edit your own messages.`);
 
-        this.chat.authorizeAction(this.user, this.userToken, {
+        this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'editMessage',
             topic: this.topic,
             parentMessage: this.parentMessage,
@@ -137,7 +137,7 @@ export class ChatConnection extends SocketRPC {
         if (message.user?.id !== this.user.id)
             throw new Error(`You can only delete your own messages.`);
 
-        this.chat.authorizeAction(this.user, this.userToken, {
+        this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'deleteMessage',
             message,
             parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId, false) : null,
@@ -269,7 +269,7 @@ export class ChatConnection extends SocketRPC {
         if (!message.message)
             throw new Error(`Cannot post an empty message`);
 
-        this.chat.authorizeAction(this.user, this.userToken, {
+        this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'postMessage',
             message,
             parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId) : null,
@@ -293,7 +293,7 @@ export class ChatConnection extends SocketRPC {
         if (message.hidden)
             throw notFound;
         
-        this.chat.authorizeAction(this.user, this.userToken, { 
+        this.chat.doAuthorizeAction(this.user, this.userToken, { 
             action: 'viewTopic', 
             topic: await this.chat.getTopic(message.topicId),
             message,
@@ -310,7 +310,7 @@ export class ChatConnection extends SocketRPC {
 
         if (!message) 
             throw new Error(`No such message with ID '${id}'`);
-        this.chat.authorizeAction(this.user, this.userToken, {
+        this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'likeMessage',
             message,
             parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId) : null,
@@ -326,7 +326,7 @@ export class ChatConnection extends SocketRPC {
 
         if (!message) 
             throw new Error(`No such message with ID '${id}'`);
-        this.chat.authorizeAction(this.user, this.userToken, {
+        this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'likeMessage',
             message,
             parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId) : null,
