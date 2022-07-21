@@ -33,10 +33,7 @@ export class BantaCommentsComponent {
                 }
                 return true;
             } catch (e) {
-                console.error(`Failed to send message: `, message);
-                console.error(e);
-
-                throw new Error(`Could not send: ${e.message}`);
+                this.handleBackendException(e, 'Could not send: ');
             }
         }
 
@@ -48,12 +45,35 @@ export class BantaCommentsComponent {
                 }
                 return true;
             } catch (e) {
-                console.error(`Failed to send message: `, message);
-                console.error(e);
-
-                throw new Error(`Could not send reply: ${e.message}`);
+                this.handleBackendException(e, 'Could not send reply: ');
             }
         }
+    }
+
+    private handleBackendExceptionAsAlert(e: Error, prefix: string = '') {
+        try {
+            this.handleBackendException(e, prefix);
+        } catch (e) {
+            alert(e.message);
+        }
+    }
+
+    private handleBackendException(e: Error, prefix: string = '') {
+        let errorMessage = e.message;
+
+        if (errorMessage.startsWith('permission-denied|')) {
+            errorMessage = errorMessage.replace(/^permission-denied\|/, '');
+
+            if (errorMessage.startsWith(`app-handle|`)) {
+                // If this is an error during authorizeAction on the backend, pass control to the user-provided 
+                // permission-denied handler.
+
+                this.sendPermissionDenied(errorMessage.replace(/^app-handle\|/, ''));
+                return;
+            }
+        }
+
+        throw new Error(`${prefix}${errorMessage}`);
     }
 
     // Lifecycle Events / Initialization
@@ -62,7 +82,6 @@ export class BantaCommentsComponent {
         this._subs.add(this.backend.userChanged.subscribe(user => this.user = user));
         this.startLoading();
 
-        console.log(`Checking...`);
         if (typeof window !== 'undefined') {
             let queryString = window.location.search.substring(1);
             let query = queryString.split('&')
@@ -70,8 +89,6 @@ export class BantaCommentsComponent {
                 .reduce((o, [k, v]) => (o[k] = v, o), {})
             ;
 
-            console.log('here:');
-            console.dir(query);
             const commentID = query['comment'];
             if (commentID) {
                 this.sharedCommentID = commentID;
@@ -172,8 +189,6 @@ export class BantaCommentsComponent {
             return true;
         }
 
-        console.log(`[Banta] Status check: ${this.source?.state || 'connecting'}`);
-
         let messageSwitchTime = 5*1000;
         if (this.messageChangedAt + messageSwitchTime < Date.now()) {
             if (this.loadingMessages[this._loadingMessageIndex]) {
@@ -188,7 +203,7 @@ export class BantaCommentsComponent {
     // Properties
 
     private _signInSelected = new Subject<void>();
-    private _permissionDeniedError = new Subject<void>();
+    private _permissionDeniedError = new Subject<string>();
     private _editAvatarSelected = new Subject<void>();
     private _upvoted = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
@@ -251,7 +266,7 @@ export class BantaCommentsComponent {
 
     @Output() get signInSelected(): Observable<void> { return this._signInSelected; }
     @Output() get editAvatarSelected() { return this._editAvatarSelected; }
-    @Output() get permissionDeniedError(): Observable<void> { return this._permissionDeniedError; }
+    @Output() get permissionDeniedError(): Observable<string> { return this._permissionDeniedError; }
     @Output() get upvoted() { return this._upvoted.asObservable(); }
     @Output() get reported() { return this._reported.asObservable(); }
     @Output() get selected() { return this._selected.asObservable(); }
@@ -278,7 +293,6 @@ export class BantaCommentsComponent {
     scrollToComment(commentId: ChatMessage['id']): void {
         setTimeout(() => {
           const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
-          console.dir(comment)
           if (comment.length > 0) {
             // comment.item(0).scroll({behavior: 'smooth'});
             comment.item(0).scrollIntoView();
@@ -328,8 +342,8 @@ export class BantaCommentsComponent {
         this.scrollToComment(id);
     }
 
-    showPermissionDenied() {
-        this._permissionDeniedError.next();
+    sendPermissionDenied(message: string) {
+        this._permissionDeniedError.next(message);
     }
 
     scrollToMessage(message: ChatMessage) {
@@ -357,11 +371,11 @@ export class BantaCommentsComponent {
 
         if (!message.userState?.liked)
             message.likes = (message.likes || 0) + 1;
+        
         try {
             await source.likeMessage(message.id);
         } catch (e) {
-            alert(`Could not like this message: ${e.message}`);
-            return;
+            this.handleBackendExceptionAsAlert(e, 'Could not like this message: ');
         }
         
         await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
@@ -378,7 +392,7 @@ export class BantaCommentsComponent {
         try {
             await source.unlikeMessage(message.id);
         } catch (e) {
-            alert(`Failed to unlike message: ${e.message}`);
+            this.handleBackendExceptionAsAlert(e, 'Failed to unlike this message: ');
         }
 
         await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
@@ -445,14 +459,18 @@ export class BantaCommentsComponent {
         if (!confirm("Are you sure you want to delete this comment? You cannot undo this action."))
             return;
 
-        this.source.deleteMessage(message.id);
+        try {
+            await this.source.deleteMessage(message.id);
+        } catch (e) {
+            this.handleBackendExceptionAsAlert(e, `Could not delete message: `);
+        }
     }
 
     async editMessage(source: ChatSourceBase, message: ChatMessage, newText: string) {
         try {
             await source.editMessage(message.id, newText);
         } catch (e) {
-            alert(e.message);
+            this.handleBackendExceptionAsAlert(e, 'Could not edit this message: ');
             return;
         }
 
@@ -470,7 +488,7 @@ export class BantaCommentsComponent {
             await this.source.editMessage(message.id, text);
             message.transientState.editing = false;
         } catch (e) {
-            alert(`Could not edit message: ${e.message}`);
+            this.handleBackendExceptionAsAlert(e, `Could not edit message: `);
         }
     }
 }

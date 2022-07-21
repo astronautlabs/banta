@@ -69,7 +69,7 @@ export class BantaChatComponent {
     private _upvoted = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
     private _signInSelected = new Subject<void>();
-    private _permissionDeniedError = new Subject<void>();
+    private _permissionDeniedError = new Subject<string>();
 
     @Output()
     get signInSelected(): Observable<void> {
@@ -77,7 +77,7 @@ export class BantaChatComponent {
     }
 
     @Output()
-    get permissionDeniedError(): Observable<void> {
+    get permissionDeniedError(): Observable<string> {
         return this._permissionDeniedError;
     }
 
@@ -87,8 +87,8 @@ export class BantaChatComponent {
         this._signInSelected.next();
     }
 
-    sendPermissionError() {
-        this._permissionDeniedError.next();
+    sendPermissionError(message: string) {
+        this._permissionDeniedError.next(message);
     }
 
     insertEmoji(emoji) {

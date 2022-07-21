@@ -48,10 +48,10 @@ export class CommentFieldComponent {
     @Input() hashtags : HashTag[];
     @Input() participants : User[] = [];
 
-    private _permissionDeniedError = new Subject<void>();
+    private _permissionDeniedError = new Subject<string>();
 
     @Output()
-    get permissionDeniedError(): Observable<void> {
+    get permissionDeniedError(): Observable<string> {
         return this._permissionDeniedError;
     }
 
@@ -60,8 +60,8 @@ export class CommentFieldComponent {
         root.appendChild(this.autocompleteEl.nativeElement);
     }
 
-    showPermissionDenied() {
-        this._permissionDeniedError.next();
+    sendPermissionDenied(message: string) {
+        this._permissionDeniedError.next(message);
     }
 
     showAutoComplete(options : AutoCompleteOption[]) {

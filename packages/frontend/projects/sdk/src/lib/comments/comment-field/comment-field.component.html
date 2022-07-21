@@ -83,7 +83,7 @@
             <button
                 *ngIf="!canComment"
                 type="button"
-                (click)="showPermissionDenied()"
+                (click)="sendPermissionDenied('')"
                 mat-raised-button
                 color="primary"
                 >{{permissionDeniedLabel}}</button>

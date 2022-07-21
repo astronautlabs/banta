@@ -75,7 +75,7 @@
                     [canComment]="source?.permissions?.canPost"
                     [signInLabel]="signInLabel"
                     [permissionDeniedLabel]="permissionDeniedLabel"
-                    (permissionDeniedError)="showPermissionDenied()"
+                    (permissionDeniedError)="sendPermissionDenied($event)"
                     [shouldInterceptMessageSend]="shouldInterceptMessageSend"
                     [user]="user"
                     [label]="postReplyLabel"
@@ -101,7 +101,7 @@
             (editAvatarSelected)="showEditAvatar()"
             (signInSelected)="showSignIn()"
             [permissionDeniedLabel]="permissionDeniedLabel"
-            (permissionDeniedError)="showPermissionDenied()"
+            (permissionDeniedError)="sendPermissionDenied($event)"
             [shouldInterceptMessageSend]="shouldInterceptMessageSend"
             [submit]="sendMessage"
             >
