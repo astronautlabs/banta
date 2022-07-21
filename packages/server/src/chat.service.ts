@@ -125,9 +125,9 @@ export class ChatService {
     /**
      * @internal
      */
-    doAuthorizeAction: AuthorizeAction = (user: User, token: string, action: AuthorizableAction) => {
+    async doAuthorizeAction: AuthorizeAction = (user: User, token: string, action: AuthorizableAction) => {
         try {
-            this.authorizeAction(user, token, action);
+            await this.authorizeAction(user, token, action);
         } catch (e) {
             throw new Error(`permission-denied|${e.message}`);
         }
@@ -150,9 +150,9 @@ export class ChatService {
      * @param action 
      * @returns 
      */
-    checkAuthorization(user: User, token: string, action: AuthorizableAction) {
+    async checkAuthorization(user: User, token: string, action: AuthorizableAction) {
         try {
-            this.doAuthorizeAction(user, token, action);
+            await this.doAuthorizeAction(user, token, action);
             return true;
         } catch (e) {
             return false;
