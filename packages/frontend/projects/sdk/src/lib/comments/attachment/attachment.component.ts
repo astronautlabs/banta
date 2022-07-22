@@ -1,5 +1,5 @@
 import { Component, ElementRef, Output, ViewChild } from '@angular/core';
-import { CDNProvider, ChatMessageAttachments } from '@banta/common';
+import { CDNProvider, ChatMessageAttachment } from '@banta/common';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -14,7 +14,7 @@ export class AttachmentComponent {
   ) { }
 
   @ViewChild('fileUpload', { static: false }) fileInput: ElementRef;
-  _addedAttachment = new Subject<ChatMessageAttachments>();
+  _addedAttachment = new Subject<ChatMessageAttachment>();
 
   @Output()
   get addedAttachment() {

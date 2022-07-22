@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, Output, ViewChild } from "@angular/core";
-import { ChatMessage, ChatMessageAttachments, User } from "@banta/common";
+import { ChatMessage, ChatMessageAttachment, User } from "@banta/common";
 import { Observable, Subject } from "rxjs";
 import { ChatSourceBase } from "../../chat-source-base";
 import { EMOJIS } from "../../emoji";
@@ -277,8 +277,8 @@ export class CommentFieldComponent {
         }
     }
 
-    chatMessageAttachments: ChatMessageAttachments[] = [];
-    addedAttachment(file: ChatMessageAttachments) {
+    chatMessageAttachments: ChatMessageAttachment[] = [];
+    addedAttachment(file: ChatMessageAttachment) {
         this.chatMessageAttachments.push(file);
     }
 
