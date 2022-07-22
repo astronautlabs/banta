@@ -30,7 +30,22 @@ export class AttachmentComponent {
     if (element.files.length) {
       console.log('[Banta] File Added to comment');
       const file = element.files[0];
-      const publicURL = await this.cdnProvider.uploadImage(file);
+      let publicURL: string;
+      
+      try {
+        publicURL = await this.cdnProvider.uploadImage(file);
+      } catch (e) {
+        console.error(`[Banta] Caught an error while uploading image to CDN:`);
+        console.error(e);
+        alert(`Failed to upload image. Please try again later.`);
+        return;
+      }
+
+      // If no URL was returned, then an error must have occurred. Presumably the CDN
+      // provider has conveyed an error to the user.
+      if (!publicURL)
+        return;
+      
       this._addedAttachment.next({
         type: file.type,
         url: publicURL
