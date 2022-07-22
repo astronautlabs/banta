@@ -39,7 +39,7 @@ export class BantaCommentsComponent {
 
         this.sendReply = async (message: ChatMessage) => {
             try {
-                const intercept = await this.shouldInterceptMessageSend?.(message, this.source);
+                const intercept = await this.shouldInterceptMessageSend?.(message, this.selectedMessageThread);
                 if (!intercept) {
                     await this.selectedMessageThread.send(message);
                 }
