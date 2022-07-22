@@ -5,7 +5,7 @@ import { Subject } from "rxjs";
 @Component({
   selector: 'banta-comment-sort',
   templateUrl: './comment-sort.component.html',
-  styleUrls: ['./comment-sort.component.css']
+  styleUrls: ['./comment-sort.component.scss']
 })
 export class CommentSortComponent {
 

@@ -21,4 +21,8 @@
     (shared)="sharedMessage($event)"
     [allowAttachments]="true"
     (permissionDeniedError)="permissionDenied($event)"
-    ></banta-comments>
+    >
+    <div class="reply-send-options">
+      <input type="checkbox" /> Private Reply
+    </div>
+</banta-comments>

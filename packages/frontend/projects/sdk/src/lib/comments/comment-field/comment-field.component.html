@@ -22,17 +22,20 @@
                         [disabled]="sending"
                         [(ngModel)]="text"></textarea>
                 </mat-form-field>
-                <div>
-                    <ng-content></ng-content>
-                    <emoji-selector-button class="top-right" (selected)="insertEmoji($event)"></emoji-selector-button>
-                    <comment-attachments (addedAttachment)="addedAttachment($event)" *ngIf="allowAttachments">
-                    </comment-attachments>
+                <div class="options-line">
+                    <mat-spinner *ngIf="sending" class="icon loading" diameter="18" strokeWidth="2"></mat-spinner>
+                    <div *ngIf="sendError" class="error-message" [class.expanded]="expandError" [matTooltip]="sendError.message" (click)="alertError()">
+                        <mat-icon *ngIf="sendError">error</mat-icon>
+                        {{sendError.message}}
+                    </div>
+                    <div class="spacer"></div>
+                    <div class="custom">
+                        <ng-content></ng-content>
+                    </div>
+                    <comment-attachments (addedAttachment)="addedAttachment($event)" *ngIf="allowAttachments"></comment-attachments>
+                    <emoji-selector-button (selected)="insertEmoji($event)"></emoji-selector-button>
                 </div>
-                <mat-spinner *ngIf="sending" class="icon loading" diameter="18" strokeWidth="2"></mat-spinner>
-                <div *ngIf="sendError" class="error-message" [class.expanded]="expandError">
-                    <mat-icon *ngIf="sendError">error</mat-icon>
-                    {{sendError.message}}
-                </div>
+                
             </div>
             <div #autocompleteContainer class="autocomplete-container">
                 <div #autocomplete class="autocomplete" [class.visible]="autocompleteVisible">

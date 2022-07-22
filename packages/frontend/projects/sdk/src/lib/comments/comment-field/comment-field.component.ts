@@ -30,8 +30,9 @@ export class CommentFieldComponent {
     @Output() editAvatarSelected = new Subject<void>();
 
     sending = false;
-    @Input() sendError : Error;
-    @Input() expandError = false;
+    sendError : Error;
+    expandError = false;
+
     text : string = '';
     @Input() sendLabel = 'Send';
     @Input() sendingLabel = 'Sending';
@@ -102,6 +103,10 @@ export class CommentFieldComponent {
                 this.expandError = false;
             }, 5*1000);
         }, 100);
+
+        // On mobile, just show an alert dialog
+        if (window.innerWidth < 430)
+            alert(message);
     }
 
     completionFunc : (str : string) => AutoCompleteOption[];
@@ -265,6 +270,12 @@ export class CommentFieldComponent {
                 attachments: this.chatMessageAttachments
             };
 
+            // this.sendError = new Error('Could not send: This has been a test of the emergency broadcast system.');
+            // this.expandError = true;
+
+            this.indicateError('Could not send: This has been a test of the emergency broadcast system.');
+            if (1) return;
+
             try {
                 await this.submit(message);
                 this.text = '';
@@ -286,4 +297,9 @@ export class CommentFieldComponent {
 		this.chatMessageAttachments.splice(index, 1);
 	}
 
+    alertError() {
+        if (!this.sendError)
+            return;
+        alert(this.sendError.message);
+    }
 }

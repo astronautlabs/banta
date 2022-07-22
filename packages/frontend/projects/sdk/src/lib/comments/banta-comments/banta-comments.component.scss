@@ -81,3 +81,14 @@ banta-comment-view {
         }
     }
 }
+
+banta-comment-sort {
+    margin: 0 0 0 auto;
+    width: fit-content;
+    display: block;
+
+    @media (max-width: 450px) {
+        margin: 0;
+        width: 100%;
+    }
+}

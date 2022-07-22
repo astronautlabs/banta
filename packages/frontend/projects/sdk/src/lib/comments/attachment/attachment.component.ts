@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 @Component({
   selector: 'comment-attachments',
   templateUrl: './attachment.component.html',
-  styleUrls: ['./attachment.component.css']
+  styleUrls: ['./attachment.component.scss']
 })
 export class AttachmentComponent {
 

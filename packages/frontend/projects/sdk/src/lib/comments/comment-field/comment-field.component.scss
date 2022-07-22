@@ -23,6 +23,7 @@
     width: calc(48px + 1.75em);
     display: flex;
     justify-content: flex-end;
+    flex-shrink: 0;
 
     .avatar {
         width: 48px;
@@ -47,6 +48,7 @@ form {
         position: relative;
         display: flex;
         flex-grow: 1;
+        min-width: 0;
 
         textarea {
             font-size: 14pt;
@@ -57,40 +59,42 @@ form {
             }
         }
 
-        mat-form-field {
-            margin-bottom: 1em;
-        }
-
-        emoji-selector-button {
-            bottom: 0;
-            right: 0;
-            position: absolute;
-        }
-
         mat-spinner.loading {
             position: absolute;
             left: 0.5em;
             bottom: 0.5em;
         }
 
-        .error-message {
-            position: absolute;
-            left: 0.5em;
-            bottom: 0.5em;
-            color: #683333;
-            overflow-x: hidden;
-            max-width: 1.5em;
-            white-space: nowrap;
-            transition: 2s max-width ease-in-out;
+        .options-line {
+            display: flex;
+            align-items: center;
 
-            &.expanded, &:hover {
-                max-width: 100%;
+            & > * {
+                flex-shrink: 0;
             }
 
-            mat-icon {
-                vertical-align: middle;
+            .error-message {
+                left: 0.5em;
+                bottom: 0.5em;
+                color: #683333;
+                overflow-x: hidden;
+                max-width: 1.5em;
+                white-space: nowrap;
+                transition: 2s max-width ease-in-out;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                flex-shrink: 1;
+    
+                &.expanded, &:hover {
+                    max-width: 100%;
+                }
+    
+                mat-icon {
+                    vertical-align: middle;
+                }
             }
         }
+        
     }
 
     input[type=text] {
@@ -105,6 +109,7 @@ form {
 
     .actions {
         margin-left: 1em;
+        flex-shrink: 0;
     }
 
     button {
@@ -116,15 +121,21 @@ form {
 form.new-message {
     display: flex;
     align-items: flex-start;
+    min-width: 0;
 
     .field-container {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+        min-width: 0;
     }
 
     mat-form-field {
         width: 100%;
+
+        ::ng-deep .mat-form-field-wrapper {
+            padding-bottom: 0;
+        }
     }
 
     button {
@@ -179,6 +190,7 @@ textarea {
 
     .avatar-container {
         width: auto;
+        flex-shrink: 0;
         .avatar {
             width: 32px;
             height: 32px;
