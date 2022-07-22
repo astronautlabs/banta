@@ -7,6 +7,10 @@ import { CDNProvider } from "./cdn-provider";
  */
 export class DataURICDNProvider extends CDNProvider {
     async uploadImage(image: Blob): Promise<string> {
-        return URL.createObjectURL(image);
+        return await new Promise<string>(resolve => {
+            let reader = new FileReader(); 
+            reader.onload = (ev) => resolve(<string>ev.target.result);
+            reader.readAsDataURL(image);
+        });
     }
 }

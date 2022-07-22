@@ -1,6 +1,7 @@
-import { Component, Output, Input, HostBinding } from "@angular/core";
+import { Component, Output, Input, HostBinding, ViewChild } from "@angular/core";
 import { Subject } from 'rxjs';
-import { ChatMessage, ChatPermissions, User } from '@banta/common';
+import { ChatMessage, ChatMessageAttachment, ChatPermissions, User } from '@banta/common';
+import { LightboxComponent } from "../../common/lightbox/lightbox.component";
 
 @Component({
     selector: 'banta-comment',
@@ -153,6 +154,17 @@ export class CommentComponent {
 		this._avatarSelected.next(user);
 		this.selectUser();
 	}
+
+    @ViewChild('lightbox') lightbox: LightboxComponent;
+
+    showLightbox(image: ChatMessageAttachment) {
+        this.lightbox.open(
+            image.url,
+            this.message.attachments
+                .filter(x => x.type === 'image/png')
+                .map(x => x.url)
+        )
+    }
 
     avatarForUser(user : User) {
         if (user && user.avatarUrl) {

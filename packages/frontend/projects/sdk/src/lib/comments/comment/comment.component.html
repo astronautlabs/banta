@@ -20,9 +20,18 @@
     <div class="content" *ngIf="!editing">
         {{message.message}}
 
-        <div class="attachments-row" *ngIf="message.attachments && message.attachments.length">
-            <img *ngFor="let attachment of message.attachments"  [src]="attachment.url | safeURL" alt="">
-        </div>
+        <ng-container *ngIf="message.attachments?.length > 0">
+            <banta-lightbox #lightbox></banta-lightbox>
+            <div class="attachments-row" [class.single]="message.attachments?.length === 1">
+                <a 
+                    href="javascript:;" 
+                    (click)="showLightbox(attachment)"
+                    *ngFor="let attachment of message.attachments" 
+                    >
+                    <img [src]="attachment.url | safeURL" alt="">
+                </a>
+            </div>
+        </ng-container>
     </div>
     <div class="content" *ngIf="editing" style="padding-bottom: 2em;">
         <div>
