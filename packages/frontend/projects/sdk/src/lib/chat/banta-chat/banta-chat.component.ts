@@ -1,9 +1,10 @@
-import { Component, Input, Output, ElementRef, ViewChild } from "@angular/core";
+import { Component, Input, Output, ViewChild } from "@angular/core";
 import { Subject, Observable, Subscription } from 'rxjs';
 
-import { User, ChatSource, ChatMessage, NewMessageForm, UserAccount } from '@banta/common';
+import { User, ChatMessage, NewMessageForm } from '@banta/common';
 import { ChatViewComponent } from '../chat-view/chat-view.component';
-import { BantaService, ChatBackendService } from "../../common";
+import { ChatBackendBase } from "../../chat-backend-base";
+import { ChatSourceBase } from "../../chat-source-base";
 
 /**
  * Chat component
@@ -15,21 +16,19 @@ import { BantaService, ChatBackendService } from "../../common";
 })
 export class BantaChatComponent {
     constructor(
-        private banta : BantaService,
-        private backend : ChatBackendService,
-        private elementRef : ElementRef<HTMLElement>
+        private backend : ChatBackendBase
     ) {
     }
 
-    private _source : ChatSource;
+    private _source : ChatSourceBase;
     private _subs = new Subscription();
-    user : UserAccount = null;
+    user : User = null;
 
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage) => boolean | Promise<boolean>;
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
 
 
     ngOnInit() {
-        this._subs.add(this.banta.userChanged.subscribe(user => this.user = user));
+        this._subs.add(this.backend.userChanged.subscribe(user => this.user = user));
     }
 
     ngOnDestroy() {
@@ -37,7 +36,7 @@ export class BantaChatComponent {
     }
 
     @Input()
-    get source() : ChatSource {
+    get source() : ChatSourceBase {
         return this._source;
     }
 
@@ -70,7 +69,7 @@ export class BantaChatComponent {
     private _upvoted = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
     private _signInSelected = new Subject<void>();
-    private _permissionDeniedError = new Subject<void>();
+    private _permissionDeniedError = new Subject<string>();
 
     @Output()
     get signInSelected(): Observable<void> {
@@ -78,7 +77,7 @@ export class BantaChatComponent {
     }
 
     @Output()
-    get permissionDeniedError(): Observable<void> {
+    get permissionDeniedError(): Observable<string> {
         return this._permissionDeniedError;
     }
 
@@ -88,8 +87,8 @@ export class BantaChatComponent {
         this._signInSelected.next();
     }
 
-    sendPermissionError() {
-        this._permissionDeniedError.next();
+    sendPermissionError(message: string) {
+        this._permissionDeniedError.next(message);
     }
 
     insertEmoji(emoji) {
@@ -150,13 +149,16 @@ export class BantaChatComponent {
         if (!this.user)
             return false;
 
-        if (!this.user.permissions)
-            return true;
+        // TODO
+        // if (!this.user.permissions)
+        //     return true;
 
-        if (!this.user.permissions.canChat)
-            return true;
+        // if (!this.user.permissions.canChat)
+        //     return true;
 
-        return this.user.permissions?.canChat(this.source);
+        // return this.user.permissions?.canChat(this.source);
+        
+        return true;
     }
 
     newMessage : NewMessageForm = {};
@@ -174,13 +176,13 @@ export class BantaChatComponent {
         let message : ChatMessage = {
             user: null,
             sentAt: Date.now(),
-            upvotes: 0,
+            likes: 0,
             url: location.href,
             message: text
         };
 
         try {
-            const intercept = await this.shouldInterceptMessageSend?.(message);
+            const intercept = await this.shouldInterceptMessageSend?.(message, this.source);
             if (!intercept) {
                 await this.source.send(message);
             }

@@ -1,6 +1,6 @@
 {
   "name": "@banta/common",
-  "version": "1.0.0",
+  "version": "2.0.8",
   "description": "",
   "private": false,
   "main": "dist/index.js",
@@ -15,10 +15,12 @@
   "author": "Astronaut Labs, LLC",
   "license": "MIT",
   "peerDependencies": {
+    "reflect-metadata": "^0.1.13",
     "rxjs": "^6.6.7"
   },
-  "gitHead": "d0220d82c6f44071d9765673209f88a7e9eb7320",
+  "gitHead": "0cb1cd13e2196f54d2fd67e17f447cc2b70df1bf",
   "devDependencies": {
+    "reflect-metadata": "^0.1.13",
     "typescript": "^4.6.3"
   }
 }

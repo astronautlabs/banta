@@ -1,18 +1,19 @@
-import { ChatMessage, ChatSource, User, ChatBackend, Notification, Vote, ChatSourceOptions, CommentsOrder, CDNProvider } from "@banta/common";
+import { ChatMessage, User, Notification, Vote, CommentsOrder, ChatPermissions } from "@banta/common";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";
 import { MOCK_USERS } from "./mock-users";
 import * as pmq from 'popular-movie-quotes';
+import { ChatBackendBase, ChatSourceBase, ChatSourceOptions } from "@banta/sdk";
 
 const GENERIC_AVATAR_URL = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
 @Injectable()
-export class MockBackend implements ChatBackend {
+export class MockBackend extends ChatBackendBase {
     messages = new Map<string, ChatMessage>();
     userAvatars = new Map<string, string>();
 
-    private sources = new Map<string, ChatSource>();
+    private sources = new Map<string, MockSource>();
 
     /**
      * @internal
@@ -21,31 +22,32 @@ export class MockBackend implements ChatBackend {
         this.sources.delete(`${source.identifier}:${source.sortOrder}`);
     }
 
-    private getSourceForId(id : string, options: ChatSourceOptions) {
+    private getSourceForId(topicId: string, messageId: string, options: ChatSourceOptions) {
+        let sortOrder = options?.sortOrder ?? CommentsOrder.NEWEST;
 
-        let key = `${id}:${options.sortOrder}`;
+        let key = `${topicId}:${sortOrder}`;
         if (this.sources.has(key))
             return this.sources.get(key);
 
-        let source : ChatSource;
+        let source : MockSource;
 
-        if (id.endsWith('_comments'))
-            source = new MockCommentsSource(this, id, options.sortOrder ?? CommentsOrder.NEWEST);
-        else if (id.endsWith('_chat'))
-            source = new MockChatSource(this, id, options.sortOrder ?? CommentsOrder.NEWEST);
-        else if (id.endsWith('_replies'))
-            source = new MockReplySource(this, id, options.sortOrder ?? CommentsOrder.NEWEST);
+        if (messageId)
+            source = new MockReplySource(this, topicId, messageId, sortOrder);
+        else if (topicId.endsWith('_comments'))
+            source = new MockCommentsSource(this, topicId, sortOrder);
+        else if (topicId.endsWith('_chat'))
+            source = new MockChatSource(this, topicId, sortOrder);
 
         this.sources.set(key, source);
         return source;
     }
 
-    async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSource> {
-        return this.getSourceForId(topicId, options);
+    async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSourceBase> {
+        return this.getSourceForId(topicId, undefined, options);
     }
 
-    async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSource> {
-        return this.getSourceForId(messageId, options);
+    async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSourceBase> {
+        return this.getSourceForId(topicId, messageId, options);
     }
 
     async getSourceCountForTopic(topicId: string): Promise<number> {
@@ -64,18 +66,6 @@ export class MockBackend implements ChatBackend {
         return this.messages.get(messageId);
     }
 
-    async upvoteMessage(topicId: string, messageId: string, submessageId: string, vote: Vote): Promise<void> {
-        let message = this.messages.get(messageId);
-        if (!message) {
-            throw new Error(`No such message`);
-        }
-
-        if (!message.upvotes)
-            message.upvotes = 0;
-
-        message.upvotes += 1;
-    }
-
     watchMessage(message: ChatMessage, handler: (message: ChatMessage) => void): () => void {
         // TODO
         return () => {};
@@ -86,7 +76,7 @@ export class MockBackend implements ChatBackend {
 
 }
 
-export class MockSource implements ChatSource {
+export class MockSource implements ChatSourceBase {
     constructor(
         readonly backend : MockBackend,
         readonly identifier: string,
@@ -95,10 +85,74 @@ export class MockSource implements ChatSource {
         this.currentUserChanged.next(this.currentUser);
     }
 
+    ready = Promise.resolve();
+    
     currentUserChanged = new BehaviorSubject<User>(null);
     messageReceived = new Subject<ChatMessage>();
     messageSent = new Subject<ChatMessage>();
     messages: ChatMessage[] = [];
+
+    async getExistingMessages(): Promise<ChatMessage[]> {
+        return [];
+    }
+
+    permissions: ChatPermissions = {
+        canEdit: true,
+        canLike: true,
+        canPost: true,
+        canDelete: true
+    }
+    async getCount() {
+        return 0; // TODO
+    }
+
+    async editMessage(messageId: string, text: string) : Promise<void> {
+        this.backend.messages.get(messageId).message = text;
+    }
+
+    async deleteMessage(messageId: string) {
+        this.backend.messages.delete(messageId);
+    }
+
+    async get(id: string) {
+        return this.backend.messages.get(id);
+    }
+
+    async likeMessage(messageId: string): Promise<void> {
+        let message = this.backend.messages.get(messageId);
+        if (!message) {
+            throw new Error(`No such message`);
+        }
+
+        // The UI will increment the like count early for quick user response.
+        // We need to maintain a fake "source of truth" for the likes.
+        
+        if (!message['$likes'])
+            message['$likes'] = 0;
+
+        message['$likes'] += 1;
+        message.likes = message['$likes'];
+    }
+
+    async loadAfter(message: ChatMessage, count: number) {
+        return [];
+    }
+
+    async unlikeMessage(messageId: string): Promise<void> {
+        let message = this.backend.messages.get(messageId);
+        if (!message) {
+            throw new Error(`No such message`);
+        }
+
+        // The UI will increment the like count early for quick user response.
+        // We need to maintain a fake "source of truth" for the likes.
+        
+        if (!message['$likes'])
+            message['$likes'] = 0;
+
+        message['$likes'] -= 1;
+        message.likes = message['$likes'];
+    }
 
     async send(message: ChatMessage) {
         if (message.message.includes('#error'))
@@ -187,17 +241,17 @@ export class SimulatedSource extends MockSource {
             user.avatarUrl = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
         let message = <ChatMessage>{
-            id: `${uuid()}_replies`,
+            id: uuid(),
             user,
             sentAt: Date.now(),
-            upvotes: 0,
+            likes: 0,
             message: messageText,
             submessages: [
                 {
                     user: this.currentUser,
                     message: `Good point!`,
                     sentAt: Date.now(),
-                    upvotes: 0
+                    likes: 0
                 },
                 {
                     user: {
@@ -208,25 +262,25 @@ export class SimulatedSource extends MockSource {
                     },
                     sentAt: Date.now(),
                     message: `What would this mean for Buttigieg?`,
-                    upvotes: 0
+                    likes: 0
                 },
                 {
                     user,
                     sentAt: Date.now(),
                     message: `Klobucharino`,
-                    upvotes: 0
+                    likes: 0
                 },
                 {
                     user: this.currentUser,
                     sentAt: Date.now(),
                     message: `Good question!`,
-                    upvotes: 0
+                    likes: 0
                 },
                 {
                     user,
                     sentAt: Date.now(),
                     message: `But whyigieg`,
-                    upvotes: 0
+                    likes: 0
                 }
             ]
         }
@@ -283,6 +337,7 @@ export class MockReplySource extends SimulatedSource {
     constructor(
         readonly backend : MockBackend,
         readonly identifier : string,
+        readonly parentIdentifier: string,
         readonly sortOrder: CommentsOrder
     ) {
         super(backend, identifier, sortOrder, [

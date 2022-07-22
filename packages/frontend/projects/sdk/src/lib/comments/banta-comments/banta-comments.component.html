@@ -1,90 +1,136 @@
+<ng-container *ngIf="loading">
+    <div class="loading-screen" [class.visible]="showLoadingScreen">
+        <h1>Loading Comments</h1>
+        <div>
+            <mat-spinner [diameter]="300" [strokeWidth]="2"></mat-spinner>
+        </div>
 
-<div class="focused" [class.visible]="selectedMessageVisible" *ngIf="selectedMessage">
+        <p class="loading-message" [class.visible]="loadingMessageVisible">{{loadingMessage}}</p>
+    </div>
+</ng-container>
+<ng-container *ngIf="!loading">
+    <div class="focused" [class.visible]="selectedMessageVisible" *ngIf="selectedMessage">
 
-    <div>
-        <a mat-button href="javascript:;" (click)="unselectMessage()">
-            <mat-icon>arrow_back</mat-icon>
-            Latest Comments
-        </a>
+        <div>
+            <a mat-button href="javascript:;" (click)="unselectMessage()">
+                <mat-icon>arrow_back</mat-icon>
+                Latest Comments
+            </a>
+        </div>
+
+        <banta-comment
+            [message]="selectedMessage"
+            [liking]="selectedMessage.transientState.liking"
+            [mine]="user?.id === selectedMessage.user?.id"
+            [permissions]="source?.permissions"
+            [showReplyAction]="false"
+            [editing]="selectedMessage.transientState.editing"
+            (editStarted)="startEditing(selectedMessage)"
+            (editEnded)="selectedMessage.transientState.editing = false"
+            (edited)="saveEdit(selectedMessage, $event)"
+            (userSelected)="selectMessageUser(selectedMessage)"
+            (avatarSelected)="selectAvatar($event)"
+            (usernameSelected)="selectUsername($event)"
+            (liked)="likeMessage(source, selectedMessage)"
+            (unliked)="unlikeMessage(source, selectedMessage)"
+            (reported)="reportMessage(selectedMessage)"
+            (selected)="selectMessage(selectedMessage)"
+            (shared)="shareMessage($event)"
+            (deleted)="deleteMessage(selectedMessage)"
+            ></banta-comment>
+
+        <div class="replies">
+
+            <ng-container *ngIf="!selectedMessageThread">
+                <div class="loading">
+                    <mat-spinner></mat-spinner>
+                </div>
+            </ng-container>
+
+            <ng-container *ngIf="selectedMessageThread">
+                <banta-comment-view
+                    [source]="selectedMessageThread"
+                    [allowReplies]="false"
+                    [fixedHeight]="false"
+                    [showEmptyState]="false"
+                    [newestLast]="true"
+                    (liked)="likeMessage(selectedMessageThread, $event)"
+                    (unliked)="unlikeMessage(selectedMessageThread, $event)"
+                    (messageEdited)="editMessage(selectedMessageThread, $event.message, $event.newMessage)"
+                    (reported)="reportMessage($event)"
+                    (usernameSelected)="selectUsername($event)"
+                    (avatarSelected)="selectAvatar($event)"
+                    (shared)="shareMessage($event)"
+                    (deleted)="deleteMessage($event)"
+                    ></banta-comment-view>
+
+                <banta-comment-field
+                    [sendLabel]="replyLabel"
+                    [sendingLabel]="sendingLabel"
+                    [hashtags]="hashtags"
+                    [participants]="participants"
+                    (signInSelected)="showSignIn()"
+                    (editAvatarSelected)="showEditAvatar()"
+                    [source]="selectedMessageThread"
+                    [canComment]="source?.permissions?.canPost"
+                    [signInLabel]="signInLabel"
+                    [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
+                    (permissionDeniedError)="handlePermissionDenied($event)"
+                    [shouldInterceptMessageSend]="shouldInterceptMessageSend"
+                    [user]="user"
+                    [label]="postReplyLabel"
+                    [submit]="sendReply"
+                    [allowAttachments]="allowAttachments"
+                    >
+                    <ng-content select=".reply-send-options"></ng-content>
+                </banta-comment-field>
+            </ng-container>
+        </div>
     </div>
 
-    <banta-comment
-        [message]="selectedMessage"
-        ></banta-comment>
+    <div class="main" [class.hidden]="selectedMessage">
+        <banta-comment-field
+            [source]="source"
+            [user]="user"
+            [sendLabel]="sendLabel"
+            [sendingLabel]="sendingLabel"
+            [signInLabel]="signInLabel"
+            [canComment]="source?.permissions?.canPost"
+            [hashtags]="hashtags"
+            [participants]="participants"
+            [label]="postCommentLabel"
+            (editAvatarSelected)="showEditAvatar()"
+            (signInSelected)="showSignIn()"
+            [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
+            (permissionDeniedError)="handlePermissionDenied($event)"
+            [shouldInterceptMessageSend]="shouldInterceptMessageSend"
+            [submit]="sendMessage"
+            [allowAttachments]="allowAttachments"
+            >
+        
+        </banta-comment-field>
 
-    <div class="replies">
+        <banta-comment-sort
+            [(sort)]="sortOrder"></banta-comment-sort>
 
-        <ng-container *ngIf="!selectedMessageThread">
-            <div class="loading">
-                <mat-spinner></mat-spinner>
-            </div>
-        </ng-container>
-
-        <ng-container *ngIf="selectedMessageThread">
-            <banta-comment-view
-                [source]="selectedMessageThread"
-                [allowReplies]="false"
-                [fixedHeight]="false"
-                [showEmptyState]="false"
-                [newestLast]="true"
-                ></banta-comment-view>
-
-            <banta-comment-field
-                [sendLabel]="replyLabel"
-                [sendingLabel]="sendingLabel"
-                [hashtags]="hashtags"
-                [participants]="participants"
-                (signInSelected)="showSignIn()"
-                (editAvatarSelected)="showEditAvatar()"
-                [source]="selectedMessageThread"
-                [canComment]="canComment"
-                [signInLabel]="signInLabel"
-                [permissionDeniedLabel]="permissionDeniedLabel"
-                (permissionDeniedError)="showPermissionDenied()"
-                [shouldInterceptMessageSend]="shouldInterceptMessageSend"
-                [user]="user"
-                [label]="postReplyLabel"
-				[allowAttachments]="allowAttachments"
-                ></banta-comment-field>
-        </ng-container>
+        <banta-comment-view
+            [class.faded]="selectedMessage"
+            [source]="source"
+            [fixedHeight]="fixedHeight"
+            [maxMessages]="maxMessages"
+            [maxVisibleMessages]="maxVisibleMessages"
+            [genericAvatarUrl]="genericAvatarUrl"
+            (userSelected)="selectMessageUser($event)"
+            (sortOrderChanged)="sortOrder = $event"
+            (selected)="selectMessage($event)"
+            (liked)="likeMessage(source, $event)"
+            (unliked)="unlikeMessage(source, $event)"
+            (messageEdited)="editMessage(source, $event.message, $event.newMessage)"
+            (reported)="reportMessage($event)"
+            (usernameSelected)="selectUsername($event)"
+            (avatarSelected)="selectAvatar($event)"
+            (shared)="shareMessage($event)"
+            (deleted)="deleteMessage($event)"
+            ></banta-comment-view>
     </div>
-</div>
-
-<div class="main" [class.hidden]="selectedMessage">
-    <banta-comment-field
-        [source]="source"
-        [user]="user"
-        [sendLabel]="sendLabel"
-        [sendingLabel]="sendingLabel"
-        [signInLabel]="signInLabel"
-        [canComment]="canComment"
-        [hashtags]="hashtags"
-        [participants]="participants"
-        [label]="postCommentLabel"
-        (editAvatarSelected)="showEditAvatar()"
-        (signInSelected)="showSignIn()"
-        [permissionDeniedLabel]="permissionDeniedLabel"
-        (permissionDeniedError)="showPermissionDenied()"
-        [shouldInterceptMessageSend]="shouldInterceptMessageSend"
-		[allowAttachments]="allowAttachments"
-        ></banta-comment-field>
-
-    <banta-comment-sort
-        [(sort)]="sortOrder"></banta-comment-sort>
-
-    <banta-comment-view
-        [class.faded]="selectedMessage"
-        [source]="source"
-        [fixedHeight]="fixedHeight"
-        [maxMessages]="maxMessages"
-        [maxVisibleMessages]="maxVisibleMessages"
-        [genericAvatarUrl]="genericAvatarUrl"
-        (userSelected)="selectMessageUser($event)"
-        (selected)="selectMessage($event)"
-        (upvoted)="upvoteMessage($event)"
-        (reported)="reportMessage($event)"
-        (usernameSelected)="selectUsername($event)"
-        (avatarSelected)="selectAvatar($event)"
-        (shared)="shareMessage($event)"
-        ></banta-comment-view>
-</div>
+</ng-container>

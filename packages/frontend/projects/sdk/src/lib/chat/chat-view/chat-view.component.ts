@@ -1,6 +1,8 @@
 import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
-import { ChatSource, User, ChatMessage } from '@banta/common';
+import { User, ChatMessage } from '@banta/common';
 import { Subject, Subscription } from 'rxjs';
+import { ChatBackendBase } from "../../chat-backend-base";
+import { ChatSourceBase } from "../../chat-source-base";
 
 @Component({
     selector: 'banta-chat-view',
@@ -9,13 +11,14 @@ import { Subject, Subscription } from 'rxjs';
 })
 export class ChatViewComponent {
     constructor(
+        private backend: ChatBackendBase,
         private elementRef : ElementRef<HTMLElement>
     ) {
 
     }
 
     private _sourceSubs = new Subscription();
-    private _source : ChatSource;
+    private _source : ChatSourceBase;
 
     @Input()
     get source() {
@@ -70,12 +73,10 @@ export class ChatViewComponent {
             this._sourceSubs.add(this._source.messageReceived.subscribe(msg => this.messageReceived(msg)));
             this._sourceSubs.add(this._source.messageSent.subscribe(msg => this.messageSent(msg)));
 
-            if (this._source.currentUserChanged) {
-                this._sourceSubs.add(
-                    this._source.currentUserChanged
-                        .subscribe(user => this.currentUser = user)
-                );
-            }
+            this._sourceSubs.add(
+                this.backend.userChanged
+                    .subscribe(user => this.currentUser = user)
+            );
         }
     }
 

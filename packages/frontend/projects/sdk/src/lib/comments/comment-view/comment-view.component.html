@@ -1,7 +1,7 @@
 <div class="message-container">
     <ng-content select="[data-before]"></ng-content>
 
-    <a mat-button class="nav" [class.visible]="isViewingMore" href="javascript:;" (click)="showNew()">
+    <a mat-button class="nav" [class.visible]="isViewingMore || customSortEnabled" href="javascript:;" (click)="showNew()">
         <mat-icon>file_upload</mat-icon>
         New
         <ng-container *ngIf="newMessages.length >= 1">
@@ -14,20 +14,31 @@
             Be the first to comment!
         </div>
     </ng-container>
-    <banta-comment
-        *ngFor="let message of messages; trackBy: messageIdentity"
-        class="abbreviated"
-        [message]="message"
-        (click)="isViewingMore = true"
-        [showReplyAction]="allowReplies"
-		(userSelected)="selectMessageUser(message)"
-        (avatarSelected)="selectAvatar($event)"
-		(usernameSelected)="selectUsername($event)"
-        (upvoted)="upvoteMessage(message)"
-        (reported)="reportMessage(message)"
-        (selected)="selectMessage(message)"
-        (shared)="sharedMessage($event)"
-        ></banta-comment>
+    <ng-container *ngFor="let message of messages; trackBy: messageIdentity">
+        <banta-comment
+            *ngIf="!message.hidden"
+            class="abbreviated"
+            
+            [message]="message"
+            [mine]="currentUser?.id === message.user?.id"
+            [permissions]="source?.permissions"
+            (click)="isViewingMore = true"
+            [showReplyAction]="allowReplies"
+            [editing]="message.transientState.editing"
+            (editStarted)="startEditing(message)"
+            (deleted)="deleteMessage(message)"
+            (editEnded)="message.transientState.editing = false"
+            (edited)="saveEdit(message, $event)"
+            (userSelected)="selectMessageUser(message)"
+            (avatarSelected)="selectAvatar($event)"
+            (usernameSelected)="selectUsername($event)"
+            (liked)="likeMessage(message)"
+            (unliked)="unlikeMessage(message)"
+            (reported)="reportMessage(message)"
+            (selected)="selectMessage(message)"
+            (shared)="sharedMessage($event)"
+            ></banta-comment>
+    </ng-container>
 
     <a mat-button class="nav" [class.visible]="hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
 

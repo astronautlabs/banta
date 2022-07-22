@@ -1,3 +1,15 @@
+<h1>Comments</h1>
+
+<div class="property">
+    <label>Topic:</label>
+    <code>{{topicID}}</code>
+</div>
+
+<div class="property">
+    <label>Message Count:</label>
+    <code>{{messageCount === undefined ? 'Unknown' : messageCount}}</code>
+</div>
+
 <banta-comments
     topicID="{{topicID}}_comments"
     [maxVisibleMessages]="20"
@@ -5,6 +17,8 @@
     (usernameSelected)="alert('Username was selected')"
     (userSelected)="alert('User (avatar or username) was selected')"
     (avatarSelected)="alert('Avatar was selected')"
+    (reported)="reportedMessage($event)"
     (shared)="sharedMessage($event)"
-	[allowAttachments]="true"
+    [allowAttachments]="true"
+    (permissionDeniedError)="permissionDenied($event)"
     ></banta-comments>

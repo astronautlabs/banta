@@ -1,6 +1,6 @@
 import { Component, Output, Input, HostBinding } from "@angular/core";
 import { Subject } from 'rxjs';
-import { ChatMessage, User } from '@banta/common';
+import { ChatMessage, ChatPermissions, User } from '@banta/common';
 
 @Component({
     selector: 'banta-comment',
@@ -10,7 +10,8 @@ import { ChatMessage, User } from '@banta/common';
 export class CommentComponent {
     private _reported = new Subject<void>();
     private _selected = new Subject<void>();
-    private _upvoted = new Subject<void>();
+    private _liked = new Subject<void>();
+    private _unliked = new Subject<void>();
 
     private _shared = new Subject<ChatMessage>();
 
@@ -32,6 +33,11 @@ export class CommentComponent {
 
     @HostBinding('class.new')
     isNew = false;
+
+    @HostBinding('class.highlighted')
+    get isHighlighted() {
+        return this.message?.transientState?.highlighted ?? false;
+    }
 
     @HostBinding('class.visible')
     visible = false;
@@ -62,10 +68,37 @@ export class CommentComponent {
         return this._reported.asObservable();
     }
 
+    @Input() permissions: ChatPermissions;
+    @Input() mine = false;
+    
+    @Input() editing = false;
+    editedMessage: string;
+
+    saveEdit() {
+        this._edited.next(this.editedMessage);
+    }
+
+    endEditing() {
+        this._editEnded.next();
+    }
+
+    startEdit() {
+        this._editStarted.next();
+        this.editedMessage = this.message.message;
+    }
+
+    delete() {
+        this._deleted.next();
+    }
 
     @Output()
-    get upvoted() {
-        return this._upvoted.asObservable();
+    get liked() {
+        return this._liked.asObservable();
+    }
+
+    @Output()
+    get unliked() {
+        return this._unliked.asObservable();
     }
 
     @Output()
@@ -73,22 +106,30 @@ export class CommentComponent {
         return this._selected.asObservable();
     }
 
-    @HostBinding('attr.data-comment-id')
-    get commentId() {
-        return this.message?.id;
-    }
+    private _editStarted = new Subject<void>();
+    private _deleted = new Subject<void>();
+    private _editEnded = new Subject<void>();
+    private _edited = new Subject<string>();
 
-    @Output()
-    get shared(){
-      return this._shared.asObservable();
-    }
+    @Output() get edited() { return this._edited.asObservable(); }
+    @Output() get deleted() { return this._deleted.asObservable(); }
+    @Output() get editStarted() { return this._editStarted.asObservable(); }
+    @Output() get editEnded() { return this._editEnded.asObservable(); }
+    @Output() get shared(){ return this._shared.asObservable(); }
+
+    @HostBinding('attr.data-comment-id') get commentId() { return this.message?.id; }
+
 
     report() {
         this._reported.next();
     }
 
-    upvote() {
-        this._upvoted.next();
+    like() {
+        this._liked.next();
+    }
+
+    unlike() {
+        this._unliked.next();
     }
 
     share() {

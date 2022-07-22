@@ -1,6 +1,7 @@
 import { Component, ElementRef, Input, Output, ViewChild } from "@angular/core";
-import { ChatMessage, ChatMessageAttachments, ChatSource, User } from "@banta/common";
+import { ChatMessage, ChatMessageAttachments, User } from "@banta/common";
 import { Observable, Subject } from "rxjs";
+import { ChatSourceBase } from "../../chat-source-base";
 import { EMOJIS } from "../../emoji";
 
 export interface AutoCompleteOption {
@@ -20,7 +21,7 @@ export interface HashTag {
 })
 export class CommentFieldComponent {
 
-    @Input() source : ChatSource;
+    @Input() source : ChatSourceBase;
     @Input() user : User;
     @Input() canComment = true;
     @Input() allowAttachments = false;
@@ -29,8 +30,8 @@ export class CommentFieldComponent {
     @Output() editAvatarSelected = new Subject<void>();
 
     sending = false;
-    sendError : Error;
-    expandError = false;
+    @Input() sendError : Error;
+    @Input() expandError = false;
     text : string = '';
     @Input() sendLabel = 'Send';
     @Input() sendingLabel = 'Sending';
@@ -38,8 +39,8 @@ export class CommentFieldComponent {
     @Input() permissionDeniedLabel = 'Unavailable';
     @Input() signInLabel = 'Sign In';
     @Input() placeholder = '';
-
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage) => boolean | Promise<boolean>;
+    @Output() textChanged = new Subject<void>();
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
 
     @ViewChild('autocomplete') autocompleteEl : ElementRef<HTMLElement>;
     @ViewChild('autocompleteContainer') autocompleteContainerEl : ElementRef<HTMLElement>;
@@ -48,10 +49,10 @@ export class CommentFieldComponent {
     @Input() hashtags : HashTag[];
     @Input() participants : User[] = [];
 
-    private _permissionDeniedError = new Subject<void>();
+    private _permissionDeniedError = new Subject<string>();
 
     @Output()
-    get permissionDeniedError(): Observable<void> {
+    get permissionDeniedError(): Observable<string> {
         return this._permissionDeniedError;
     }
 
@@ -60,8 +61,8 @@ export class CommentFieldComponent {
         root.appendChild(this.autocompleteEl.nativeElement);
     }
 
-    showPermissionDenied() {
-        this._permissionDeniedError.next();
+    sendPermissionDenied(message: string) {
+        this._permissionDeniedError.next(message);
     }
 
     showAutoComplete(options : AutoCompleteOption[]) {
@@ -90,14 +91,17 @@ export class CommentFieldComponent {
         this.completionPrefix = '';
     }
 
+    private errorTimeout;
     indicateError(message : string) {
         this.sendError = new Error(message);
-        setTimeout(() => {
+        this.expandError = false;
+        clearTimeout(this.errorTimeout);
+        this.errorTimeout = setTimeout(() => {
             this.expandError = true;
-            setTimeout(() => {
+            this.errorTimeout = setTimeout(() => {
                 this.expandError = false;
             }, 5*1000);
-        });
+        }, 100);
     }
 
     completionFunc : (str : string) => AutoCompleteOption[];
@@ -116,9 +120,6 @@ export class CommentFieldComponent {
     }
 
     async onKeyDown(event : KeyboardEvent) {
-        console.log(event.key);
-
-
         if (this.autocompleteVisible) {
             if (event.key === 'Escape') {
                 this.dismissAutoComplete();
@@ -240,6 +241,9 @@ export class CommentFieldComponent {
         this.editAvatarSelected.next();
     }
 
+    @Input()
+    submit: (message: ChatMessage) => boolean;
+
     async sendMessage() {
         if (!this.source)
             return;
@@ -256,21 +260,17 @@ export class CommentFieldComponent {
                 user: this.user,
                 sentAt: Date.now(),
                 url: location.href,
-                upvotes: 0,
+                likes: 0,
                 message: text,
                 attachments: this.chatMessageAttachments
             };
 
             try {
-                const intercept = await this.shouldInterceptMessageSend?.(message);
-                if (!intercept) {
-                    await this.source.send(message);
-                }
+                await this.submit(message);
                 this.text = '';
             } catch (e) {
-                this.indicateError(`Could not send: ${e.message}`);
-                console.error(`Failed to send message: `, message);
-                console.error(e);
+                await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
+                this.indicateError(e.message);
             }
         } finally {
             this.sending = false;
