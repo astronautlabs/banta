@@ -270,12 +270,6 @@ export class CommentFieldComponent {
                 attachments: this.chatMessageAttachments
             };
 
-            // this.sendError = new Error('Could not send: This has been a test of the emergency broadcast system.');
-            // this.expandError = true;
-
-            this.indicateError('Could not send: This has been a test of the emergency broadcast system.');
-            if (1) return;
-
             try {
                 await this.submit(message);
                 this.text = '';
