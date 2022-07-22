@@ -28,7 +28,7 @@
                     (click)="showLightbox(attachment)"
                     *ngFor="let attachment of message.attachments" 
                     >
-                    <img [src]="attachment.url | safeURL" alt="">
+                    <img [src]="attachment.url" alt="">
                 </a>
             </div>
         </ng-container>

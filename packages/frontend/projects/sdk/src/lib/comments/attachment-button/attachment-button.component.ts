@@ -3,15 +3,16 @@ import { CDNProvider, ChatMessageAttachment } from '@banta/common';
 import { Subject } from 'rxjs';
 
 @Component({
-  selector: 'comment-attachments',
-  templateUrl: './attachment.component.html',
-  styleUrls: ['./attachment.component.scss']
+  selector: 'banta-attachment-button',
+  templateUrl: './attachment-button.component.html',
+  styleUrls: ['./attachment-button.component.scss']
 })
-export class AttachmentComponent {
+export class AttachmentButtonComponent {
 
   constructor(
     private cdnProvider: CDNProvider,
-  ) { }
+  ) {
+  }
 
   @ViewChild('fileUpload', { static: false }) fileInput: ElementRef;
   _addedAttachment = new Subject<ChatMessageAttachment>();

@@ -32,7 +32,7 @@
                     <div class="custom">
                         <ng-content></ng-content>
                     </div>
-                    <comment-attachments (addedAttachment)="addedAttachment($event)" *ngIf="allowAttachments"></comment-attachments>
+                    <banta-attachment-button (addedAttachment)="addedAttachment($event)" *ngIf="allowAttachments"></banta-attachment-button>
                     <emoji-selector-button (selected)="insertEmoji($event)"></emoji-selector-button>
                 </div>
                 
@@ -61,7 +61,7 @@
                     <button (click)="removeAttachment(attachmentIndex)" mat-mini-fab color="primary" class="remove-img">
                         <mat-icon>close</mat-icon>
                     </button>
-                    <img [src]="attachment.url | safeURL" alt="Message Attachment">
+                    <img [src]="attachment.url" alt="Message Attachment">
                 </div>
             </div>
 
