@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, Output, ViewChild } from "@angular/core";
-import { ChatMessage, User } from "@banta/common";
+import { ChatMessage, ChatMessageAttachment, User } from "@banta/common";
 import { Observable, Subject } from "rxjs";
 import { ChatSourceBase } from "../../chat-source-base";
 import { EMOJIS } from "../../emoji";
@@ -24,6 +24,7 @@ export class CommentFieldComponent {
     @Input() source : ChatSourceBase;
     @Input() user : User;
     @Input() canComment = true;
+    @Input() allowAttachments = false;
 
     @Output() signInSelected = new Subject<void>();
     @Output() editAvatarSelected = new Subject<void>();
@@ -260,7 +261,8 @@ export class CommentFieldComponent {
                 sentAt: Date.now(),
                 url: location.href,
                 likes: 0,
-                message: text
+                message: text,
+                attachments: this.chatMessageAttachments
             };
 
             try {
@@ -274,5 +276,14 @@ export class CommentFieldComponent {
             this.sending = false;
         }
     }
+
+    chatMessageAttachments: ChatMessageAttachment[] = [];
+    addedAttachment(file: ChatMessageAttachment) {
+        this.chatMessageAttachments.push(file);
+    }
+
+	removeAttachment(index: number) {
+		this.chatMessageAttachments.splice(index, 1);
+	}
 
 }

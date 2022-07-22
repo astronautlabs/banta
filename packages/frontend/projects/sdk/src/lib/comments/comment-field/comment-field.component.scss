@@ -194,3 +194,28 @@ textarea {
         }
     }
 }
+
+.message-attachments-container {
+    display: flex;
+    gap: 20px;
+
+    .message-attachment {
+        width: 300px;
+        position: relative;
+
+        img {
+            width: 300px;
+            border-radius: 10px;
+        }
+        .remove-img {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            margin: 0;
+        }
+    }
+}
+
+.field-row {
+    position: relative;
+}

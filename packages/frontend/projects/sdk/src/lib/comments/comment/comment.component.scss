@@ -40,12 +40,27 @@
             margin-left: 60px;
             margin-right: 0.5em;
         }
+
+		.attachments-row {
+			margin-top: 15px;
+			display: flex;
+			gap: 10px;
+
+			img {
+				border-radius: 10px;
+				width: 300px;
+                max-width: 100%;
+                max-height: 20em;
+                object-fit: cover;
+			}
+		}
+
     }
 
     &.abbreviated {
         .message-content {
             .content {
-                max-height: 8.5em;
+                // max-height: 8.5em;
                 text-overflow: ellipsis;
                 overflow-y: hidden;
             }

@@ -80,6 +80,7 @@
                     [user]="user"
                     [label]="postReplyLabel"
                     [submit]="sendReply"
+                    [allowAttachments]="allowAttachments"
                     >
                     <ng-content select=".reply-send-options"></ng-content>
                 </banta-comment-field>
@@ -104,6 +105,7 @@
             (permissionDeniedError)="handlePermissionDenied($event)"
             [shouldInterceptMessageSend]="shouldInterceptMessageSend"
             [submit]="sendMessage"
+            [allowAttachments]="allowAttachments"
             >
         
         </banta-comment-field>

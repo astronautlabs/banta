@@ -11,13 +11,14 @@
 </div>
 
 <banta-comments
-    [topicID]="topicID"
-    [maxVisibleMessages]="5"
+    topicID="{{topicID}}_comments"
+    [maxVisibleMessages]="20"
     [maxMessages]="2000"
     (usernameSelected)="alert('Username was selected')"
     (userSelected)="alert('User (avatar or username) was selected')"
     (avatarSelected)="alert('Avatar was selected')"
     (reported)="reportedMessage($event)"
     (shared)="sharedMessage($event)"
+    [allowAttachments]="true"
     (permissionDeniedError)="permissionDenied($event)"
     ></banta-comments>

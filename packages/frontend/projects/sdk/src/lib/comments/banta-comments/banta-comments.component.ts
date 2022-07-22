@@ -231,6 +231,7 @@ export class BantaCommentsComponent {
     @Input() permissionDeniedLabel = 'Send';
     @Input() postCommentLabel = 'Post a comment';
     @Input() postReplyLabel = 'Post a reply';
+    @Input() allowAttachments = false;
     @Input() fixedHeight: boolean;
     @Input() maxMessages: number;
     @Input() maxVisibleMessages: number;
