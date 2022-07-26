@@ -146,7 +146,7 @@ export class ChatService {
      * - Replacing bad words
      * - Hiding at time of post (hidden = true)
      */
-    transformMessage: (message: ChatMessage, action: 'post' | 'edit', previousMessage?: string) => void;
+    transformMessage: (message: ChatMessage, action: 'post' | 'edit', previousMessage?: string) => Promise<void>;
 
     /**
      * Check whether authorizeAction() throws with the given arguments.
@@ -230,10 +230,10 @@ export class ChatService {
                 throw new Error(`No such parent message with ID '${message.parentMessageId}'`);
         }
 
-        // Definitely keeping this message at this point.
-
         if (this.transformMessage)
-            this.transformMessage(message, 'post');
+            await this.transformMessage(message, 'post');
+
+        // Definitely keeping this message at this point.
 
         await this.messages.insertOne(message);
         
