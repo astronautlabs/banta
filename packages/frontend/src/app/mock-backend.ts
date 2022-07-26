@@ -89,6 +89,7 @@ export class MockSource implements ChatSourceBase {
     
     currentUserChanged = new BehaviorSubject<User>(null);
     messageReceived = new Subject<ChatMessage>();
+    messageUpdated = new Subject<ChatMessage>();
     messageSent = new Subject<ChatMessage>();
     messages: ChatMessage[] = [];
 

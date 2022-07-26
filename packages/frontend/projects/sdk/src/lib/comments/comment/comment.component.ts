@@ -171,8 +171,6 @@ export class CommentComponent {
     avatarForUser(user : User) {
         let url = this.genericAvatarUrl;
 
-        console.log(`GENERIC: ${this.genericAvatarUrl}`);
-        
         if (user && user.avatarUrl) {
             url = user.avatarUrl;
         }

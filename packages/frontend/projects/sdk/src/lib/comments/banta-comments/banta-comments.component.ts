@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ChatBackendBase } from '../../chat-backend-base';
 import { ChatSourceBase } from '../../chat-source-base';
 import { EditEvent } from '../comment-view/comment-view.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 /**
  * Comments component
@@ -19,7 +20,8 @@ export class BantaCommentsComponent {
     constructor(
         private backend: ChatBackendBase,
         private elementRef: ElementRef<HTMLElement>,
-        private activatedRoute: ActivatedRoute
+        private activatedRoute: ActivatedRoute,
+        private matSnackBar: MatSnackBar
     ) {
         this.sendMessage = async (message: ChatMessage) => {
             try {
@@ -103,23 +105,10 @@ export class BantaCommentsComponent {
     }
 
     private async setSourceFromTopicID(topicID: string) {
-        if (this._source) {
-            this._source.close();
-            this._source = null;
-        }
-
         setTimeout(async () => {
             console.log(`[banta-comments] Subscribing to topic source '${topicID}'`);
-            this._source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder });
-
-            if (this.sharedCommentID) {
-                this.navigateToSharedComment(this.sharedCommentID);
-                this.sharedCommentID = null;
-            }
-
-            this._source.messageReceived.subscribe(m => this.addParticipant(m));
-            this._source.messageSent.subscribe(m => this.addParticipant(m));
-            this._source.messages.forEach(m => this.addParticipant(m));
+            this.source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder });
+            this._sourceIsOwned = true;
         });
     }
 
@@ -213,6 +202,13 @@ export class BantaCommentsComponent {
     private _usernameSelected = new Subject<User>();
     private _avatarSelected = new Subject<User>();
     private _source: ChatSourceBase;
+
+    /**
+     * Track whether we created this source. If we did not (ie it was passed in from the caller),
+     * then we are not responsible for calling close(). If we do own it though, we will call close() 
+     * when we are done with it.
+     */
+    private _sourceIsOwned = false;
     private _subs = new Subscription();
     private _sortOrder: CommentsOrder = CommentsOrder.NEWEST;
     private _topicID: string;
@@ -240,13 +236,48 @@ export class BantaCommentsComponent {
     @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
     @Input() participants: User[] = [];
 
+    private _sourceSubscription: Subscription;
+
     @Input()
     get source(): ChatSourceBase { return this._source; }
     set source(value) { 
+        if (this._source && this._sourceIsOwned) {
+            this._source.close();
+            this._sourceSubscription?.unsubscribe();
+            this._source = null;
+            this.participants = [];
+        }
+
         this._source = value;
-        if (value && this.sharedCommentID) {
-            this.navigateToSharedComment(this.sharedCommentID);
-            this.sharedCommentID = null;
+        this._sourceIsOwned = false; // Assume we don't own this source.
+        this._sourceSubscription = new Subscription();
+        
+        if (value) {
+            if (this.sharedCommentID) {
+                this.navigateToSharedComment(this.sharedCommentID);
+                this.sharedCommentID = null;
+            }
+
+            this._source.messages.forEach(m => this.addParticipant(m));
+
+            this._sourceSubscription.add(this._source.messageReceived.subscribe(m => this.addParticipant(m)));
+            this._sourceSubscription.add(this._source.messageSent.subscribe(m => this.addParticipant(m)));            
+            this._sourceSubscription.add(
+                this._source.messageUpdated.subscribe(msg => {
+                    console.log(`comments received message: `, msg);
+                    if (msg.id === this.selectedMessage?.id && msg.hidden) {
+                        this.unselectMessage();
+                        this.matSnackBar.open(
+                            "The thread you were viewing was removed.",
+                            undefined,
+                            {
+                                duration: 2500
+                            }
+                        )
+                    }
+                })
+            );
+
         }
     }
     @Input() 

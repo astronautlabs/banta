@@ -92,6 +92,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     onChatMessage(message: ChatMessage) {
         if (this.messageMap.has(message.id)) {
             Object.assign(this.messageMap.get(message.id), message);
+            this._messageUpdated.next(message);
         } else if (!message.hidden) {
             // Only process non-hidden messages through here. 
             // Hidden messages may be sent to us when they become hidden (ie moderation is occurring).
@@ -103,9 +104,11 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     private messageMap = new Map<string, ChatMessage>();
     private _messageReceived = new Subject<ChatMessage>();
+    private _messageUpdated = new Subject<ChatMessage>();
     private _messageSent = new Subject<ChatMessage>();
 
     get messageReceived() { return this._messageReceived.asObservable(); }
+    get messageUpdated() { return this._messageUpdated.asObservable(); }
     get messageSent() { return this._messageSent.asObservable(); }
 
     messages: ChatMessage[] = [];
