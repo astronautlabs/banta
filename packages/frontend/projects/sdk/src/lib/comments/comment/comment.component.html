@@ -22,7 +22,7 @@
 
         <ng-container *ngIf="message.attachments?.length > 0">
             <banta-lightbox #lightbox></banta-lightbox>
-            <div class="attachments-row" [class.single]="message.attachments?.length === 1">
+            <div class="attachments-row" [class.single]="message.attachments?.length === 1" *ngIf="message.attachments && message.attachments?.length > 0">
                 <a 
                     href="javascript:;" 
                     (click)="showLightbox(attachment)"
@@ -32,6 +32,10 @@
                 </a>
             </div>
         </ng-container>
+
+        <ul class="message-facts small">
+            <li *ngIf="message.edits?.length > 0">(Edited)</li>
+        </ul>
     </div>
     <div class="content" *ngIf="editing" style="padding-bottom: 2em;">
         <div>
@@ -43,6 +47,7 @@
         <button mat-raised-button (click)="saveEdit()">Save</button> &nbsp;
         <button mat-button (click)="endEditing()">Cancel</button>
     </div>
+
 
     <div class="actions">
         <banta-timestamp [value]="message.sentAt"></banta-timestamp>
