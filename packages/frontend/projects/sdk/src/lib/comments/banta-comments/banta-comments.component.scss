@@ -45,14 +45,6 @@ banta-comment-view {
     }
 }
 
-@media (max-width: 500px) {
-    .focused {
-        .replies {
-            margin-left: 0;
-        }
-    }
-}
-
 .loading-screen {
     text-align: center;
     opacity: 0;
@@ -86,9 +78,26 @@ banta-comment-sort {
     margin: 0 0 0 auto;
     width: fit-content;
     display: block;
+}
 
-    @media (max-width: 450px) {
+
+@mixin banta-comments-mobile-styles {
+    .focused {
+        .replies {
+            margin-left: 0;
+        }
+    }
+
+    banta-comment-sort {
         margin: 0;
         width: 100%;
     }
+}
+
+@media (max-width: 500px) {
+    @include banta-comments-mobile-styles;
+}
+
+:host-context(.banta-mobile) {
+    @include banta-comments-mobile-styles;
 }

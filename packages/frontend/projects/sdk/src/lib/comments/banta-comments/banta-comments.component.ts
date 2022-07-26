@@ -1,4 +1,6 @@
-import { AfterViewInit, Component, ElementRef, Input, Output } from '@angular/core';
+/// <reference types="@types/resize-observer-browser" />
+
+import { AfterViewInit, Component, ElementRef, HostBinding, Input, NgZone, Output } from '@angular/core';
 import { User, ChatMessage, CommentsOrder } from '@banta/common';
 import { HashTag } from '../comment-field/comment-field.component';
 import { Subject, Observable, Subscription } from 'rxjs';
@@ -21,7 +23,8 @@ export class BantaCommentsComponent {
         private backend: ChatBackendBase,
         private elementRef: ElementRef<HTMLElement>,
         private activatedRoute: ActivatedRoute,
-        private matSnackBar: MatSnackBar
+        private matSnackBar: MatSnackBar,
+        private ngZone: NgZone
     ) {
         this.sendMessage = async (message: ChatMessage) => {
             try {
@@ -98,10 +101,30 @@ export class BantaCommentsComponent {
         }
     }
 
-    sharedCommentID: string;
+    private resizeObserver: ResizeObserver;
+    private width: number;
+    private height: number;
+
+    @HostBinding('class.banta-mobile')
+    get isMobileSized() { return this.width < 500; }
+
+    ngAfterViewInit() {
+        let callback = () => {
+            let size = this.elementRef.nativeElement.getBoundingClientRect();
+            this.ngZone.run(() => {
+                this.width = size.width;
+                this.height = size.height;
+            })
+        };
+        this.resizeObserver = new ResizeObserver(callback);
+        this.resizeObserver.observe(this.elementRef.nativeElement);
+
+        callback();
+    }
 
     ngOnDestroy() {
         this._subs.unsubscribe();
+        this.resizeObserver.disconnect();
     }
 
     private async setSourceFromTopicID(topicID: string) {
@@ -135,6 +158,7 @@ export class BantaCommentsComponent {
     showLoadingScreen = false;
     loadingStartedAt: number;
     messageChangedAt: number;
+    sharedCommentID: string;
 
     private async startLoading() {
         this.loadingStartedAt = this.messageChangedAt = Date.now();

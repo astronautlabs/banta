@@ -58,7 +58,7 @@
 	}
 }
 
-@media (max-width: 500px) {
+@mixin banta-emoji-selector-panel-mobile-styles {
 	.selector {
 		flex-direction: row;
 		height: 27em;
@@ -67,4 +67,12 @@
 	.emoji-list {
 		height: auto;
 	}
+}
+
+@media (max-width: 500px) {
+	@include banta-emoji-selector-panel-mobile-styles;
+}
+
+:host-context(.banta-mobile) {
+	@include banta-emoji-selector-panel-mobile-styles;
 }

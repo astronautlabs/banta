@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostBinding, ViewChild } from '@angular/core';
 import {ChatMessage} from "@banta/common";
 import { ChatBackendBase } from '@banta/sdk';
 
@@ -15,6 +15,9 @@ export class TryComponent {
     topicID: string;
     newTopicID: string;
     messageCount: number;
+
+    @HostBinding('class.small-mode')
+    isSmallMode = false;
 
     allowChangingTopic = false;
 

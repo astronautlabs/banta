@@ -11,3 +11,10 @@ banta-comments {
     align-items: center;
     justify-content: center;
 }
+
+:host.small-mode {
+    banta-comments {
+        max-width: 365px;
+        margin: 0 auto;
+    }
+}

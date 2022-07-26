@@ -10,7 +10,9 @@
     <code>{{messageCount === undefined ? 'Unknown' : messageCount}}</code>
 </div>
 
-<a href="javascript:;" (click)="goFullScreen()">Fullscreen</a>
+<a href="javascript:;" (click)="goFullScreen()">Fullscreen</a> |
+<a *ngIf="!isSmallMode" href="javascript:;" (click)="isSmallMode = true">Small Mode</a>
+<a *ngIf="isSmallMode" href="javascript:;" (click)="isSmallMode = false">Wide Mode</a>
 
 <div class="fullscreen" #fullscreenElement>
     <a *ngIf="isFullScreen" href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>

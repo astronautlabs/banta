@@ -18,7 +18,7 @@
     animation-delay: 400ms;
     animation-fill-mode: both;
     position: relative;
-    z-index: 1;
+    z-index: 10;
 }
 
 .avatar-container {
@@ -185,7 +185,7 @@ textarea {
     }
 }
 
-@media (max-width: 500px) {
+@mixin banta-comment-field-mobile-styles {
     :host {
         margin: 0;
     }
@@ -207,6 +207,14 @@ textarea {
             display: none;
         }
     }
+}
+
+@media (max-width: 500px) {
+    @include banta-comment-field-mobile-styles;
+}
+
+:host-context(.banta-mobile) {
+    @include banta-comment-field-mobile-styles;
 }
 
 .message-attachments-container {

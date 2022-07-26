@@ -1,4 +1,6 @@
-import { Component, ElementRef, Output, ViewChild } from '@angular/core';
+/// <reference types="@types/resize-observer-browser" />
+
+import { Component, ElementRef, HostBinding, Output, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
 @Component({
@@ -36,29 +38,13 @@ import { Subject, Observable } from 'rxjs';
         button {
             color: #666
         }
-
-        /* :host.bottom-left emoji-selector-panel {
-            right: auto;
-            left: 0;
-        }
-
-        :host.top-right emoji-selector-panel {
-            top: 2.4em;
-            bottom: auto;
-        }
-
-        :host.top-left emoji-selector-panel {
-            top: 2.4em;
-            bottom: auto;
-            left: 0;
-            right: auto;
-        } */
     `]
 })
 export class EmojiSelectorButtonComponent {
     constructor(private elementRef: ElementRef<HTMLElement>) {
 
     }
+
     private _selected = new Subject<string>();
     private clickListener : any;
     private resizeListener : any;
@@ -79,6 +65,12 @@ export class EmojiSelectorButtonComponent {
         this.removeListener();
         this.panelElement.nativeElement.remove();
     }
+
+    private width: number;
+    private height: number;
+
+    @HostBinding('class.width-constrained')
+    get widthConstrained() { return this.width < 700; }
 
     ngAfterViewInit() {
     }
@@ -131,11 +123,24 @@ export class EmojiSelectorButtonComponent {
         //this.place();
 
         setTimeout(() => {
-            this.resizeListener = () => {
+            let onResize = () => {
                 if (!this.showEmojiPanel)
                     return;
-                this.place();
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+
+                let buttonRect = this.buttonElement.nativeElement.getBoundingClientRect();
+                let buttonRight = window.innerWidth - buttonRect.right;
+
+                if (this.width < 700) {
+                    this.panelElement.nativeElement.style.right = `${-buttonRight}px`;
+                } else {
+                    this.panelElement.nativeElement.style.right = '';
+                }
             };
+
+            this.resizeListener = onResize;
+            onResize();
 
             this.clickListener = (ev : MouseEvent) => {
 
