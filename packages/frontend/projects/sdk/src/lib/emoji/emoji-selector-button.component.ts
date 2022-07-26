@@ -129,14 +129,24 @@ export class EmojiSelectorButtonComponent {
                 this.width = window.innerWidth;
                 this.height = window.innerHeight;
 
+                let edgeOffset = 0;
+                let commentField = this.elementRef.nativeElement.closest(`banta-comment-field`);
+                if (commentField) {
+                    let size = commentField.getBoundingClientRect();
+                    this.width = size.width;
+                    edgeOffset = window.innerWidth - size.right;
+                }
+
                 let buttonRect = this.buttonElement.nativeElement.getBoundingClientRect();
-                let buttonRight = window.innerWidth - buttonRect.right;
+                let buttonRight = window.innerWidth - buttonRect.right - edgeOffset - 10;
 
                 if (this.width < 700) {
                     this.panelElement.nativeElement.style.right = `${-buttonRight}px`;
                 } else {
                     this.panelElement.nativeElement.style.right = '';
                 }
+
+                this.panelElement.nativeElement.style.maxWidth = `${this.width - 15}px`;
             };
 
             this.resizeListener = onResize;
