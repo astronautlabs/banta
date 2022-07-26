@@ -79,7 +79,15 @@ export class EmojiSelectorButtonComponent {
     }
 
     ngAfterViewInit() {
-        let root = document.body.querySelector('[ng-version]') || document.body;
+        this.putPanelAtRoot();
+    }
+
+    private putPanelAtRoot() {
+        // If we are in full-screen, placing the panel outside of the full-screen element will result in it 
+        // always being behind said full-screen element, so we need to ensure we never place it further up the 
+        // stack.
+        
+        let root = document.fullscreenElement || document.body.querySelector('[ng-version]') || document.body;
         root.appendChild(this.panelElement.nativeElement);
     }
 
@@ -89,6 +97,7 @@ export class EmojiSelectorButtonComponent {
     }
 
     place() {
+        this.putPanelAtRoot();
         let pos = this.buttonElement.nativeElement.getBoundingClientRect();
         let size = this.panelElement.nativeElement.getBoundingClientRect();
         let left = window.scrollX + pos.left + pos.width - size.width;

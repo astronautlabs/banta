@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import {ChatMessage} from "@banta/common";
 import { ChatBackendBase } from '@banta/sdk';
 
@@ -20,6 +20,31 @@ export class TryComponent {
 
     alert(message: string) {
         alert(message);
+    }
+
+    @ViewChild('fullscreenElement')
+    fullscreenElement: ElementRef<HTMLElement>;
+
+    get isFullScreen() {
+        return !!document.fullscreenElement;
+    }
+
+    exitFullScreen() {
+        document.exitFullscreen();
+    }
+    
+    goFullScreen() {
+        
+        let element = this.fullscreenElement.nativeElement;
+
+        if (element.requestFullscreen)
+            element.requestFullscreen();
+        else if (element['webkitRequestFullscreen'])
+            element['webkitRequestFullscreen']();
+        else if (element['mozRequestFullScreen'])
+            element['mozRequestFullScreen']();
+        else if (element['msRequestFullscreen'])
+            element['msRequestFullscreen']();
     }
 
     async ngOnInit() {

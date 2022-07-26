@@ -10,16 +10,21 @@
     <code>{{messageCount === undefined ? 'Unknown' : messageCount}}</code>
 </div>
 
-<banta-comments
-    topicID="{{topicID}}_comments"
-    [maxVisibleMessages]="20"
-    [maxMessages]="2000"
-    (usernameSelected)="alert('Username was selected')"
-    (userSelected)="alert('User (avatar or username) was selected')"
-    (avatarSelected)="alert('Avatar was selected')"
-    (reported)="reportedMessage($event)"
-    (shared)="sharedMessage($event)"
-    [allowAttachments]="true"
-    (permissionDeniedError)="permissionDenied($event)"
-    >
-</banta-comments>
+<a href="javascript:;" (click)="goFullScreen()">Fullscreen</a>
+
+<div class="fullscreen" #fullscreenElement>
+    <a *ngIf="isFullScreen" href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>
+    <banta-comments
+        topicID="{{topicID}}_comments"
+        [maxVisibleMessages]="20"
+        [maxMessages]="2000"
+        (usernameSelected)="alert('Username was selected')"
+        (userSelected)="alert('User (avatar or username) was selected')"
+        (avatarSelected)="alert('Avatar was selected')"
+        (reported)="reportedMessage($event)"
+        (shared)="sharedMessage($event)"
+        [allowAttachments]="true"
+        (permissionDeniedError)="permissionDenied($event)"
+        >
+    </banta-comments>
+</div>
