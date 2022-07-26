@@ -17,6 +17,8 @@
     animation-duration: 800ms;
     animation-delay: 400ms;
     animation-fill-mode: both;
+    position: relative;
+    z-index: 1;
 }
 
 .avatar-container {

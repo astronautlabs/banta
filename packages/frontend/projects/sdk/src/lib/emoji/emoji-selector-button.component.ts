@@ -21,8 +21,8 @@ import { Subject, Observable } from 'rxjs';
 
         emoji-selector-panel {
             position: absolute;
-            /* bottom: 2.5em;
-            right: 0; */
+            top: 2.5em;
+            right: 0;
             opacity: 0;
             pointer-events: none;
             z-index: 10;
@@ -56,7 +56,9 @@ import { Subject, Observable } from 'rxjs';
     `]
 })
 export class EmojiSelectorButtonComponent {
+    constructor(private elementRef: ElementRef<HTMLElement>) {
 
+    }
     private _selected = new Subject<string>();
     private clickListener : any;
     private resizeListener : any;
@@ -79,7 +81,6 @@ export class EmojiSelectorButtonComponent {
     }
 
     ngAfterViewInit() {
-        this.putPanelAtRoot();
     }
 
     private putPanelAtRoot() {
@@ -97,12 +98,19 @@ export class EmojiSelectorButtonComponent {
     }
 
     place() {
+        // Not currently used as it can't be easily done handling all 
+        // scrolling corner cases.
+
         this.putPanelAtRoot();
         let pos = this.buttonElement.nativeElement.getBoundingClientRect();
         let size = this.panelElement.nativeElement.getBoundingClientRect();
         let left = window.scrollX + pos.left + pos.width - size.width;
         if (left < 0)
             left = (window.scrollX + window.innerWidth) / 2 - size.width / 2;
+        let scrollY = window.scrollY;
+        if (document.fullscreenElement) {
+            
+        }
 
         Object.assign(
             this.panelElement.nativeElement.style,
@@ -120,7 +128,7 @@ export class EmojiSelectorButtonComponent {
         }
 
         this.showEmojiPanel = true;
-        this.place();
+        //this.place();
 
         setTimeout(() => {
             this.resizeListener = () => {
