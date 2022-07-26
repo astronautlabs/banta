@@ -25,6 +25,7 @@
             [permissions]="source?.permissions"
             [showReplyAction]="false"
             [editing]="selectedMessage.transientState.editing"
+            [genericAvatarUrl]="genericAvatarUrl"
             (editStarted)="startEditing(selectedMessage)"
             (editEnded)="selectedMessage.transientState.editing = false"
             (edited)="saveEdit(selectedMessage, $event)"
@@ -54,6 +55,7 @@
                     [fixedHeight]="false"
                     [showEmptyState]="false"
                     [newestLast]="true"
+                    [genericAvatarUrl]="genericAvatarUrl"
                     (liked)="likeMessage(selectedMessageThread, $event)"
                     (unliked)="unlikeMessage(selectedMessageThread, $event)"
                     (messageEdited)="editMessage(selectedMessageThread, $event.message, $event.newMessage)"
@@ -81,6 +83,7 @@
                     [label]="postReplyLabel"
                     [submit]="sendReply"
                     [allowAttachments]="allowAttachments"
+                    [genericAvatarUrl]="genericAvatarUrl"
                     >
                     <ng-content select=".reply-send-options"></ng-content>
                 </banta-comment-field>
@@ -106,6 +109,7 @@
             [shouldInterceptMessageSend]="shouldInterceptMessageSend"
             [submit]="sendMessage"
             [allowAttachments]="allowAttachments"
+            [genericAvatarUrl]="genericAvatarUrl"
             >
         
         </banta-comment-field>

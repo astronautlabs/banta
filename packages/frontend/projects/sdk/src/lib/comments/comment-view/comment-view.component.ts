@@ -303,13 +303,4 @@ export class CommentViewComponent {
 
         return false;
     }
-
-    avatarForUser(user: User) {
-        let url = this.genericAvatarUrl;
-
-        if (user && user.avatarUrl)
-            url = user.avatarUrl;
-
-        return `url(${url})`;
-    }
 }

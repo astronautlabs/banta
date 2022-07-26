@@ -231,11 +231,12 @@ export class BantaCommentsComponent {
     @Input() permissionDeniedLabel = 'Send';
     @Input() postCommentLabel = 'Post a comment';
     @Input() postReplyLabel = 'Post a reply';
-    @Input() allowAttachments = false;
+    @Input() allowAttachments = true;
     @Input() fixedHeight: boolean;
     @Input() maxMessages: number;
     @Input() maxVisibleMessages: number;
-    @Input() genericAvatarUrl: string;
+    @Input() genericAvatarUrl = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
+
     @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
     @Input() participants: User[] = [];
 

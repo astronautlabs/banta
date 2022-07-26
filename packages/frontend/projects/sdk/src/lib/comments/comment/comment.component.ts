@@ -118,6 +118,8 @@ export class CommentComponent {
     @Output() get editEnded() { return this._editEnded.asObservable(); }
     @Output() get shared(){ return this._shared.asObservable(); }
 
+    @Input() genericAvatarUrl: string;
+
     @HostBinding('attr.data-comment-id') get commentId() { return this.message?.id; }
 
 
@@ -167,12 +169,14 @@ export class CommentComponent {
     }
 
     avatarForUser(user : User) {
+        let url = this.genericAvatarUrl;
+
+        console.log(`GENERIC: ${this.genericAvatarUrl}`);
+        
         if (user && user.avatarUrl) {
-            let url = user.avatarUrl;
-            return `url(${url})`;
+            url = user.avatarUrl;
         }
 
-        return null;
+        return `url(${url})`;
     }
-
 }

@@ -49,7 +49,11 @@ export class CommentFieldComponent {
 
     @Input() hashtags : HashTag[];
     @Input() participants : User[] = [];
+    @Input() genericAvatarUrl: string;
 
+    get userAvatarUrl() {
+        return this.user?.avatarUrl || this.genericAvatarUrl;
+    }
     private _permissionDeniedError = new Subject<string>();
 
     @Output()
