@@ -279,7 +279,7 @@ export class ChatConnection extends SocketRPC {
         if (!message.topicId)
             throw new Error(`You must specify a topic ID`);
 
-        if (!message.message)
+        if (!message.message && !(message.attachments?.length > 0))
             throw new Error(`Cannot post an empty message`);
 
         await this.chat.doAuthorizeAction(this.user, this.userToken, {
