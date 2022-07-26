@@ -14,13 +14,13 @@ export class AttachmentButtonComponent {
   ) {
   }
 
-  @ViewChild('fileUpload', { static: false }) fileInput: ElementRef;
-  _addedAttachment = new Subject<ChatMessageAttachment>();
+  private _addedAttachment = new Subject<ChatMessageAttachment>();
+  private _attachmentError = new Subject<ChatMessageAttachment>();
 
-  @Output()
-  get addedAttachment() {
-    return this._addedAttachment.asObservable();
-  }
+  @ViewChild('fileUpload', { static: false }) fileInput: ElementRef;
+
+  @Output() get addedAttachment() { return this._addedAttachment.asObservable(); }
+  @Output() get attachmentError() { return this._attachmentError.asObservable(); }
 
   show() {
     (this.fileInput.nativeElement as HTMLInputElement).click();
@@ -33,12 +33,29 @@ export class AttachmentButtonComponent {
       const file = element.files[0];
       let publicURL: string;
       
+      let attachment: ChatMessageAttachment = {
+        type: file.type,
+        url: undefined,
+        transientState: {
+          uploading: true,
+          error: false,
+          errorMessage: undefined
+        }
+      }
+
+      this._addedAttachment.next(attachment);
+
       try {
         publicURL = await this.cdnProvider.uploadImage(file);
       } catch (e) {
+        attachment.transientState.error = true;
+        attachment.transientState.errorMessage = "Failed to upload";
+
         console.error(`[Banta] Caught an error while uploading image to CDN:`);
         console.error(e);
         alert(`Failed to upload image. Please try again later.`);
+
+        this._attachmentError.next(attachment);
         return;
       }
 
@@ -47,10 +64,8 @@ export class AttachmentButtonComponent {
       if (!publicURL)
         return;
       
-      this._addedAttachment.next({
-        type: file.type,
-        url: publicURL
-      })
+      attachment.url = publicURL;
+      attachment.transientState = undefined;
     }
 
   }

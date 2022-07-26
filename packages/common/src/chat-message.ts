@@ -3,6 +3,8 @@ import { User } from './user';
 export interface ChatMessageAttachment {
     type: string;
     url?: string;
+    transientState?: Record<string,any>;
+    userState?: Record<string,any>;
 }
 
 /**

@@ -32,7 +32,11 @@
                     <div class="custom">
                         <ng-content></ng-content>
                     </div>
-                    <banta-attachment-button (addedAttachment)="addedAttachment($event)" *ngIf="allowAttachments"></banta-attachment-button>
+                    <banta-attachment-button 
+                        *ngIf="allowAttachments"
+                        (addedAttachment)="addedAttachment($event)"
+                        (attachmentError)="attachmentError($event)"
+                        ></banta-attachment-button>
                     <emoji-selector-button (selected)="insertEmoji($event)"></emoji-selector-button>
                 </div>
                 
@@ -57,11 +61,23 @@
 
             <div *ngIf="chatMessageAttachments && chatMessageAttachments.length" class="message-attachments-container">
                 <div *ngFor="let attachment of chatMessageAttachments; index as attachmentIndex"
-                    class="message-attachment">
+                    class="message-attachment" [class.with-border]="!attachment.url">
                     <button (click)="removeAttachment(attachmentIndex)" mat-mini-fab color="primary" class="remove-img">
                         <mat-icon>close</mat-icon>
                     </button>
-                    <img [src]="attachment.url" alt="Message Attachment">
+                    <ng-container *ngIf="attachment.transientState?.error">
+                        <mat-icon class="error">close</mat-icon>
+                        <em class="error">{{attachment.transientState?.errorMessage || 'Error'}}</em>
+                    </ng-container>
+                    <ng-container *ngIf="!attachment.transientState?.error">
+                        <ng-container *ngIf="attachment.transientState?.uploading">
+                            <mat-spinner></mat-spinner>
+                            <em>Uploading...</em>
+                        </ng-container>
+                        <ng-container *ngIf="!attachment.transientState?.uploading">
+                            <img [src]="attachment.url" alt="Message Attachment">
+                        </ng-container>
+                    </ng-container>
                 </div>
             </div>
 
@@ -81,7 +97,7 @@
                 mat-raised-button
                 class="send"
                 color="primary"
-                [disabled]="canComment && ((!text && !chatMessageAttachments.length) || sending)"
+                [disabled]="!sendButtonEnabled"
                 >
                 <ng-container *ngIf="canComment">
                     <mat-icon *ngIf="!sending">chevron_right</mat-icon>

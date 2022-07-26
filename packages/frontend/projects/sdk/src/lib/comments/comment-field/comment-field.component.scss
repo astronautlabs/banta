@@ -224,6 +224,30 @@ textarea {
     .message-attachment {
         width: 300px;
         position: relative;
+        text-align: center;
+
+        &.with-border {
+            outline: 1px solid #333;
+            padding: 1em 0;
+        }
+
+        mat-spinner {
+            display: block;
+            margin: 0 auto 0.5em auto;
+            width: fit-content;
+        }
+
+        mat-icon.error {
+            display: block;
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 0.5em auto;
+        }
+
+        .error {
+            color: #b76363;
+        }
 
         img {
             width: 300px;

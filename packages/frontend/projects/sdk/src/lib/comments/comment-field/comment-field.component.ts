@@ -118,6 +118,21 @@ export class CommentFieldComponent {
     completionPrefix : string;
     autoCompleteSelected : number = 0;
 
+    get isValidMessage() {
+        return (this.text || this.chatMessageAttachments.length > 0);
+    }
+
+    get hasPendingAttachments() {
+        return this.chatMessageAttachments.some(x => x.transientState);
+    }
+
+    get sendButtonEnabled() {
+        return this.canComment
+            && this.isValidMessage
+            && !this.hasPendingAttachments
+            && !this.sending
+        ;
+    }
     async autocomplete(replacement : string) {
         let el = this.textareaEl.nativeElement;
         this.text = this.text.slice(0, el.selectionStart - this.completionPrefix.length) + replacement + this.text.slice(el.selectionStart);
@@ -262,7 +277,7 @@ export class CommentFieldComponent {
         try {
             let text = (this.text || '').trim();
 
-            if (text === '')
+            if (!this.isValidMessage)
                 return;
 
             let message : ChatMessage = {
@@ -271,12 +286,13 @@ export class CommentFieldComponent {
                 url: location.href,
                 likes: 0,
                 message: text,
-                attachments: this.chatMessageAttachments
+                attachments: this.chatMessageAttachments.filter(x => x.url)
             };
 
             try {
                 await this.submit(message);
                 this.text = '';
+                this.chatMessageAttachments = [];
             } catch (e) {
                 await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
                 this.indicateError(e.message);
@@ -287,8 +303,15 @@ export class CommentFieldComponent {
     }
 
     chatMessageAttachments: ChatMessageAttachment[] = [];
-    addedAttachment(file: ChatMessageAttachment) {
-        this.chatMessageAttachments.push(file);
+
+    addedAttachment(attachment: ChatMessageAttachment) {
+        this.chatMessageAttachments.push(attachment);
+    }
+
+    attachmentError(attachment: ChatMessageAttachment) {
+        setTimeout(() => {
+            this.chatMessageAttachments = this.chatMessageAttachments.filter(x => x !== attachment);
+        }, 3000);
     }
 
 	removeAttachment(index: number) {
