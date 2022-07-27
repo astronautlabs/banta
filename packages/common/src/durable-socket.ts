@@ -81,7 +81,7 @@
             } catch (e) {
                 console.error(`[Socket] Failed to send ping message. Assuming connection is broken. [${this.url}]`);
                 try {
-                    this._socket.close();
+                    this._socket?.close();
                 } catch (e) {
                     console.error(`[Socket] Failed to close socket after ping failure: ${e.message} [${this.url}]`);
                 }
@@ -91,7 +91,7 @@
             if (this.lastPong < Date.now() - this.pingKeepAliveInterval) {
                 console.log(`[Socket] No keep-alive response in ${this.pingKeepAliveInterval}ms. Forcing reconnect... [${this.url}]`);
                 try {
-                    this._socket.close();
+                    this._socket?.close();
                 } catch (e) {
                     console.error(`[Socket] Failed to close socket after timeout waiting for pong: ${e.message} [${this.url}]`);
                 }
@@ -126,10 +126,8 @@
         clearInterval(this.pingTimer);
         this.pingTimer = null;
 
-        if (this._socket) {
-            this._socket.close();
-            this._socket = null;
-        }
+        this._socket?.close();
+        this._socket = null;
 
         this.dispatchEvent({
             type: 'lost', 
@@ -242,7 +240,10 @@
 
     close(code?: number, reason?: string): void {
         this._closed = true;
-        this._socket.close(code, reason);
+
+        this._socket?.close(code, reason);
+        this._socket = null;
+        
         this.dispatchEvent({
             type: 'close', 
             bubbles: false, 
