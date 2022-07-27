@@ -28,7 +28,7 @@ class BantaService {
     }
 
     altOnInit() {
-        this.chat.transformMessage = (message: ChatMessage, action: 'post' | 'edit', previousMessage: string) => {
+        this.chat.transformMessage = async (message: ChatMessage, action: 'post' | 'edit', previousMessage: string) => {
             message.message = message.message.toUpperCase();
         }
 
