@@ -279,15 +279,20 @@ export class ChatConnection extends SocketRPC {
         if (!message.topicId)
             throw new Error(`You must specify a topic ID`);
 
-        if (!message.message && !(message.attachments?.length > 0))
-            throw new Error(`Cannot post an empty message`);
-
+        // Important that the auth check happens before the empty message check to 
+        // enable the "Permission Denied" special handling in the host app. This way 
+        // the user can click the Send button (which is really a call-to-action when
+        // in the Permission Denied state) and have the app handle it.
+         
         await this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'postMessage',
             message,
             parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId) : null,
             topic: await this.chat.getTopic(message.topicId)
         });
+    
+        if (!message.message && !(message.attachments?.length > 0))
+            throw new Error(`Cannot post an empty message`);
 
         return this.chat.postMessage(message);
     }
