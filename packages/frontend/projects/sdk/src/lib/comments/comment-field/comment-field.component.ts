@@ -127,8 +127,13 @@ export class CommentFieldComponent {
     }
 
     get sendButtonEnabled() {
-        return this.canComment
-            && this.isValidMessage
+        if (!this.canComment) {
+            // In this case, we want to enable the button because we want to be able to 
+            // send the permissionDenied message up to the host.
+            return true;
+        }
+
+        return this.isValidMessage
             && !this.hasPendingAttachments
             && !this.sending
         ;
@@ -277,7 +282,7 @@ export class CommentFieldComponent {
         try {
             let text = (this.text || '').trim();
 
-            if (!this.isValidMessage)
+            if (this.canComment && !this.isValidMessage)
                 return;
 
             let message : ChatMessage = {
