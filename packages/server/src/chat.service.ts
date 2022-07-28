@@ -311,7 +311,7 @@ export class ChatService {
      */
     async setMessageHiddenStatus(messageOrId: ChatMessage | string, hidden: boolean) {
         let message = await this.getMessage(messageOrId, true);
-        if (message.hidden === hidden)
+        if (message.hidden === hidden || message.deleted)
             return;
         
         // Update the message itself to reflect the new status.
