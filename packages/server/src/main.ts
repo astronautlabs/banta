@@ -28,9 +28,9 @@ class BantaService {
     }
 
     altOnInit() {
-        this.chat.transformMessage = async (message: ChatMessage, action: 'post' | 'edit', previousMessage: string) => {
-            message.message = message.message.toUpperCase();
-        }
+        // this.chat.transformMessage = async (message: ChatMessage, action: 'post' | 'edit', previousMessage: string) => {
+        //     message.message = message.message.toUpperCase();
+        // }
 
         this.chat.authorizeAction = (user: User, token: string, action: AuthorizableAction) => {
             // if (action.action === 'postMessage') {
