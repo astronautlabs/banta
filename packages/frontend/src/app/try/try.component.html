@@ -14,12 +14,18 @@
 <a *ngIf="!isSmallMode" href="javascript:;" (click)="isSmallMode = true">Small Mode</a>
 <a *ngIf="isSmallMode" href="javascript:;" (click)="isSmallMode = false">Wide Mode</a>
 
+| 
+<a *ngIf="useInlineReplies" href="javascript:;" (click)="useInlineReplies = false">Use Focused Replies</a>
+<a *ngIf="!useInlineReplies" href="javascript:;" (click)="useInlineReplies = true">Use Inline Replies</a>
+
+
 <div class="fullscreen" #fullscreenElement>
     <a *ngIf="isFullScreen" href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>
     <banta-comments
         topicID="{{topicID}}_comments"
         [maxVisibleMessages]="20"
         [maxMessages]="2000"
+        [useInlineReplies]="useInlineReplies"
         (usernameSelected)="alert('Username was selected')"
         (userSelected)="alert('User (avatar or username) was selected')"
         (avatarSelected)="alert('Avatar was selected')"

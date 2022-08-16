@@ -20,7 +20,9 @@
     
     .replies {
         margin-top: 1em;
-        margin-left: 4em;
+        margin-left: 2em;
+        border-left: 2px solid #333;
+        padding-left: 2em;
     }
 }
 
@@ -78,6 +80,10 @@ banta-comment-sort {
     margin: 0 0 0 auto;
     width: fit-content;
     display: block;
+}
+
+.inline-replies {
+    margin-left: 4em;
 }
 
 

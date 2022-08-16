@@ -192,6 +192,8 @@ export class BantaCommentsComponent {
         `
     ];
 
+    @Input() useInlineReplies = true;
+
     private updateLoading(): boolean {
         if (this.source?.state && this.source?.state !== 'connecting') {
             clearInterval(this._loadingTimer);
@@ -490,6 +492,10 @@ export class BantaCommentsComponent {
     }
 
     async selectMessage(message: ChatMessage) {
+        if (this.selectedMessage === message) {
+            this.unselectMessage();
+            return;
+        }
         this._selected.next(message);
         this.selectedMessage = message;
         let selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id);

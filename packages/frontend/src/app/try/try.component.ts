@@ -15,7 +15,8 @@ export class TryComponent {
     topicID: string;
     newTopicID: string;
     messageCount: number;
-
+    useInlineReplies = true;
+    
     @HostBinding('class.small-mode')
     isSmallMode = false;
 

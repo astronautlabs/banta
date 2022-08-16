@@ -39,6 +39,9 @@
             (selected)="selectMessage(message)"
             (shared)="sharedMessage($event)"
             ></banta-comment>
+        <div class="inline-replies-container" *ngIf="selectedMessage === message">
+            <ng-content select=".inline-replies"></ng-content>
+        </div>
     </ng-container>
 
     <a mat-button class="nav" [class.visible]="hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
@@ -52,5 +55,5 @@
         v={{maxVisibleMessages}}, M={{maxMessages}}
     </div> -->
 
-    <ng-content select=":not([data-before])"></ng-content>
+    <ng-content select=":not([data-before]):not(.inline-replies)"></ng-content>
 </div>

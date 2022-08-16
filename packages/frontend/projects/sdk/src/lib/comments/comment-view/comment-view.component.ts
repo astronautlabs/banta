@@ -44,6 +44,9 @@ export class CommentViewComponent {
     @HostBinding('class.fixed-height')
     fixedHeight: boolean;
 
+    @Input()
+    selectedMessage: ChatMessage;
+    
     @Output()
     get selected() {
         return this._selected;
