@@ -73,8 +73,14 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     async authenticate() {
-        if (this.backend.user)
-            await this.peer.authenticate(this.backend.user?.token);
+        if (this.backend.user) {
+            try {
+                await this.peer.authenticate(this.backend.user?.token);
+            } catch (e) {
+                console.error(`Could not authenticate with Banta server:`);
+                console.error(e);
+            }
+        }
     }
 
     close(): void {
