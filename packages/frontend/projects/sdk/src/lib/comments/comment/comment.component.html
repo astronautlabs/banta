@@ -18,7 +18,7 @@
         <span class="spacer"></span>
     </div>
     <div class="content" *ngIf="!editing">
-        {{message.message}}
+        <span class="banta-message-content" [innerHTML]="message.message | markdownToHtml"></span>
 
         <ng-container *ngIf="message.attachments?.length > 0">
             <banta-lightbox #lightbox></banta-lightbox>

@@ -3,10 +3,12 @@ import { TimestampComponent } from './timestamp.component';
 import { CommonModule } from '@angular/common';
 import { LightboxComponent } from './lightbox/lightbox.component';
 import { MatIconModule } from '@angular/material/icon';
+import { BantaMarkdownToHtmlPipe } from './markdown-to-html.pipe';
 
 const COMPONENTS = [
     TimestampComponent,
-    LightboxComponent
+    LightboxComponent,
+    BantaMarkdownToHtmlPipe
 ];
 
 @NgModule({

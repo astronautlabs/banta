@@ -11,7 +11,6 @@ import { SaasModule } from 'src/saas/saas.module';
 import { NotFoundComponent } from './not-found.component';
 import { SourceComponent } from './source/source.component';
 import { TryComponent } from './try/try.component';
-import { MarkdownModule } from 'ngx-markdown';
 import { DevComponent } from './dev/dev.component';
 
 // KEEP [see below]
@@ -38,8 +37,7 @@ import { ChatBackendBase } from 'projects/sdk/src/lib';
     MaterialModule,
     BrowserAnimationsModule,
     SaasModule,
-    BantaSdkModule.configure(),
-    MarkdownModule.forRoot()
+    BantaSdkModule.configure()
   ],
   providers: [
     {

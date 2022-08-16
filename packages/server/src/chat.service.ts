@@ -6,6 +6,9 @@ import * as ioredis from 'ioredis';
 import IORedis from 'ioredis';
 import { PubSubManager } from "./pubsub";
 import { v4 as uuid } from 'uuid';
+import createDOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
+import sanitizeHtml from 'sanitize-html';
 
 export interface ChatEvent {
     type : 'post' | 'edit' | 'like' | 'unlike' | 'delete';
@@ -229,6 +232,18 @@ export class ChatService {
             if (!parentMessage)
                 throw new Error(`No such parent message with ID '${message.parentMessageId}'`);
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////
+        // SECURITY SENSITIVE /////////////////////////////////////////////////////////////////
+        //     First, escape all HTML, then if sanitizeHtml misses anything, strip the remaining
+        //     HTML away.
+        let dom = new JSDOM('');
+        let purifier = createDOMPurify(<any>dom.window);
+        message.message = sanitizeHtml(message.message, { allowedTags: [], disallowedTagsMode: 'escape' })
+        message.message = purifier.sanitize(message.message, { ALLOWED_TAGS: [] });
+        //
+        // SECURITY SENSITIVE /////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////
 
         if (this.transformMessage)
             await this.transformMessage(message, 'post');
