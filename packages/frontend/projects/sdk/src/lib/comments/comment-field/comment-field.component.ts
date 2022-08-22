@@ -39,6 +39,7 @@ export class CommentFieldComponent {
     @Input() label = 'Post a comment';
     @Input() permissionDeniedLabel = 'Unavailable';
     @Input() signInLabel = 'Sign In';
+    @Input() maxLength = 1500;
     @Input() placeholder = '';
     @Output() textChanged = new Subject<void>();
     @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;

@@ -183,6 +183,7 @@ export class BantaCommentsComponent {
     private _loadingTimer;
     private _loadingMessageIndex = 0;
 
+    @Input() maxCommentLength: number = 1500;
     @Input() loadingMessages: string[] = [
         `Just a second...`,
         `We're definitely working on it.`,

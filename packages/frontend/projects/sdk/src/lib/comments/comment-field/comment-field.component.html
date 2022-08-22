@@ -17,6 +17,7 @@
                         [placeholder]="placeholder"
                         matInput
                         cdkTextareaAutosize
+                        [maxlength]="maxLength"
                         (keydown)="onKeyDown($event)"
                         (blur)="onBlur()"
                         [disabled]="sending"
