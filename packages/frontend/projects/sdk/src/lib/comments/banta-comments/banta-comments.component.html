@@ -85,7 +85,7 @@
                     [allowAttachments]="allowAttachments"
                     [genericAvatarUrl]="genericAvatarUrl"
                     >
-                    <ng-content select=".reply-send-options"></ng-content>
+                    <ng-container *ngTemplateOutlet="sendReplyOptionsTemplate"></ng-container>
                 </banta-comment-field>
             </ng-container>
         </div>
@@ -184,7 +184,7 @@
                                 [allowAttachments]="allowAttachments"
                                 [genericAvatarUrl]="genericAvatarUrl"
                                 >
-                                <ng-content select=".reply-send-options"></ng-content>
+                                <ng-container *ngTemplateOutlet="sendReplyOptionsTemplate"></ng-container>
                             </banta-comment-field>
                         </ng-container>
                     </div>

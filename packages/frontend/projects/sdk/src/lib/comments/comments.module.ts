@@ -19,6 +19,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {CommentSortComponent} from "./comment-sort/comment-sort.component";
 import {MatSelectModule} from "@angular/material/select";
 import { AttachmentButtonComponent } from './attachment-button/attachment-button.component';
+import { BantaSendReplyOptionsDirective } from './send-reply-options.directive';
 
 const COMPONENTS = [
     CommentComponent,
@@ -27,7 +28,8 @@ const COMPONENTS = [
     LiveCommentComponent,
     CommentFieldComponent,
     CommentSortComponent,
-    AttachmentButtonComponent
+    AttachmentButtonComponent,
+    BantaSendReplyOptionsDirective
 ];
 
 @NgModule({

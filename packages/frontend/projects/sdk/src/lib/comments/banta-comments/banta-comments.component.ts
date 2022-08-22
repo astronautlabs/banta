@@ -1,6 +1,6 @@
 /// <reference types="@types/resize-observer-browser" />
 
-import { AfterViewInit, Component, ElementRef, HostBinding, Input, NgZone, Output } from '@angular/core';
+import { AfterViewInit, Component, ContentChild, ElementRef, HostBinding, Input, NgZone, Output, TemplateRef } from '@angular/core';
 import { User, ChatMessage, CommentsOrder } from '@banta/common';
 import { HashTag } from '../comment-field/comment-field.component';
 import { Subject, Observable, Subscription } from 'rxjs';
@@ -9,6 +9,7 @@ import { ChatBackendBase } from '../../chat-backend-base';
 import { ChatSourceBase } from '../../chat-source-base';
 import { EditEvent } from '../comment-view/comment-view.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { BantaSendReplyOptionsDirective } from '../send-reply-options.directive';
 
 /**
  * Comments component
@@ -107,6 +108,9 @@ export class BantaCommentsComponent {
 
     @HostBinding('class.banta-mobile')
     get isMobileSized() { return this.width < 500; }
+
+    @ContentChild(BantaSendReplyOptionsDirective, {read: TemplateRef}) 
+    sendReplyOptionsTemplate: any;
 
     ngAfterViewInit() {
         let callback = () => {
