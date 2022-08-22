@@ -7,9 +7,8 @@ import { Subject, Observable, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { ChatBackendBase } from '../../chat-backend-base';
 import { ChatSourceBase } from '../../chat-source-base';
-import { EditEvent } from '../comment-view/comment-view.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BantaSendReplyOptionsDirective } from '../send-reply-options.directive';
+import { BantaReplySendOptionsDirective } from '../reply-send-options.directive';
 
 /**
  * Comments component
@@ -109,7 +108,7 @@ export class BantaCommentsComponent {
     @HostBinding('class.banta-mobile')
     get isMobileSized() { return this.width < 500; }
 
-    @ContentChild(BantaSendReplyOptionsDirective, {read: TemplateRef}) 
+    @ContentChild(BantaReplySendOptionsDirective, {read: TemplateRef}) 
     sendReplyOptionsTemplate: any;
 
     ngAfterViewInit() {
