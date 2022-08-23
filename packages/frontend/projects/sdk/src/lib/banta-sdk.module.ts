@@ -21,6 +21,8 @@ import { ChatBackend } from './chat-backend';
 import { SdkOptions } from './sdk-options';
 import { BANTA_SDK_OPTIONS } from './sdk-options';
 import { ChatBackendBase } from './chat-backend-base';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { PortalModule } from '@angular/cdk/portal';
 
 @NgModule({
     imports: [
@@ -39,7 +41,9 @@ import { ChatBackendBase } from './chat-backend-base';
         MatFormFieldModule,
         MatInputModule,
         MatProgressSpinnerModule,
-        MatSnackBarModule
+        MatSnackBarModule,
+        OverlayModule,
+        PortalModule
     ],
     declarations: [
         BantaComponent,

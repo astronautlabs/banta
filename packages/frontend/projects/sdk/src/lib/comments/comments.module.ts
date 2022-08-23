@@ -20,6 +20,8 @@ import {CommentSortComponent} from "./comment-sort/comment-sort.component";
 import {MatSelectModule} from "@angular/material/select";
 import { AttachmentButtonComponent } from './attachment-button/attachment-button.component';
 import { BantaReplySendOptionsDirective } from './reply-send-options.directive';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { PortalModule } from '@angular/cdk/portal';
 
 const COMPONENTS = [
     CommentComponent,
@@ -47,7 +49,9 @@ const COMPONENTS = [
     BantaCommonModule,
     EmojiModule,
     MatTooltipModule,
-    MatSelectModule
+    MatSelectModule,
+    OverlayModule,
+    PortalModule
   ],
     exports: COMPONENTS
 })

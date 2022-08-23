@@ -7,6 +7,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { PortalModule } from '@angular/cdk/portal';
 
 const COMPONENTS = [
     EmojiSelectorPanelComponent,
@@ -21,7 +23,9 @@ const COMPONENTS = [
         MatIconModule,
         MatButtonModule,
         MatFormFieldModule,
-        MatInputModule
+        MatInputModule,
+        OverlayModule,
+        PortalModule
     ],
     exports: COMPONENTS
 })
