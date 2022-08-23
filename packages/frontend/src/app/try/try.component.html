@@ -1,8 +1,10 @@
 <h1>Comments</h1>
 
 <div class="property">
-    <label>Topic:</label>
-    <code>{{topicID}}</code>
+    <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>Topic ID</mat-label>
+        <input matInput type="text" [(ngModel)]="topicID" />
+    </mat-form-field>
 </div>
 
 <div class="property">
@@ -17,7 +19,6 @@
 | 
 <a *ngIf="useInlineReplies" href="javascript:;" (click)="useInlineReplies = false">Use Focused Replies</a>
 <a *ngIf="!useInlineReplies" href="javascript:;" (click)="useInlineReplies = true">Use Inline Replies</a>
-
 
 <div class="fullscreen" #fullscreenElement>
     <a *ngIf="isFullScreen" href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>
@@ -37,4 +38,13 @@
 
         <div *bantaReplySendOptions title="This is an example customization">Don't forget to be nice!</div>
     </banta-comments>
+</div>
+
+<div class="custom-theme-editor">
+    <h1>Custom Theme</h1>
+    <a *ngIf="useCustomTheme" href="javascript:;" (click)="useCustomTheme = false">Use Default Theme</a>
+    <a *ngIf="!useCustomTheme" href="javascript:;" (click)="useCustomTheme = true">Use Custom Theme</a>
+    
+    <p>Banta is highly themeable. Try it below:</p>
+    <textarea class="custom-theme" [(ngModel)]="customTheme"></textarea>
 </div>

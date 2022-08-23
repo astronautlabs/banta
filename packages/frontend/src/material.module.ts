@@ -6,6 +6,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
+import { FullscreenOverlayContainer, OverlayContainer } from "@angular/cdk/overlay";
 
 const MODULES = [
     MatIconModule,
@@ -19,7 +20,10 @@ const MODULES = [
 
 @NgModule({
     imports: MODULES,
-    exports: MODULES
+    exports: MODULES,
+    providers: [
+        {provide: OverlayContainer, useClass: FullscreenOverlayContainer}
+    ]
 })
 export class MaterialModule {
 }

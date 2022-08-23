@@ -1,8 +1,21 @@
 
 <mat-menu #pointItemMenu="matMenu">
-    <button *ngIf="!mine" mat-menu-item (click)="report()">Report</button>
-    <button *ngIf="mine" [disabled]="!permissions?.canEdit" mat-menu-item (click)="startEdit()">Edit</button>
-    <button *ngIf="mine" [disabled]="!permissions?.canDelete" mat-menu-item (click)="delete()">Delete</button>
+    <button mat-menu-item (click)="share()">
+        <mat-icon>share</mat-icon>
+        Share
+    </button>
+    <button *ngIf="!mine" mat-menu-item (click)="report()">
+        <mat-icon>warning</mat-icon>
+        Report
+    </button>
+    <button *ngIf="mine" [disabled]="!permissions?.canEdit" mat-menu-item (click)="startEdit()">
+        <mat-icon>edit</mat-icon>
+        Edit
+    </button>
+    <button *ngIf="mine" [disabled]="!permissions?.canDelete" mat-menu-item (click)="delete()">
+        <mat-icon>delete</mat-icon>
+        Delete
+    </button>
 </mat-menu>
 
 <div class="message-content">
@@ -15,6 +28,7 @@
         <a href="javascript:;" class="display-name" (click)="selectUser()">{{message.user.displayName}}</a>
         <a href="javascript:;" class="username" (click)="selectUsername(message.user)">@{{message.user.username}}</a>
         <span class="user-tag" *ngIf="message.user.tag">{{message.user.tag}}</span>
+        <banta-timestamp [value]="message.sentAt"></banta-timestamp>
         <span class="spacer"></span>
     </div>
     <div class="content" *ngIf="!editing">
@@ -33,7 +47,7 @@
             </div>
         </ng-container>
 
-        <ul class="message-facts small">
+        <ul class="message-facts">
             <li *ngIf="message.edits?.length > 0">(Edited)</li>
         </ul>
     </div>
@@ -50,23 +64,17 @@
 
 
     <div class="actions">
-        <banta-timestamp [value]="message.sentAt"></banta-timestamp>
-        <ul class="message-facts">
-            <li *ngIf="message.edits?.length > 0">Edited</li>
-        </ul>
         <div class="spacer"></div>
         <div class="counted-action" *ngIf="showReplyAction">
-            <div class="count-indicator">
-                {{message.submessages?.length || message.submessageCount || 0}}
-            </div>
-            <button mat-icon-button matTooltip="Replies" matTooltipPosition="below" (click)="select()">
+            <button mat-button [matTooltip]="replyCount > 0 ? 'Replies' : 'Reply'" matTooltipPosition="below" (click)="select()">
                 <mat-icon [inline]="true">comment</mat-icon>
+                <span class="count-indicator">
+                    {{replyCount > 0 ? 'Replies' : 'Reply'}}
+                    {{replyCount > 0 ? '(' + replyCount + ')' : ''}}
+                </span>
             </button>
         </div>
         <div class="counted-action" [class.active]="message.userState?.liked">
-            <div class="count-indicator">
-                {{message.likes}}
-            </div>
             <button 
                 *ngIf="message.transientState?.liking"
                 mat-icon-button 
@@ -78,19 +86,16 @@
             </button>
             <button 
                 *ngIf="!message.transientState?.liking"
-                mat-icon-button 
+                mat-button 
                 [disabled]="!permissions?.canLike" 
                 [matTooltip]="upvoting ? 'Please wait...' : 'Like'" 
                 matTooltipPosition="below" 
                 (click)="message.userState?.liked ? unlike() : like()" 
                 >
                 <mat-icon [inline]="true">thumb_up</mat-icon>
-            </button>
-        </div>
-
-        <div class="counted-action">
-            <button mat-icon-button matTooltip="Share this comment" matTooltipPosition="below" (click)="share()">
-                <mat-icon [inline]="true" >share</mat-icon>
+                <span class="count-indicator" *ngIf="message.likes > 0">
+                    {{message.likes}}
+                </span>
             </button>
         </div>
 

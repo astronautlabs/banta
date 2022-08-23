@@ -76,13 +76,15 @@
             color: #666;
             flex-shrink: 0;
         }
-
-        banta-timestamp {
-            color: #666;
-            font-size: 10pt;
-            flex-shrink: 0;
-        }
     }
+}
+
+
+banta-timestamp {
+    color: #666;
+    font-size: 10pt;
+    flex-shrink: 0;
+    margin-left: 1em;
 }
 
 .user {
@@ -133,6 +135,10 @@
         button, .count-indicator {
             color: #00a5ff;
         }
+    }
+
+    button .count-indicator {
+        margin-left: 0.5em;
     }
 }
 
@@ -187,19 +193,15 @@ ul.message-facts {
         margin-left: 0.5em;
     }
 
-    &.small {
-        display: none;
+    li {
+        margin-top: 0.5em;
+    }
 
-        li {
-            margin-top: 0.5em;
-        }
+    li:first-child {
+        border-left: 1px solid transparent;
+        margin-left: 0;
+        padding-left: 0;
 
-        li:first-child {
-            border-left: 1px solid transparent;
-            margin-left: 0;
-            padding-left: 0;
-
-        }
     }
 }
 
@@ -207,16 +209,6 @@ ul.message-facts {
     .avatar {
         height: 32px;
         width: 32px;
-    }
-
-    .actions {
-        ul.message-facts {
-            display: none;
-        }
-    }
-
-    ul.message-facts.small {
-        display: initial;
     }
 
     :host {

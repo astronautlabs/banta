@@ -177,4 +177,8 @@ export class CommentComponent {
 
         return `url(${url})`;
     }
+
+    get replyCount() {
+        return this.message.submessages?.length || this.message.submessageCount || 0;
+    }
 }
