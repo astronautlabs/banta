@@ -94,6 +94,14 @@ banta-comment-sort {
         }
     }
 
+    .inline-replies {
+        margin-left: 1em;
+    }
+
+    .focused .replies {
+        padding-left: 0.5em;
+    }
+    
     banta-comment-sort {
         margin: 0;
         width: 100%;

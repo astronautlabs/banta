@@ -85,6 +85,7 @@ banta-timestamp {
     font-size: 10pt;
     flex-shrink: 0;
     margin-left: 1em;
+    text-align: right;
 }
 
 .user {
@@ -92,6 +93,23 @@ banta-timestamp {
     margin: 1em 0 0 0;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+
+    .user-1, .user-2 {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .user-2 {
+        margin: 1em 0;
+    }
+    .user-identity {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
 
     .display-name, .username {
         z-index: 1;
@@ -109,6 +127,7 @@ banta-timestamp {
         overflow: hidden;
         flex-shrink: 1;
         flex-grow: 0;
+        min-width: 0;
 
         &.username.username.username {  // overcoming default dark theme styles
             color: #666;

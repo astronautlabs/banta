@@ -20,16 +20,22 @@
 
 <div class="message-content">
     <div class="user">
-        <a
-            href="javascript:;"
-            class="avatar"
-            (click)="selectAvatar(message.user)"
-            [style.background-image]="avatarForUser(message.user)"></a>
-        <a href="javascript:;" class="display-name" (click)="selectUser()">{{message.user.displayName}}</a>
-        <a href="javascript:;" class="username" (click)="selectUsername(message.user)">@{{message.user.username}}</a>
-        <span class="user-tag" *ngIf="message.user.tag">{{message.user.tag}}</span>
-        <banta-timestamp [value]="message.sentAt"></banta-timestamp>
-        <span class="spacer"></span>
+        <div class="user-1">
+            <a
+                href="javascript:;"
+                class="avatar"
+                (click)="selectAvatar(message.user)"
+                [style.background-image]="avatarForUser(message.user)"></a>
+            <div class="user-identity">
+                <a href="javascript:;" class="display-name" (click)="selectUser()">{{message.user.displayName}}</a>
+                <a href="javascript:;" class="username" (click)="selectUsername(message.user)">@{{message.user.username}}</a>
+            </div>
+        </div>
+        <div class="user-2">
+            <span class="user-tag" *ngIf="message.user.tag">{{message.user.tag}}</span>
+            <banta-timestamp [value]="message.sentAt"></banta-timestamp>
+            <span class="spacer"></span>
+        </div>
     </div>
     <div class="content" *ngIf="!editing">
         <span class="banta-message-content" [innerHTML]="message.message | markdownToHtml"></span>
