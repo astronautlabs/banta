@@ -734,7 +734,6 @@ export class ChatService {
             await this.origins.updateOne({ origin: originName }, { $set: origin }, { upsert: true });
 
             if (urlCard) {
-                console.dir(urlCard);
                 await this.urlCards.replaceOne({ url }, urlCard, { upsert: true });
             } else {
                 Logger.current.error(`No URL card was provided`);
