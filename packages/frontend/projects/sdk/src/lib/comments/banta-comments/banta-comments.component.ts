@@ -443,6 +443,11 @@ export class BantaCommentsComponent {
     // Actions
 
     async likeMessage(source: ChatSourceBase, message: ChatMessage) {
+        if (!this.user) {
+            await this.showSignIn();
+            return;
+        }
+
         this._upvoted.next(message);
         message.transientState.liking = true;
         
@@ -457,6 +462,11 @@ export class BantaCommentsComponent {
     }
 
     async unlikeMessage(source: ChatSourceBase, message: ChatMessage) {
+        if (!this.user) {
+            await this.showSignIn();
+            return;
+        }
+
         this._upvoted.next(message);
         message.transientState.liking = true;
 
@@ -534,6 +544,11 @@ export class BantaCommentsComponent {
     }
 
     async deleteMessage(message: ChatMessage) {
+        if (!this.user) {
+            await this.showSignIn();
+            return;
+        }
+
         if (!confirm("Are you sure you want to delete this comment? You cannot undo this action."))
             return;
 
@@ -545,6 +560,11 @@ export class BantaCommentsComponent {
     }
 
     async editMessage(source: ChatSourceBase, message: ChatMessage, newText: string) {
+        if (!this.user) {
+            await this.showSignIn();
+            return;
+        }
+
         try {
             await source.editMessage(message.id, newText);
         } catch (e) {
@@ -562,6 +582,11 @@ export class BantaCommentsComponent {
     }
 
     async saveEdit(message: ChatMessage, text: string) {
+        if (!this.user) {
+            await this.showSignIn();
+            return;
+        }
+        
         try {
             await this.source.editMessage(message.id, text);
             message.transientState.editing = false;
