@@ -1,6 +1,6 @@
 {
   "name": "@banta/frontend",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -25,7 +25,7 @@
     "@angular/platform-browser": "~11.2.14",
     "@angular/platform-browser-dynamic": "~11.2.14",
     "@angular/router": "~11.2.14",
-    "@banta/common": "^2.0.13",
+    "@banta/common": "^2.2.0",
     "@types/dompurify": "^2.3.3",
     "@types/marked": "^4.0.3",
     "dompurify": "^2.3.10",
