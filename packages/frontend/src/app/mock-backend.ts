@@ -1,4 +1,4 @@
-import { ChatMessage, User, Notification, Vote, CommentsOrder, ChatPermissions } from "@banta/common";
+import { ChatMessage, User, Notification, Vote, CommentsOrder, ChatPermissions, UrlCard } from "@banta/common";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";
@@ -74,6 +74,9 @@ export class MockBackend extends ChatBackendBase {
     notificationsChanged = new Subject<Notification[]>();
     newNotification = new Subject<Notification>();
 
+    getCardForUrl(url: string): Promise<UrlCard> {
+        return null;
+    }
 }
 
 export class MockSource implements ChatSourceBase {

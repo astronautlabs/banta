@@ -1,12 +1,20 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ChatMessage, Vote, CommentsOrder, Notification, User } from '@banta/common';
 import { ChatSourceBase } from './chat-source-base';
+import { AttachmentResolver, AttachmentScraper, GiphyAttachmentResolver, UrlAttachmentResolver, UrlAttachmentScraper, YouTubeAttachmentResolver } from './attachment-scraper';
 
 export interface ChatSourceOptions {
     sortOrder: CommentsOrder;
 }
 
 export abstract class ChatBackendBase {
+    constructor() {
+        this.registerAttachmentScraper(new UrlAttachmentScraper());
+        this.registerAttachmentResolver(new GiphyAttachmentResolver());
+        this.registerAttachmentResolver(new YouTubeAttachmentResolver());
+        this.registerAttachmentResolver(new UrlAttachmentResolver(this));
+    }
+    
     abstract getSourceForTopic(topicId : string, options?: ChatSourceOptions) : Promise<ChatSourceBase>;
     abstract getSourceForThread(topicId : string, messageId : string, options?: ChatSourceOptions) : Promise<ChatSourceBase>;
     abstract getSourceCountForTopic(topicId: string): Promise<number>
@@ -14,7 +22,7 @@ export abstract class ChatBackendBase {
     abstract getMessage(topicId : string, messageId : string): Promise<ChatMessage>;
     abstract getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
     abstract watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void;
-
+    abstract getCardForUrl(url: string);
     readonly notificationsChanged : Observable<Notification[]>;
     readonly newNotification : Observable<Notification>;
     
@@ -32,5 +40,24 @@ export abstract class ChatBackendBase {
 
     get user() {
         return this._user;
+    }
+    
+    private _attachmentScrapers: AttachmentScraper[] = [];
+    private _attachmentResolvers: AttachmentResolver[] = [];
+
+    registerAttachmentScraper(scraper: AttachmentScraper) {
+        this._attachmentScrapers.push(scraper);
+    }
+
+    registerAttachmentResolver(resolver: AttachmentResolver) {
+        this._attachmentResolvers.push(resolver);
+    }
+
+    get attachmentScrapers() {
+        return this._attachmentScrapers.slice();
+    }
+
+    get attachmentResolvers() {
+        return this._attachmentResolvers.slice();
     }
 }

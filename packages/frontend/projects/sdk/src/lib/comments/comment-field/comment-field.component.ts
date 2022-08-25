@@ -1,7 +1,9 @@
 import { Component, ElementRef, Input, Output, ViewChild } from "@angular/core";
 import { ChatMessage, ChatMessageAttachment, User } from "@banta/common";
 import { Observable, Subject } from "rxjs";
+import { ChatBackendBase } from "../../chat-backend-base";
 import { ChatSourceBase } from "../../chat-source-base";
+import { AttachmentFragment } from "../../attachment-scraper";
 import { EMOJIS } from "../../emoji";
 
 export interface AutoCompleteOption {
@@ -14,12 +16,19 @@ export interface HashTag {
     description : string;
 }
 
+interface AttachmentFragmentState {
+    fragment: AttachmentFragment;
+    resolution: Promise<ChatMessageAttachment>;
+}
+
 @Component({
     selector: 'banta-comment-field',
     templateUrl: './comment-field.component.html',
     styleUrls: ['./comment-field.component.scss']
 })
 export class CommentFieldComponent {
+    constructor(private chatBackend: ChatBackendBase) {
+    }
 
     @Input() source : ChatSourceBase;
     @Input() user : User;
@@ -33,7 +42,91 @@ export class CommentFieldComponent {
     sendError : Error;
     expandError = false;
 
-    text : string = '';
+    private _text : string = '';
+    get text() {
+        return this._text;
+    }
+
+    set text(value) {
+        this._text = value;
+        clearTimeout(this.attachmentScrapeTimeout);
+        this.attachmentScrapeTimeout = setTimeout(() => this.scrapeAttachments(), this.attachmentScrapeDebounce);
+    }
+
+    private attachmentScrapeTimeout;
+    private attachmentScrapeDebounce = 1500;
+    private attachmentFragments = new Map<string, AttachmentFragmentState>();
+    private scrapeAttachments() {
+        let message: ChatMessage = {
+            likes: 0,
+            message: this._text,
+            sentAt: undefined,
+            user: this.user,
+            attachments: this.chatMessageAttachments
+        };
+
+        let foundFragments: string[] = [];
+
+        for (let scraper of this.chatBackend.attachmentScrapers) {
+            let fragments = scraper.findFragments(message);
+            if (!fragments) {
+                console.error(`Attachment fragment scraper ${scraper.constructor.name} is implemented incorrectly: Returned null instead of array`);
+                continue;
+            }
+            for (let fragment of fragments) {
+                foundFragments.push(fragment.text);
+                if (!this.attachmentFragments.has(fragment.text)) {
+                    console.log(`Scraped new fragment:`);
+                    console.dir(fragment);
+                    this.attachmentFragments.set(fragment.text, {
+                        fragment,
+                        resolution: undefined
+                    });
+                }
+            }
+        }
+
+        // Remove fragments that are no longer in the message.
+        let removedFragments: string[] = [];
+        for (let [key] of this.attachmentFragments) {
+            if (!foundFragments.includes(key))
+                removedFragments.push(key);
+        }
+        for (let removedFragment of removedFragments) {
+            console.log(`Removed fragment: ${removedFragment}`);
+            this.attachmentFragments.delete(removedFragment);
+        }
+
+        // Process any fragments that are not yet resolved (or being 
+        // resolved)
+
+        for (let [key, state] of this.attachmentFragments) {
+            if (state.resolution)
+                continue;
+
+            state.resolution = new Promise(async (resolve, reject) => {
+                console.log(`Resolving fragment ${key}`);
+                for (let resolver of this.chatBackend.attachmentResolvers) {
+                    console.log(`- Trying resolver ${resolver.constructor.name}...`);
+                    try {
+                        let attachment = await resolver.resolveFragment(message, state.fragment);
+                        if (attachment) {
+                            console.log(`Resolved fragment ${key} into attachment:`);
+                            console.dir(attachment);
+                            this.chatMessageAttachments.push(attachment);
+                            resolve(attachment);
+                            break;
+                        }
+                    } catch (e) {
+                        console.error(`Caught error during attachment resolver ${resolver.constructor.name}:`);
+                        console.error(e);
+                        continue;
+                    }
+                }
+            });
+        }
+    }
+
     @Input() sendLabel = 'Send';
     @Input() sendingLabel = 'Sending';
     @Input() label = 'Post a comment';
@@ -320,8 +413,10 @@ export class CommentFieldComponent {
         }, 3000);
     }
 
-	removeAttachment(index: number) {
-		this.chatMessageAttachments.splice(index, 1);
+	removeAttachment(attachment: ChatMessageAttachment) {
+        let index = this.chatMessageAttachments.indexOf(attachment);
+        if (index >= 0)
+		    this.chatMessageAttachments.splice(index, 1);
 	}
 
     alertError() {

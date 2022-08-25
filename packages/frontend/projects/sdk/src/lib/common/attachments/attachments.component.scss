@@ -1,0 +1,17 @@
+.block-attachments {
+    display: flex;
+    flex-direction: column;
+
+    banta-attachment {
+        width: 100%;
+    }
+}
+
+.inline-attachments {
+    display: flex;
+    flex-direction: row;
+    margin-top: 15px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}

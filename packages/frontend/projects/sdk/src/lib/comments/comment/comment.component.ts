@@ -122,7 +122,6 @@ export class CommentComponent {
 
     @HostBinding('attr.data-comment-id') get commentId() { return this.message?.id; }
 
-
     report() {
         this._reported.next();
     }
@@ -156,17 +155,6 @@ export class CommentComponent {
 		this._avatarSelected.next(user);
 		this.selectUser();
 	}
-
-    @ViewChild('lightbox') lightbox: LightboxComponent;
-
-    showLightbox(image: ChatMessageAttachment) {
-        this.lightbox.open(
-            image.url,
-            this.message.attachments
-                .filter(x => x.type === 'image/png')
-                .map(x => x.url)
-        )
-    }
 
     avatarForUser(user : User) {
         let url = this.genericAvatarUrl;

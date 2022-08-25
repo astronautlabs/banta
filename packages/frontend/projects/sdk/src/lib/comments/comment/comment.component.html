@@ -39,20 +39,7 @@
     </div>
     <div class="content" *ngIf="!editing">
         <span class="banta-message-content" [innerHTML]="message.message | markdownToHtml"></span>
-
-        <ng-container *ngIf="message.attachments?.length > 0">
-            <banta-lightbox #lightbox></banta-lightbox>
-            <div class="attachments-row" [class.single]="message.attachments?.length === 1" *ngIf="message.attachments && message.attachments?.length > 0">
-                <a 
-                    href="javascript:;" 
-                    (click)="showLightbox(attachment)"
-                    *ngFor="let attachment of message.attachments" 
-                    >
-                    <img [src]="attachment.url" alt="">
-                </a>
-            </div>
-        </ng-container>
-
+        <banta-attachments [attachments]="message.attachments"></banta-attachments>
         <ul class="message-facts">
             <li *ngIf="message.edits?.length > 0">(Edited)</li>
         </ul>

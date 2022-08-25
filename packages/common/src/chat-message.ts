@@ -1,8 +1,11 @@
+import { UrlCard } from './url-card';
 import { User } from './user';
 
 export interface ChatMessageAttachment {
     type: string;
     url?: string;
+    style?: 'block' | 'inline';
+    card?: UrlCard;
     transientState?: Record<string,any>;
     userState?: Record<string,any>;
 }

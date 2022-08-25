@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@angular/core";
-import { ChatMessage, CommentsOrder, DurableSocket, Notification, User, Vote } from "@banta/common";
+import { ChatMessage, CommentsOrder, DurableSocket, Notification, UrlCard, User, Vote } from "@banta/common";
 import { Observable } from "rxjs";
 import { ChatBackendBase, ChatSourceOptions } from "./chat-backend-base";
 import { ChatSource } from "./chat-source";
@@ -74,4 +74,23 @@ export class ChatBackend extends ChatBackendBase {
     notificationsChanged: Observable<Notification[]>;
     newNotification: Observable<Notification>;
     
+    async getCardForUrl(url: string): Promise<UrlCard> {
+        let response = await fetch(`${this.serviceUrl}/urls`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                url
+            })
+        });
+
+        if (response.status == 404)
+            return null;
+        
+        if (response.status >= 400)
+            throw new Error(`Failed to retrieve URL card: ${response.status}. Body: '${await response.text()}'`);
+
+        return await response.json();
+    }
 }

@@ -251,3 +251,30 @@ ul.message-facts {
 :host-context(.banta-mobile) {
     @include banta-comment-mobile-styles;
 }
+
+.card-attachment {
+    a {
+        display: flex;
+        align-items: flex-start;
+        gap: 1em;
+        
+        width: 100%;
+        border: 1px solid #666;
+        border-radius: 4px;
+        padding: 1em;
+        box-sizing: border-box;
+        background-color: #191919;
+
+        img {
+            width: 300px;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+    }
+}
