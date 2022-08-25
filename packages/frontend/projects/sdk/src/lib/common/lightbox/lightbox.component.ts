@@ -10,7 +10,9 @@ export class LightboxComponent {
     containerElement: ElementRef<HTMLDivElement>;
 
     ngAfterViewInit() {
-        document.body.appendChild(this.containerElement.nativeElement);
+        if (typeof window !== 'undefined') {
+            document.body.appendChild(this.containerElement.nativeElement);
+        }
     }
 
     ngOnDestroy() {

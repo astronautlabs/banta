@@ -112,22 +112,25 @@ export class BantaCommentsComponent {
     sendReplyOptionsTemplate: any;
 
     ngAfterViewInit() {
-        let callback = () => {
-            let size = this.elementRef.nativeElement.getBoundingClientRect();
-            this.ngZone.run(() => {
-                this.width = size.width;
-                this.height = size.height;
-            })
-        };
-        this.resizeObserver = new ResizeObserver(callback);
-        this.resizeObserver.observe(this.elementRef.nativeElement);
+        if (typeof window !== 'undefined') {
+            let callback = () => {
+                let size = this.elementRef.nativeElement.getBoundingClientRect();
+                this.ngZone.run(() => {
+                    this.width = size.width;
+                    this.height = size.height;
+                })
+            };
+            this.resizeObserver = new ResizeObserver(callback);
+            this.resizeObserver.observe(this.elementRef.nativeElement);
 
-        callback();
+            callback();
+        }
     }
 
     ngOnDestroy() {
         this._subs.unsubscribe();
-        this.resizeObserver.disconnect();
+        if (this.resizeObserver)
+            this.resizeObserver.disconnect();
     }
 
     private async setSourceFromTopicID(topicID: string) {
@@ -354,6 +357,9 @@ export class BantaCommentsComponent {
     // UI Interactions
 
     scrollToComment(commentId: ChatMessage['id']): void {
+        if (typeof window === 'undefined')
+            return;
+        
         setTimeout(() => {
           const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
           if (comment.length > 0) {

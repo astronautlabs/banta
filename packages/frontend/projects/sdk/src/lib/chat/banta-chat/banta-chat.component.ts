@@ -177,7 +177,7 @@ export class BantaChatComponent {
             user: null,
             sentAt: Date.now(),
             likes: 0,
-            url: location.href,
+            url: typeof window !== 'undefined' ? location.href : undefined,
             message: text
         };
 

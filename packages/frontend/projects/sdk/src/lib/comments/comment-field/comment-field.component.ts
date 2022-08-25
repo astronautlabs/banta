@@ -191,8 +191,10 @@ export class CommentFieldComponent {
     }
 
     ngAfterViewInit() {
-        let root = document.body.querySelector('[ng-version]') || document.body;
-        root.appendChild(this.autocompleteEl.nativeElement);
+        if (typeof window !== 'undefined') {
+            let root = document.body.querySelector('[ng-version]') || document.body;
+            root.appendChild(this.autocompleteEl.nativeElement);
+        }
     }
 
     sendPermissionDenied(message: string) {
@@ -200,6 +202,9 @@ export class CommentFieldComponent {
     }
 
     showAutoComplete(options : AutoCompleteOption[]) {
+        if (typeof window === 'undefined')
+            return;
+        
         this.autoCompleteSelected = 0;
         this.autocompleteOptions = options;
         let pos = this.autocompleteContainerEl.nativeElement.getBoundingClientRect();
@@ -238,7 +243,7 @@ export class CommentFieldComponent {
         }, 100);
 
         // On mobile, just show an alert dialog
-        if (window.innerWidth < 430)
+        if (typeof window !== 'undefined' && window.innerWidth < 430)
             alert(message);
     }
 
@@ -417,7 +422,7 @@ export class CommentFieldComponent {
             let message : ChatMessage = {
                 user: this.user,
                 sentAt: Date.now(),
-                url: location.href,
+                url: typeof window !== 'undefined' ? location.href : undefined,
                 likes: 0,
                 message: text,
                 attachments: this.chatMessageAttachments.filter(x => x.url)
