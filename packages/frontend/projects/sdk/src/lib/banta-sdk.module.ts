@@ -23,6 +23,10 @@ import { BANTA_SDK_OPTIONS } from './sdk-options';
 import { ChatBackendBase } from './chat-backend-base';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { PortalModule } from '@angular/cdk/portal';
+import { UrlAttachmentResolver, UrlAttachmentScraper } from './url-attachments';
+import { YouTubeAttachmentResolver } from './youtube-attachments';
+import { GiphyAttachmentResolver } from './giphy-attachments';
+import { TweetAttachmentResolver } from './tweet-attachments';
 
 @NgModule({
     imports: [
@@ -59,6 +63,25 @@ import { PortalModule } from '@angular/cdk/portal';
     ]
 })
 export class BantaSdkModule {
+    constructor(
+        chatBackend: ChatBackendBase
+    ) {
+        if (typeof window !== 'undefined') {
+            if (!document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')) {
+                let script = document.createElement('script');
+                script.src = 'https://platform.twitter.com/widgets.js';
+                script.async = true;
+                document.body.appendChild(script);
+            }
+        }
+
+        chatBackend.registerAttachmentScraper(new UrlAttachmentScraper());
+        chatBackend.registerAttachmentResolver(new GiphyAttachmentResolver());
+        chatBackend.registerAttachmentResolver(new YouTubeAttachmentResolver());
+        chatBackend.registerAttachmentResolver(new TweetAttachmentResolver());
+        chatBackend.registerAttachmentResolver(new UrlAttachmentResolver(chatBackend));
+    }
+    
     static configure(options?: SdkOptions): ModuleWithProviders<BantaSdkModule> {
         return {
             ngModule: BantaSdkModule,

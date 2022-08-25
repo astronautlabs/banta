@@ -30,5 +30,10 @@
         <a class="image-attachment" *ngIf="isImageAttachment" href="javascript:;" (click)="activate()">
             <img [src]="attachment.url" alt="Image Attachment">
         </a>
+        <blockquote *ngIf="attachment.type === 'tweet'" 
+            class="twitter-tweet">
+                <p lang="en" dir="ltr"></p>
+                <a href="https://twitter.com/seldo/status/1562553608083714050?ref_src=twsrc%5Etfw"></a>
+        </blockquote>
     </ng-container>
 </ng-container>

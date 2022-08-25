@@ -8,6 +8,10 @@ import { Subject } from "rxjs";
     styleUrls: ['./attachment.component.scss']
 })
 export class BantaAttachmentComponent {
+    constructor() {
+
+    }
+
     @Input() attachment: ChatMessageAttachment;
     @Input() loading = false;
     @Input() editing = false;
@@ -16,6 +20,17 @@ export class BantaAttachmentComponent {
     @Input() errorMessage: string = 'An error has occurred';
     @Output() removed = new Subject<void>();
     @Output() activated = new Subject<void>();
+
+    ngOnInit() {
+        if (typeof window !== 'undefined') {
+            setTimeout(() => {
+                if (!window['twttr'])
+                    return;
+                window['twttr'].widgets.load();
+            }, 100);
+        }
+    }
+
     activate() {
         this.activated.next();
     }

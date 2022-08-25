@@ -1,7 +1,7 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ChatMessage, Vote, CommentsOrder, Notification, User } from '@banta/common';
 import { ChatSourceBase } from './chat-source-base';
-import { AttachmentResolver, AttachmentScraper, GiphyAttachmentResolver, UrlAttachmentResolver, UrlAttachmentScraper, YouTubeAttachmentResolver } from './attachment-scraper';
+import { AttachmentResolver, AttachmentScraper } from './attachment-scraper';
 
 export interface ChatSourceOptions {
     sortOrder: CommentsOrder;
@@ -9,10 +9,6 @@ export interface ChatSourceOptions {
 
 export abstract class ChatBackendBase {
     constructor() {
-        this.registerAttachmentScraper(new UrlAttachmentScraper());
-        this.registerAttachmentResolver(new GiphyAttachmentResolver());
-        this.registerAttachmentResolver(new YouTubeAttachmentResolver());
-        this.registerAttachmentResolver(new UrlAttachmentResolver(this));
     }
     
     abstract getSourceForTopic(topicId : string, options?: ChatSourceOptions) : Promise<ChatSourceBase>;

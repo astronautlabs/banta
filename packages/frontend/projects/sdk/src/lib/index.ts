@@ -10,5 +10,10 @@ export * from './chat-source-base';
 export * from './chat-backend';
 export * from './chat-source';
 export * from './sdk-options';
+export * from './attachment-scraper';
+export * from './url-attachments';
+export * from './youtube-attachments';
+export * from './giphy-attachments';
+export * from './tweet-attachments';
 
 export * from './banta-sdk.module';
