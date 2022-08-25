@@ -80,8 +80,7 @@
             <button 
                 *ngIf="!message.transientState?.liking"
                 mat-button 
-                [disabled]="!permissions?.canLike" 
-                [matTooltip]="upvoting ? 'Please wait...' : 'Like'" 
+                [matTooltip]="permissions?.canLike ? upvoting ? 'Please wait...' : 'Like' : permissions?.canLikeErrorMessage" 
                 matTooltipPosition="below" 
                 (click)="message.userState?.liked ? unlike() : like()" 
                 >

@@ -1,5 +1,5 @@
 import { ChatMessage, ChatPermissions, CommentsOrder, RpcCallable, SocketRPC, User } from "@banta/common";
-import { ChatService, Like, Topic } from "./chat.service";
+import { AuthorizableAction, ChatService, Like, Topic } from "./chat.service";
 import { PubSub } from "./pubsub";
 
 export interface ChatPubSubEvent {
@@ -33,6 +33,17 @@ export class ChatConnection extends SocketRPC {
         await this.sendPermissions();
     }
 
+    private async precheckAuthorization(action: AuthorizableAction): Promise<string> {
+        try {
+            await this.chat.authorizeAction(this.user, this.userToken, {
+                ...action,
+                precheck: true,
+            });
+        } catch (e) {
+            return e.message;
+        }
+    }
+
     private async sendPermissions() {
         if (!this.user || !this.topic) {
             this.sendEvent('onPermissions', <ChatPermissions>{
@@ -44,36 +55,32 @@ export class ChatConnection extends SocketRPC {
             return;
         }
 
-        let postErrorMessage: string;
-
-        try {
-            await this.chat.authorizeAction(this.user, this.userToken, {
-                action: 'postMessage',
-                precheck: true,
-                topic: this.topic
-            });
-        } catch (e) {
-            postErrorMessage = e.message;
-        }
+        let postErrorMessage = await this.precheckAuthorization({
+            action: 'postMessage',
+            topic: this.topic
+        });
+        let editErrorMessage = await this.precheckAuthorization({
+            action: 'editMessage',
+            topic: this.topic
+        });
+        let likeErrorMessage = await this.precheckAuthorization({
+            action: 'likeMessage',
+            topic: this.topic
+        });
+        let deleteErrorMessage = await this.precheckAuthorization({
+            action: 'deleteMessage',
+            topic: this.topic
+        });
 
         this.sendEvent('onPermissions', <ChatPermissions>{
             canPost: !postErrorMessage,
             canPostErrorMessage: postErrorMessage,
-            canEdit: await this.chat.checkAuthorization(this.user, this.userToken, {
-                action: 'editMessage',
-                precheck: true,
-                topic: this.topic
-            }),
-            canLike: await this.chat.checkAuthorization(this.user, this.userToken, {
-                action: 'likeMessage',
-                precheck: true,
-                topic: this.topic
-            }),
-            canDelete: await this.chat.checkAuthorization(this.user, this.userToken, {
-                action: 'deleteMessage',
-                precheck: true,
-                topic: this.topic
-            })
+            canEdit: !editErrorMessage,
+            canEditErrorMessage: editErrorMessage,
+            canLike: !likeErrorMessage,
+            canLikeErrorMessage: likeErrorMessage,
+            canDelete: !deleteErrorMessage,
+            canDeleteErrorMessage: deleteErrorMessage
         });
     }
 

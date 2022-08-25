@@ -111,6 +111,7 @@ export class CommentComponent {
     private _deleted = new Subject<void>();
     private _editEnded = new Subject<void>();
     private _edited = new Subject<string>();
+    
 
     @Output() get edited() { return this._edited.asObservable(); }
     @Output() get deleted() { return this._deleted.asObservable(); }

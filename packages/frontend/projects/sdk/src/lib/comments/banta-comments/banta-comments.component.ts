@@ -445,18 +445,15 @@ export class BantaCommentsComponent {
     async likeMessage(source: ChatSourceBase, message: ChatMessage) {
         this._upvoted.next(message);
         message.transientState.liking = true;
-
-        if (!message.userState?.liked)
-            message.likes = (message.likes || 0) + 1;
         
         try {
             await source.likeMessage(message.id);
         } catch (e) {
             this.handleBackendExceptionAsAlert(e, 'Could not like this message: ');
+        } finally {
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
+            message.transientState.liking = false;
         }
-        
-        await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
-        message.transientState.liking = false;
     }
 
     async unlikeMessage(source: ChatSourceBase, message: ChatMessage) {

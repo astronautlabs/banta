@@ -33,12 +33,12 @@ class BantaService {
         // }
 
         this.chat.authorizeAction = (user: User, token: string, action: AuthorizableAction) => {
-            // if (action.action === 'postMessage') {
-            //     if (action.precheck)
-            //         throw new Error(`You have to sign the petition first`);
-            //     else
-            //         throw new Error(`app-handle|stuff`);
-            // }
+            if (action.action === 'likeMessage') {
+                if (action.precheck)
+                    throw new Error(`You have to sign the petition first`);
+                else
+                    throw new Error(`app-handle|stuff`);
+            }
 
             // if (action.action === 'postMessage' && action.message)
             //     throw new Error(`You cannot post THIS message at this time.`);
