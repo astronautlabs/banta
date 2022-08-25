@@ -75,6 +75,13 @@ form {
                 flex-shrink: 0;
             }
 
+            .transient-message {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5em;
+            }
+
             .error-message {
                 left: 0.5em;
                 bottom: 0.5em;
@@ -185,38 +192,6 @@ textarea {
     }
 }
 
-@mixin banta-comment-field-mobile-styles {
-    :host {
-        margin: 0;
-    }
-
-    .avatar-container {
-        width: auto;
-        flex-shrink: 0;
-        .avatar {
-            width: 32px;
-            height: 32px;
-            margin-top: 1.5em;
-        }
-    }
-
-    button.send {
-        min-width: auto;
-        margin-top: 1.5em;
-        .label {
-            display: none;
-        }
-    }
-}
-
-@media (max-width: 500px) {
-    @include banta-comment-field-mobile-styles;
-}
-
-:host-context(.banta-mobile) {
-    @include banta-comment-field-mobile-styles;
-}
-
 .image-attachments-container {
     display: flex;
     gap: 20px;
@@ -298,4 +273,50 @@ textarea {
         top: 10px;
         margin: 0;
     }
+}
+
+@mixin banta-comment-field-mobile-styles {
+    :host {
+        margin: 0;
+    }
+
+    .avatar-container {
+        width: auto;
+        flex-shrink: 0;
+        .avatar {
+            width: 32px;
+            height: 32px;
+            margin-top: 1.5em;
+        }
+    }
+
+    :host:not(.can-comment) {
+        mat-form-field.message-field {
+            display: none;
+        }
+
+        .text-container {
+            display: none;
+        }
+    }
+
+    :host.can-comment {
+        button.send {
+            .label {
+                display: none;
+            }
+        }
+    }
+    button.send {
+        min-width: auto;
+        margin-top: 1.5em;
+    }
+}
+
+@media (max-width: 500px) {
+    @include banta-comment-field-mobile-styles;
+}
+
+:host-context(.banta-mobile) {
+    @include banta-comment-field-mobile-styles;
 }

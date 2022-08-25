@@ -1,6 +1,6 @@
-import { Component, ElementRef, Input, Output, ViewChild } from "@angular/core";
+import { Component, ElementRef, HostBinding, Input, Output, ViewChild } from "@angular/core";
 import { ChatMessage, ChatMessageAttachment, User } from "@banta/common";
-import { Observable, Subject } from "rxjs";
+import { Observable, Subject, Subscription } from "rxjs";
 import { ChatBackendBase } from "../../chat-backend-base";
 import { ChatSourceBase } from "../../chat-source-base";
 import { AttachmentFragment } from "../../attachment-scraper";
@@ -30,9 +30,43 @@ export class CommentFieldComponent {
     constructor(private chatBackend: ChatBackendBase) {
     }
 
-    @Input() source : ChatSourceBase;
+    private _source : ChatSourceBase;
+    @Input() 
+    get source() : ChatSourceBase {
+        return this._source;
+    }
+
+    set source(value) {
+        if (this._source) {
+            this._subs?.unsubscribe();
+            this._source = null;
+        }
+
+        this._source = value;
+        this._subs = new Subscription();
+        if (this._source) {
+            setTimeout(() => {
+                if (this._source.connectionStateChanged) {
+                    this._subs.add(this._source.connectionStateChanged.subscribe(state => {
+                        if (state === 'lost') {
+                            this.transientMessage = `Reconnecting...`;
+                        } else if (state === 'restored') {
+                            this.transientMessage = undefined;
+                        } else if (state === 'connecting') {
+                            this.transientMessage = `Connecting...`;
+                        }
+                    }));
+                }
+            });
+        }
+    }
+
+    private _subs = new Subscription();
     @Input() user : User;
-    @Input() canComment = true;
+
+    @HostBinding('class.can-comment')
+    @Input() 
+    canComment = true;
     @Input() allowAttachments = false;
 
     @Output() signInSelected = new Subject<void>();
@@ -41,6 +75,7 @@ export class CommentFieldComponent {
     sending = false;
     sendError : Error;
     expandError = false;
+    @Input() transientMessage: string;
 
     private _text : string = '';
     get text() {

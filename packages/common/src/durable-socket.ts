@@ -163,7 +163,7 @@
     }
 
     private get actualReconnectTime() {
-        let reconnectTime = Math.min(this.maxReconnectTime, Math.pow(this.reconnectTime, this._attempt));
+        let reconnectTime = Math.min(this.maxReconnectTime, this.reconnectTime * this._attempt * 1.5);
 
         return Math.min(
             this.maxReconnectTime, 

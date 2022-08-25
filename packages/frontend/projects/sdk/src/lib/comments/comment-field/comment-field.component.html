@@ -9,7 +9,7 @@
     <div class="text-container">
         <div class="field-container">
             <div class="field-row">
-                <mat-form-field appearance="outline" floatLabel="always">
+                <mat-form-field class="message-field" appearance="outline" floatLabel="always">
                     <mat-label>{{label}}</mat-label>
                     <textarea
                         #textarea
@@ -28,6 +28,10 @@
                     <div *ngIf="sendError" class="error-message" [class.expanded]="expandError" [matTooltip]="sendError.message" (click)="alertError()">
                         <mat-icon *ngIf="sendError">error</mat-icon>
                         {{sendError.message}}
+                    </div>
+                    <div *ngIf="!sendError && transientMessage" class="transient-message" [class.expanded]="true" [matTooltip]="transientMessage" (click)="alertError()">
+                        <mat-spinner [inline]="true" [diameter]="15"></mat-spinner>
+                        {{transientMessage}}
                     </div>
                     <div class="spacer"></div>
                     <div class="custom">

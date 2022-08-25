@@ -31,5 +31,6 @@ export interface ChatSourceBase {
     editMessage(messageId: string, text: string): Promise<void>;
     deleteMessage(messageId: string): Promise<void>;
 
+    connectionStateChanged?: Observable<'connected' | 'connecting' | 'lost' | 'restored'>;
     state?: 'connecting' | 'connected' | 'lost' | 'restored';
 }

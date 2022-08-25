@@ -1,4 +1,4 @@
-import { ChatMessage, ChatPermissions, CommentsOrder, User } from "@banta/common";
+import { ChatMessage, ChatPermissions, CommentsOrder, DurableSocket, User } from "@banta/common";
 import { Observable, Subject, Subscription } from "rxjs";
 import { RpcEvent, SocketRPC } from "@banta/common";
 import { ChatSourceBase } from "./chat-source-base";
@@ -21,9 +21,23 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     ready: Promise<void>;
 
     permissions: ChatPermissions;
-    state: 'connected' | 'connecting' | 'lost' | 'restored' = 'connecting';
+    private _state: 'connected' | 'connecting' | 'lost' | 'restored' = 'connecting';
 
-    async bind(socket: WebSocket): Promise<this> {
+    get state() {
+        return this._state;
+    }
+
+    set state(value) {
+        this._state = value;
+        setTimeout(() => this._connectionStateChanged.next(this._state));
+    }
+
+    private _connectionStateChanged = new Subject<'connected' | 'connecting' | 'lost' | 'restored'>();
+    get connectionStateChanged() {
+        return this._connectionStateChanged.asObservable();
+    }
+
+    async bind(socket: DurableSocket): Promise<this> {
         super.bind(socket);
         this.state = 'connected';
         this.markReady();
@@ -64,8 +78,19 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         return messages;
     }
 
+    private async ensureConnection(errorMessage?: string) {
+        let reason = `Connection to chat services is not currently available.`;
+        if (this.state !== 'connected' && this.state !== 'restored') {
+            if (errorMessage)
+                throw new Error(`${errorMessage}: ${reason}`);
+            else
+                throw new Error(`${reason}`);
+        }
+    }
+
     async editMessage(messageId: string, text: string): Promise<void> {
-        this.peer.editMessage(messageId, text);
+        await this.ensureConnection();
+        await this.peer.editMessage(messageId, text);
     }
 
     async subscribeToTopic() {
@@ -120,6 +145,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     messages: ChatMessage[] = [];
 
     async send(message: ChatMessage): Promise<ChatMessage> {
+        await this.ensureConnection();
         return await this.peer.sendMessage(message);
     }
 
@@ -137,6 +163,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         if (this.messageMap.has(id))
             return this.messageMap.get(id);
         
+        await this.ensureConnection(`Could not get message`);
         let message = await this.peer.getMessage(id);
         this.messageMap.set(id, message);
 
@@ -148,14 +175,17 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     async likeMessage(messageId: string): Promise<void> {
+        await this.ensureConnection();
         return await this.peer.likeMessage(messageId);
     }
 
     async unlikeMessage(messageId: string): Promise<void> {
+        await this.ensureConnection();
         return await this.peer.unlikeMessage(messageId);
     }
 
     async deleteMessage(messageId: string): Promise<void> {
+        await this.ensureConnection();
         return await this.peer.deleteMessage(messageId);
     }
 
