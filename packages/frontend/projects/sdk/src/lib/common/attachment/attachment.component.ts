@@ -57,4 +57,25 @@ export class BantaAttachmentComponent {
             return true;
         return false;
     }
+
+    get hasFrame() {
+        if (!this.attachment)
+            return false;
+
+        return this.attachment.type === 'iframe' || (
+            this.attachment.type === 'card' 
+            && this.attachment.card.player
+        );
+    }
+
+    get frameUrl() {
+        if (!this.attachment)
+            return undefined;
+        
+        if (this.attachment.type === 'iframe') {
+            return this.attachment.url;
+        } else if (this.attachment.type === 'card') {
+            return this.attachment.card.player;
+        }
+    }
 }

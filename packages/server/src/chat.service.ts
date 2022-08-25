@@ -695,13 +695,29 @@ export class ChatService {
 
                     let twitterTitle = head.querySelector('meta[name="twitter:title"]');
                     let twitterDescription = head.querySelector('meta[name="twitter:description"]')
-                    let twitterImage = head.querySelector('meta[name="twitter:image"]')
+                    let twitterImage = head.querySelector('meta[name="twitter:image"]');
+                    let twitterPlayer = head.querySelector('meta[name="twitter:player"]');
+                    let twitterPlayerWidth = head.querySelector('meta[name="twitter:player:width"]');
+                    let twitterPlayerHeight = head.querySelector('meta[name="twitter:player:height"]');
+
                     if (twitterTitle)
                         card.title = twitterTitle.getAttribute('content');
                     if (twitterDescription)
                         card.description = twitterDescription.getAttribute('content');
                     if (twitterImage)
                         card.image = twitterImage.getAttribute('content');
+                    if (twitterPlayer)
+                        card.player = twitterPlayer.getAttribute('content');
+                    if (twitterPlayer && !isNaN(Number(twitterPlayerWidth.getAttribute('content'))))
+                        card.playerWidth = Number(twitterPlayerWidth.getAttribute('content'));
+                    if (twitterPlayer && !isNaN(Number(twitterPlayerHeight.getAttribute('content'))))
+                        card.playerHeight = Number(twitterPlayerHeight.getAttribute('content'));
+                    
+
+                    if (card.title && card.title.length > 280)
+                        card.title = card.title.substring(0, 280) + '...';
+                    if (card.description && card.description.length > 500)
+                        card.description = card.description.substring(0, 500) + '...';
 
                     urlCard = {
                         requestDuration,

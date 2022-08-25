@@ -13,7 +13,7 @@ export class UrlAttachmentScraper implements AttachmentScraper {
 
         return (Array.from(message.message.match(URL_REGEX) ?? []))
             .reduce((a, item) => (a.includes(item) ? undefined : a.push(item), a), [])
-            .map(url => ({ 
+            .map(url => ({
                 text: url, 
                 offset: message.message.indexOf(url),
                 type: 'url'

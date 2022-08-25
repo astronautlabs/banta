@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ChatMessage, Vote, CommentsOrder, Notification, User } from '@banta/common';
+import { ChatMessage, Vote, CommentsOrder, Notification, User, UrlCard } from '@banta/common';
 import { ChatSourceBase } from './chat-source-base';
 import { AttachmentResolver, AttachmentScraper } from './attachment-scraper';
 
@@ -18,7 +18,7 @@ export abstract class ChatBackendBase {
     abstract getMessage(topicId : string, messageId : string): Promise<ChatMessage>;
     abstract getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
     abstract watchMessage(message : ChatMessage, handler : (message : ChatMessage) => void) : () => void;
-    abstract getCardForUrl(url: string);
+    abstract getCardForUrl(url: string): Promise<UrlCard>;
     readonly notificationsChanged : Observable<Notification[]>;
     readonly newNotification : Observable<Notification>;
     
