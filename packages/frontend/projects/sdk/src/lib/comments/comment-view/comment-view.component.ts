@@ -159,7 +159,8 @@ export class CommentViewComponent {
     private async getInitialMessages() {
         let messages = (await this._source.getExistingMessages());
         messages.forEach(m => m.transientState ??= {});
-        this.messages = messages;
+        this.messages = this.newestLast ? messages.slice().reverse() : messages;
+        this.sortMessages();
     }
 
     @Input()
@@ -192,13 +193,18 @@ export class CommentViewComponent {
     sortOrderChanged = new Subject<CommentsOrder>();
 
     async showNew() {
-        if (this.source && this.source.sortOrder !== CommentsOrder.NEWEST) {
-            this.sortOrderChanged.next(CommentsOrder.NEWEST);
+        let naturalOrder = CommentsOrder.NEWEST;
+        if (this.source && this.source.sortOrder !== naturalOrder) {
+            this.sortOrderChanged.next(naturalOrder);
             return;
         }
 
         this.isViewingMore = false;
-        this.messages = this.newMessages.splice(0, this.newMessages.length).concat(this.messages);
+
+        if (this.newestLast)
+            this.messages = this.messages.concat(this.newMessages.splice(0, this.newMessages.length));
+        else
+            this.messages = this.newMessages.splice(0, this.newMessages.length).concat(this.messages);
         let overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
         this.olderMessages = overflow.concat(this.olderMessages);
         this.olderMessages.splice(this.maxMessages - this.maxVisibleMessages, this.olderMessages.length);
@@ -210,29 +216,37 @@ export class CommentViewComponent {
         if (this.olderMessages.length > 0) {
             this.isLoadingMore = false;
             this.messages = this.messages.concat(this.olderMessages.splice(0, 50));
+        }
+        this.isLoadingMore = true;
+
+        let nextPageSize = 20;
+        let lastMessage: ChatMessage;
+
+        if (this.newestLast) {
+            lastMessage = this.olderMessages[0] ?? this.messages[0];
         } else {
-            this.isLoadingMore = true;
+            lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
+        }
 
-            let nextPageSize = 20;
-            let lastMessage: ChatMessage;
+        console.dir(lastMessage);
 
-            lastMessage = this.messages[this.messages.length - 1];
-
-            if (!lastMessage) {
-                this.isLoadingMore = false;
-                this.hasMore = false;
-                return;
-            }
-
-            let messages = await this.source.loadAfter(lastMessage, nextPageSize);
-            messages.forEach(m => m.transientState ??= {});
-
-            this.messages = this.messages.concat(messages);
+        if (!lastMessage) {
             this.isLoadingMore = false;
-            if (messages.length === 0) {
-                console.log(`Reached the end of the list.`);
-                this.hasMore = false;
-            }
+            this.hasMore = false;
+            return;
+        }
+
+        let messages = await this.source.loadAfter(lastMessage, nextPageSize);
+        messages.forEach(m => m.transientState ??= {});
+
+        if (this.newestLast)
+            this.messages = messages.concat(this.messages);
+        else
+            this.messages = this.messages.concat(messages);
+        this.isLoadingMore = false;
+        if (messages.length === 0) {
+            console.log(`Reached the end of the list.`);
+            this.hasMore = false;
         }
     }
 
@@ -243,13 +257,13 @@ export class CommentViewComponent {
         
         let destination = this.messages;
         let bucket = this.olderMessages;
+        let newestLast = this.newestLast;
 
         if (this.isViewingMore) {
             destination = this.newMessages;
             bucket = null;
         }
 
-        let newestLast = this.newestLast;
         
         if (newestLast) {
             destination.push(message);
@@ -263,6 +277,34 @@ export class CommentViewComponent {
 
         if (bucket?.length > 0)
             this.hasMore = true;
+
+        message.pagingCursor = String(this.incrementPagingCursors());
+        this.sortMessages();
+    }
+
+    private incrementPagingCursors() {
+        if (this.source.sortOrder !== CommentsOrder.NEWEST)
+            return;
+        
+        let maxPagingCursor = 0;
+        for (let group of [this.messages, this.olderMessages, this.newMessages]) {
+            for (let message of group) {
+                if (message.pagingCursor) {
+                    let pagingCursor = Number(message.pagingCursor) + 1;
+                    if (pagingCursor > maxPagingCursor)
+                        maxPagingCursor = pagingCursor;
+                    message.pagingCursor = String(pagingCursor);
+                }
+            }
+        }
+
+        return maxPagingCursor;
+    }
+
+    private sortMessages() {
+        this.messages.sort((a, b) => (a.sentAt - b.sentAt) * (this.newestLast ? 1 : -1));
+        this.olderMessages.sort((a, b) => (a.sentAt - b.sentAt) * (this.newestLast ? 1 : -1));
+        this.newMessages.sort((a, b) => (a.sentAt - b.sentAt) * (this.newestLast ? 1 : -1));
     }
 
     private messageReceived(message: ChatMessage) {
