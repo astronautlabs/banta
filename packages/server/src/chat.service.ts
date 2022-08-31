@@ -449,6 +449,11 @@ export class ChatService {
 
         message.message = newText;
         this.pubsubs.publish(message.topicId, { message });
+        
+        this._events.next(<EditMessageEvent>{
+            type: 'edit',
+            message
+        });
     }
 
     /**
