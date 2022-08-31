@@ -53,7 +53,7 @@ a.card-attachment {
         opacity: 0.75;
         margin-top: 1em;
         display: block;
-        font-size: 90%;
+        font-size: 80%;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -61,6 +61,12 @@ a.card-attachment {
 
     .description {
         min-width: 0;
+        width: 100%;
+    }
+
+    .summary {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
     }
 }
 
