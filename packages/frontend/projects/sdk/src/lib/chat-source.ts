@@ -62,19 +62,23 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         return this;
     }
 
+    private mapOrUpdateMessages(messages: ChatMessage[]): ChatMessage[] {
+        return messages.map(message => this.mapOrUpdateMessage(message));
+    }
+
+    private mapOrUpdateMessage(message: ChatMessage): ChatMessage {
+        let existingMessage = this.messageMap.get(message.id);
+        if (existingMessage)
+            message = Object.assign(existingMessage, message);
+        else
+            this.messageMap.set(message.id, message);
+
+        return message;
+    }
+
     async getExistingMessages(): Promise<ChatMessage[]> {
         let messages = await this.peer.getExistingMessages();
-        messages = messages.map(message => {
-            let existingMessage = this.messageMap.get(message.id);
-
-            if (existingMessage)
-                message = Object.assign(existingMessage, message);
-            else
-                this.messageMap.set(message.id, message);
-
-            return message;
-        });
-
+        messages = this.mapOrUpdateMessages(messages);
         return messages;
     }
 
@@ -122,8 +126,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     @RpcEvent()
     onChatMessage(message: ChatMessage) {
         if (this.messageMap.has(message.id)) {
-            Object.assign(this.messageMap.get(message.id), message);
-            this._messageUpdated.next(message);
+            return this.mapOrUpdateMessage(message);
         } else if (!message.hidden) {
             // Only process non-hidden messages through here. 
             // Hidden messages may be sent to us when they become hidden (ie moderation is occurring).
@@ -156,7 +159,9 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         if (!message.pagingCursor)
             return [];
         
-        return this.peer.loadAfter(Number(message.pagingCursor), count);
+        return this.mapOrUpdateMessages(
+            await this.peer.loadAfter(Number(message.pagingCursor), count)
+        );
     }
 
     async get(id: string): Promise<ChatMessage> {
