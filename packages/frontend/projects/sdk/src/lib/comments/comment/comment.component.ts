@@ -1,7 +1,7 @@
-import { Component, Output, Input, HostBinding, ViewChild } from "@angular/core";
+import { Component, Output, Input, HostBinding } from "@angular/core";
 import { Subject } from 'rxjs';
-import { ChatMessage, ChatMessageAttachment, ChatPermissions, User } from '@banta/common';
-import { LightboxComponent } from "../../common/lightbox/lightbox.component";
+import { ChatMessage, ChatPermissions, User } from '@banta/common';
+import { MessageMenuItem } from "../../message-menu-item";
 
 @Component({
     selector: 'banta-comment',
@@ -45,6 +45,9 @@ export class CommentComponent {
 
     @Input()
     message : ChatMessage;
+
+    @Input()
+    customMenuItems: MessageMenuItem[];
 
     @Input()
     showReplyAction = true;

@@ -3,6 +3,7 @@ import { User, ChatMessage, CommentsOrder } from '@banta/common';
 import { Subject, Subscription } from 'rxjs';
 import { ChatBackendBase } from "../../chat-backend-base";
 import { ChatSourceBase } from "../../chat-source-base";
+import { MessageMenuItem } from "../../message-menu-item";
 
 export interface EditEvent {
     message: ChatMessage;
@@ -39,6 +40,8 @@ export class CommentViewComponent {
 
     @Input()
     allowReplies = true;
+
+    @Input() customMenuItems: MessageMenuItem[] = [];
 
     @Input()
     @HostBinding('class.fixed-height')

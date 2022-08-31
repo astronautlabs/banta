@@ -1,6 +1,7 @@
 import { Component, ElementRef, HostBinding, ViewChild } from '@angular/core';
 import {ChatMessage} from "@banta/common";
 import { ChatBackendBase } from '@banta/sdk';
+import { MessageMenuItem } from 'projects/sdk/src/lib';
 
 const DEFAULT_CUSTOM_THEME = `
 .use-custom-theme banta-comment-view .message-container {
@@ -43,6 +44,17 @@ export class TryComponent {
         this.customThemeElement.textContent = this.customTheme;
         this.element.nativeElement.appendChild(this.customThemeElement);
     }
+
+    customMenuItems: MessageMenuItem[] = [
+        {
+            icon: 'home',
+            label: 'This is custom!',
+            action(message: ChatMessage) {
+                alert(`Did you say '${message.message}'?`);
+                console.log(message);
+            }
+        }
+    ];
 
     topicID: string;
     newTopicID: string;

@@ -19,6 +19,7 @@
             *ngIf="!message.hidden"
             class="abbreviated"
             
+            [customMenuItems]="customMenuItems"
             [message]="message"
             [mine]="currentUser?.id === message.user?.id"
             [permissions]="source?.permissions"

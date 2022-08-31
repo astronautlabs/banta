@@ -16,6 +16,12 @@
         <mat-icon>delete</mat-icon>
         Delete
     </button>
+
+    <button *ngFor="let menuItem of customMenuItems" mat-menu-item (click)="menuItem.action(message)">
+        <mat-icon>{{menuItem.icon}}</mat-icon>
+        {{menuItem.label}}
+    </button>
+
 </mat-menu>
 
 <div class="message-content">

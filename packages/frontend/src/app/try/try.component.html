@@ -24,6 +24,7 @@
     <a *ngIf="isFullScreen" href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>
     <banta-comments
         topicID="{{topicID}}_comments"
+        [customMenuItems]="customMenuItems"
         [maxVisibleMessages]="20"
         [maxMessages]="2000"
         [useInlineReplies]="useInlineReplies"

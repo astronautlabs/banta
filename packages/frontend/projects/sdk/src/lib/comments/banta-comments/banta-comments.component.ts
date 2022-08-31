@@ -9,6 +9,7 @@ import { ChatBackendBase } from '../../chat-backend-base';
 import { ChatSourceBase } from '../../chat-source-base';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BantaReplySendOptionsDirective } from '../reply-send-options.directive';
+import { MessageMenuItem } from '../../message-menu-item';
 
 /**
  * Comments component
@@ -165,6 +166,8 @@ export class BantaCommentsComponent {
     loadingStartedAt: number;
     messageChangedAt: number;
     sharedCommentID: string;
+
+    @Input() customMenuItems: MessageMenuItem[] = [];
 
     private async startLoading() {
         this.loadingStartedAt = this.messageChangedAt = Date.now();

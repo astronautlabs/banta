@@ -64,6 +64,7 @@
                     (avatarSelected)="selectAvatar($event)"
                     (shared)="shareMessage($event)"
                     (deleted)="deleteMessage($event)"
+                    [customMenuItems]="customMenuItems"
                     ></banta-comment-view>
 
                 <banta-comment-field
@@ -126,6 +127,7 @@
             [maxMessages]="maxMessages"
             [maxVisibleMessages]="maxVisibleMessages"
             [genericAvatarUrl]="genericAvatarUrl"
+            [customMenuItems]="customMenuItems"
             (userSelected)="selectMessageUser($event)"
             (sortOrderChanged)="sortOrder = $event"
             (selected)="selectMessage($event)"
