@@ -54,7 +54,7 @@
         <div>
             <mat-form-field floatLabel="always" appearance="outline" style="width: 100%;">
                 <mat-label>Edit Message</mat-label>
-                <textarea matInput [(ngModel)]="editedMessage"></textarea>
+                <textarea matInput [(ngModel)]="editedMessage" [maxlength]="maxLength"></textarea>
             </mat-form-field>
         </div>
         <button mat-raised-button (click)="saveEdit()">Save</button> &nbsp;

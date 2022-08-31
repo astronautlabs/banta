@@ -20,6 +20,8 @@ export class CommentComponent {
 	private _avatarSelected = new Subject<User>();
 	private _usernameSelected = new Subject<User>();
 
+    @Input() maxLength: number = 1500;
+    
     ngOnInit() {
         let maxTime = 500;
         let minTime = 0;

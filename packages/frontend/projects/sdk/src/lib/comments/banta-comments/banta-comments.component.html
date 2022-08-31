@@ -25,6 +25,7 @@
             [permissions]="source?.permissions"
             [showReplyAction]="false"
             [editing]="selectedMessage.transientState.editing"
+            [maxLength]="maxCommentLength"
             [genericAvatarUrl]="genericAvatarUrl"
             (editStarted)="startEditing(selectedMessage)"
             (editEnded)="selectedMessage.transientState.editing = false"
