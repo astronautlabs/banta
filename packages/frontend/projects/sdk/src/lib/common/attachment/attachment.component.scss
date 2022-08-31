@@ -15,7 +15,7 @@
     }
 }
 
-a.card {
+a.card-attachment {
     display: flex;
     align-items: flex-start;
     gap: 1em;
@@ -113,4 +113,13 @@ iframe {
     border: none;
     width: 100%;
     aspect-ratio: 16/9;
+}
+
+@media (max-width: 700px) {
+    a.card-attachment {
+        flex-direction: column;
+        img {
+            width: 100%;
+        }
+    }
 }

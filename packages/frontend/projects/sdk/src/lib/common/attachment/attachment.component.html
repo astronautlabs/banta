@@ -15,7 +15,7 @@
         <iframe *ngIf="hasFrame"
             sandbox="allow-scripts allow-popups allow-same-origin allow-presentation" 
             [src]="frameUrl | trustResourceUrl"></iframe>
-        <a *ngIf="attachment.type === 'card'" class="card" [href]="attachment.url" target="_blank" [class.has-image]="attachment.card.image">
+        <a *ngIf="attachment.type === 'card'" class="card-attachment" [href]="attachment.url" target="_blank" [class.has-image]="attachment.card.image">
             <img 
                 *ngIf="attachment.card.image"
                 class="thumbnail" 
