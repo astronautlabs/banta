@@ -23,7 +23,7 @@ export class CommentComponent {
     @Input() maxLength: number = 1500;
     
     ngOnInit() {
-        let maxTime = 500;
+        let maxTime = 100;
         let minTime = 0;
         let randomTime = minTime + Math.random() * (maxTime - minTime);
 

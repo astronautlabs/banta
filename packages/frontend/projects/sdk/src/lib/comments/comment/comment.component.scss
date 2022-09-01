@@ -1,6 +1,6 @@
 @keyframes comment-appear {
     from {
-        transform: translate(100vw, 0);
+        transform: translate(6em, 0);
     }
 
     to {
@@ -18,7 +18,7 @@
     &.new {
         visibility: visible;
         animation-name: comment-appear;
-        animation-duration: 400ms;
+        animation-duration: 250ms;
         animation-fill-mode: both;
     }
 
