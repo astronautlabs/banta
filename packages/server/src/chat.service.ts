@@ -256,6 +256,10 @@ export class ChatService {
         message.id = uuid();
         message.hidden = false;
 
+        // Make sure we strip the user's auth token, we never need that to be stored.
+        if (message.user)
+            delete message.user.token;
+
         if (!message.user || !message.user.id)
             throw new Error(`Message must include a valid user reference`);
             
