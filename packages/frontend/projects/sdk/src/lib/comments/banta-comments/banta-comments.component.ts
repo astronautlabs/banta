@@ -563,6 +563,10 @@ export class BantaCommentsComponent {
 
         try {
             await this.source.deleteMessage(message.id);
+
+            if (this.selectedMessage?.id === message.id)
+                this.unselectMessage();
+
         } catch (e) {
             this.handleBackendExceptionAsAlert(e, `Could not delete message: `);
         }
