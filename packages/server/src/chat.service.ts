@@ -137,15 +137,6 @@ export class ChatService {
      * @returns 
      */
     validateToken: ValidateToken = async (token: string) => { 
-        if (process.env.IS_DEMO) {
-            console.log(`[!!] Demo authentication for token '${token}'`);
-            return {
-                id: 'abc',
-                displayName: 'Bob',
-                username: 'bob',
-                tag: 'El Heffe'
-            }
-        }
         throw new Error(`The Banta integration must specify validateToken()`); 
     };
 

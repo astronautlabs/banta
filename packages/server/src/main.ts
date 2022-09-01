@@ -32,6 +32,27 @@ class BantaService {
         //     message.message = message.message.toUpperCase();
         // }
 
+        this.chat.validateToken = async (token: string) => {
+            if (token === 'bantabot') {
+                return {
+                    id: 'bantabot',
+                    displayName: 'bantabot',
+                    username: 'bantabot',
+                    tag: 'Bot'
+                }
+            }
+            if (process.env.IS_DEMO) {
+                console.log(`[!!] Demo authentication for token '${token}'`);
+                return {
+                    id: 'abc',
+                    displayName: 'Bob',
+                    username: 'bob',
+                    tag: 'El Heffe'
+                }
+            }
+            throw new Error(`The Banta integration must specify validateToken()`);
+        };
+
         this.chat.authorizeAction = (user: User, token: string, action: AuthorizableAction) => {
             // if (action.action === 'likeMessage') {
             //     if (action.precheck)

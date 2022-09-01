@@ -181,12 +181,12 @@ export class ChatConnection extends SocketRPC {
             this.parentMessage = null;
         }
 
-        this.topic = await this.chat.getOrCreateTopic(topicId);
+        this.topic = topicId != '-' ? await this.chat.getOrCreateTopic(topicId) : null;
         this.topicId = topicId;
 
         await this.sendPermissions();
 
-        this.pubsub = new PubSub<ChatPubSubEvent>(this.chat.pubsubs, topicId);
+        this.pubsub = new PubSub<ChatPubSubEvent>(this.chat.pubsubs, topicId === '-' ? null : topicId);
         this.pubsub.subscribe(async message => {
             if (message.message) {
                 // A message has been created/updated
@@ -195,7 +195,7 @@ export class ChatConnection extends SocketRPC {
                 if (!this.ownsMessage(chatMessage))
                     return;
 
-                if (chatMessage.topicId !== topicId)
+                if (topicId != '-' && chatMessage.topicId !== topicId)
                     return;
                 
                 await this.sendChatMessage(chatMessage);
@@ -217,6 +217,9 @@ export class ChatConnection extends SocketRPC {
     }
 
     private ownsMessage(chatMessage: ChatMessage, allowSubMessages = false) {
+        if (this.topicId === '-')
+            return true;
+        
         if (allowSubMessages && !this.parentMessage && chatMessage.topicId === this.topicId)
             return true;
 
@@ -275,8 +278,14 @@ export class ChatConnection extends SocketRPC {
         if (!this.user)
             throw new Error(`You must be signed in to send messages.`);
         
-        message.topicId = this.topicId;
-        message.parentMessageId = this.parentMessage?.id;
+        // If we are not in monitor mode, then enforce that the message is part of the currently
+        // subscribed topic.
+
+        if (this.topicId != '-') {
+            message.topicId = this.topicId;
+            message.parentMessageId = this.parentMessage?.id;
+        }
+
         message.user = { ...this.user };
         message.sentAt = Date.now();
         message.attachments ??= [];

@@ -4,3 +4,4 @@ dist.esm/
 lerna-debug.log
 packages/t3-server/
 .idea
+.env

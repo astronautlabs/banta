@@ -54,7 +54,7 @@ export class PubSub<T> {
 
     private _messageSubject : Subject<T>;
     private _listener = (channel, message) => {
-        if (channel == this.id)
+        if (!this.id || channel == this.id)
             this._messageSubject?.next(JSON.parse(message));
     };
 
@@ -65,7 +65,7 @@ export class PubSub<T> {
             this.manager.subscribe(this.id);
             this._messageSubject = subject;
             this._subscription = this.manager.messages.subscribe((ev: { channel: string, message: any }) => {
-                if (ev.channel == this.id)
+                if (!this.id || ev.channel == this.id)
                     subject.next(ev.message);
             });
         },
