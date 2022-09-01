@@ -252,7 +252,7 @@
             composed: false,
             currentTarget: this,
             defaultPrevented: false,
-            eventPhase: Event.NONE,
+            eventPhase: 0, //Event.NONE,
             isTrusted: true,
             returnValue: undefined,
             srcElement: undefined,
@@ -263,10 +263,10 @@
             preventDefault() { this.defaultPrevented = true; },
             stopPropagation() { },
             stopImmediatePropagation() { },
-            AT_TARGET: Event.AT_TARGET,
-            BUBBLING_PHASE: Event.BUBBLING_PHASE,
-            CAPTURING_PHASE: Event.CAPTURING_PHASE,
-            NONE: Event.NONE
+            AT_TARGET: 2, //Event.AT_TARGET,
+            BUBBLING_PHASE: 3, //Event.BUBBLING_PHASE,
+            CAPTURING_PHASE: 1, //Event.CAPTURING_PHASE,
+            NONE: 0, //Event.NONE
         });
     }
     
