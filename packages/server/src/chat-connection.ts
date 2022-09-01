@@ -278,6 +278,13 @@ export class ChatConnection extends SocketRPC {
         message.topicId = this.topicId;
         message.parentMessageId = this.parentMessage?.id;
         message.user = { ...this.user };
+        message.sentAt = Date.now();
+        message.attachments ??= [];
+        message.deleted = false;
+        message.likes = 0;
+        message.edits = [];
+        message.submessageCount = 0;
+        
         delete message.user.token;
 
         if (!message)
