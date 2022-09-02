@@ -144,6 +144,9 @@ export class BantaCommentsComponent {
     }
 
     private async setSourceFromTopicID(topicID: string) {
+        if (typeof window === 'undefined')
+            return;
+
         setTimeout(async () => {
             console.log(`[banta-comments] Subscribing to topic source '${topicID}'`);
             this.source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder });
