@@ -121,8 +121,17 @@ export class BantaCommentsComponent {
                     this.height = size.height;
                 })
             };
-            this.resizeObserver = new ResizeObserver(callback);
-            this.resizeObserver.observe(this.elementRef.nativeElement);
+
+            if (typeof ResizeObserver !== 'undefined') {
+                this.resizeObserver = new ResizeObserver(callback);
+                this.resizeObserver.observe(this.elementRef.nativeElement);
+            } else {
+                // One check is better than nothing!
+                setTimeout(() => {
+                    this.width = this.elementRef.nativeElement.clientWidth;
+                    this.height = this.elementRef.nativeElement.clientHeight;
+                }, 1000);
+            }
 
             callback();
         }
