@@ -1,4 +1,4 @@
-import { Component, Output, Input, HostBinding } from "@angular/core";
+import { Component, Output, Input, HostBinding, ElementRef } from "@angular/core";
 import { Subject } from 'rxjs';
 import { ChatMessage, ChatPermissions, User } from '@banta/common';
 import { MessageMenuItem } from "../../message-menu-item";
@@ -9,6 +9,15 @@ import { MessageMenuItem } from "../../message-menu-item";
     styleUrls: ['./comment.component.scss']
 })
 export class CommentComponent {
+    constructor(
+        private elementRef: ElementRef<HTMLElement>
+    ) {
+    }
+
+    get element() {
+        return this.elementRef.nativeElement;
+    }
+
     private _reported = new Subject<void>();
     private _selected = new Subject<void>();
     private _liked = new Subject<void>();

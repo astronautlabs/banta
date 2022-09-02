@@ -1,6 +1,8 @@
+import { Overlay } from '@angular/cdk/overlay';
+import { TemplatePortal } from '@angular/cdk/portal';
 import { Component, ElementRef, HostBinding, ViewChild } from '@angular/core';
 import {ChatMessage} from "@banta/common";
-import { ChatBackendBase } from '@banta/sdk';
+import { BantaCommentsComponent, ChatBackendBase } from '@banta/sdk';
 import { MessageMenuItem } from 'projects/sdk/src/lib';
 
 const DEFAULT_CUSTOM_THEME = `
@@ -32,9 +34,13 @@ const DEFAULT_CUSTOM_THEME = `
 export class TryComponent {
     constructor(
         private chatBackend: ChatBackendBase,
-        private element: ElementRef<HTMLElement>
+        private element: ElementRef<HTMLElement>,
+        private overlay: Overlay
     ) {
     }
+
+    @ViewChild('comments')
+    comments: BantaCommentsComponent;
 
     private customThemeElement: HTMLStyleElement;
 
@@ -122,8 +128,44 @@ export class TryComponent {
         this.topicID = this.newTopicID;
     }
 
+    @ViewChild('selectorPanelTemplate') selectorPanelTemplate: TemplatePortal<any>;
+
     sharedMessage(message: ChatMessage) {
-        this.alert(`messsage id: ${message.id} has been shared `)
+        let comment = this.comments.getCommentComponentForMessage(message);
+
+        if (comment) {
+            let overlayRef = this.overlay.create({
+                positionStrategy: this.overlay.position()
+                    .flexibleConnectedTo(comment.element)
+                    .withPositions([
+                        {
+                            originX: 'end',
+                            originY: 'bottom',
+                            overlayX: 'end',
+                            overlayY: 'top'
+                        }
+                    ])
+                    .withFlexibleDimensions(true),
+                hasBackdrop: true,
+                disposeOnNavigation: true,
+                scrollStrategy: this.overlay.scrollStrategies.reposition({
+                    autoClose: true
+                })
+            });
+            
+            overlayRef.backdropClick().subscribe(() => {
+                overlayRef.detach();
+            })
+
+            overlayRef.keydownEvents().subscribe(event => {
+                if (event.key === 'Escape') {
+                    overlayRef.detach();
+                }
+            });
+            overlayRef.attach(this.selectorPanelTemplate);
+        } else {
+            this.alert(`messsage id: ${message.id} has been shared, but we couldnt find its element`)
+        }
     }
 
     reportedMessage(message: ChatMessage) {
@@ -132,5 +174,11 @@ export class TryComponent {
 
     permissionDenied(message: string) {
         alert(`App should handle: '${message}'`);
+    }
+
+    dumpComponent() {
+        console.dir(this.comments);
+        window['bantaCommentsComponent'] = this.comments;
+        alert(`Component has been dumped to console and placed into window.bantaCommentsComponent`);
     }
 }

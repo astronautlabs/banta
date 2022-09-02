@@ -1,6 +1,6 @@
 /// <reference types="@types/resize-observer-browser" />
 
-import { AfterViewInit, Component, ContentChild, ElementRef, HostBinding, Input, NgZone, Output, TemplateRef } from '@angular/core';
+import { AfterViewInit, Component, ContentChild, ElementRef, HostBinding, Input, NgZone, Output, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import { User, ChatMessage, CommentsOrder } from '@banta/common';
 import { HashTag } from '../comment-field/comment-field.component';
 import { Subject, Observable, Subscription } from 'rxjs';
@@ -10,6 +10,8 @@ import { ChatSourceBase } from '../../chat-source-base';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BantaReplySendOptionsDirective } from '../reply-send-options.directive';
 import { MessageMenuItem } from '../../message-menu-item';
+import { CommentViewComponent } from '../comment-view/comment-view.component';
+import { CommentComponent } from '../comment/comment.component';
 
 /**
  * Comments component
@@ -54,6 +56,10 @@ export class BantaCommentsComponent {
                 this.handleBackendException(e, 'Could not send reply: ');
             }
         }
+    }
+
+    get element() {
+        return this.elementRef.nativeElement;
     }
 
     private handleBackendExceptionAsAlert(e: Error, prefix: string = '') {
@@ -113,6 +119,11 @@ export class BantaCommentsComponent {
     sendReplyOptionsTemplate: any;
 
     ngAfterViewInit() {
+        this.threadViewQuery.changes.subscribe(changes => {
+            console.log(`i see changes...`);
+            console.dir(changes);
+        });
+
         if (typeof window !== 'undefined') {
             let callback = () => {
                 let size = this.elementRef.nativeElement.getBoundingClientRect();
@@ -215,6 +226,47 @@ export class BantaCommentsComponent {
     ];
 
     @Input() useInlineReplies = true;
+
+    /**
+     * Access the CommentViewComponent for this BantaCommentsComponent. 
+     * CommentViewComponent is responsible for interacting with the ChatSource 
+     * object and rendering comments as CommentComponents. It is the source of 
+     * truth for which CommentComponent corresponds to which ChatMessage. 
+     * 
+     * Note that this CommentViewComponent is only for the top level comments.
+     * Replies are handled by a separate CommentViewComponent which can be 
+     * retrieved using the threadView property.
+     */
+    @ViewChild('commentView')
+    commentView: CommentViewComponent;
+
+    @ViewChildren(CommentViewComponent)
+    threadViewQuery: QueryList<CommentViewComponent>;
+
+    /**
+     * Attempts to find the CommentComponent that corresponds to the given ChatMessage.
+     * The ChatMessage could be a top-level message in this conversation, or a reply, 
+     * but note that a CommentComponent will only exist for a reply if the user has 
+     * the relevant reply thread open.
+     * @param message The message to look for
+     */
+    getCommentComponentForMessage(message: ChatMessage): CommentComponent {
+        if (message.parentMessageId)
+            return this.threadView?.getCommentComponentForMessage(message);
+        else
+            return this.commentView.getCommentComponentForMessage(message)
+    }
+
+    /**
+     * Access the CommentViewComponent corresponding to the currently open reply thread.
+     * This is not the top level comments, but instead the reply thread that the user has 
+     * opened (only one set of replies can be open at a time).
+     * 
+     * For details about what CommentViewComponent affords you, see the commentView property.
+     */
+    get threadView() {
+        return Array.from(this.threadViewQuery).filter(x => x !== this.commentView)[0];
+    }
 
     private updateLoading(): boolean {
         if (this.source?.state && this.source?.state !== 'connecting') {

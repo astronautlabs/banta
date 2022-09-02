@@ -51,6 +51,8 @@
 
             <ng-container *ngIf="selectedMessageThread">
                 <banta-comment-view
+                    class="replies"
+                    #threadView
                     [source]="selectedMessageThread"
                     [allowReplies]="false"
                     [fixedHeight]="false"
@@ -122,6 +124,7 @@
             [(sort)]="sortOrder"></banta-comment-sort>
 
         <banta-comment-view
+            #commentView
             [class.faded]="selectedMessage && !useInlineReplies"
             [source]="source"
             [fixedHeight]="fixedHeight"

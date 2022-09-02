@@ -1,9 +1,10 @@
-import { Component, Input, ViewChild, ElementRef, Output, HostBinding } from "@angular/core";
+import { Component, Input, ViewChild, ElementRef, Output, HostBinding, ViewChildren, QueryList } from "@angular/core";
 import { User, ChatMessage, CommentsOrder } from '@banta/common';
 import { Subject, Subscription } from 'rxjs';
 import { ChatBackendBase } from "../../chat-backend-base";
 import { ChatSourceBase } from "../../chat-source-base";
 import { MessageMenuItem } from "../../message-menu-item";
+import { CommentComponent } from "../comment/comment.component";
 
 export interface EditEvent {
     message: ChatMessage;
@@ -42,6 +43,26 @@ export class CommentViewComponent {
     allowReplies = true;
 
     @Input() customMenuItems: MessageMenuItem[] = [];
+
+    @ViewChildren(CommentComponent)
+    commentsQuery: QueryList<CommentComponent>;
+
+    get comments() {
+        return Array.from(this.commentsQuery);
+    }
+
+    /**
+     * Get the CommentComponent instantiated for the given ChatMessage,
+     * if it exists in the current view. Note that messages which are not 
+     * currently shown to the user will not return a CommentComponent.
+     * @param message 
+     * @returns 
+     */
+    getCommentComponentForMessage(message: ChatMessage) {
+        if (!message)
+            throw new Error(`You must pass a valid ChatMessage`);
+        return this.comments.find(x => x.message?.id === message.id);
+    }
 
     @Input()
     @HostBinding('class.fixed-height')

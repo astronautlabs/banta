@@ -20,9 +20,12 @@
 <a *ngIf="useInlineReplies" href="javascript:;" (click)="useInlineReplies = false">Use Focused Replies</a>
 <a *ngIf="!useInlineReplies" href="javascript:;" (click)="useInlineReplies = true">Use Inline Replies</a>
 
+| 
+<a href="javascript:;" (click)="dumpComponent()">Dump Component</a>
 <div class="fullscreen" #fullscreenElement>
     <a *ngIf="isFullScreen" href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>
     <banta-comments
+        #comments
         topicID="{{topicID}}_comments"
         [customMenuItems]="customMenuItems"
         [maxVisibleMessages]="20"
@@ -49,3 +52,12 @@
     <p>Banta is highly themeable. Try it below:</p>
     <textarea class="custom-theme" [(ngModel)]="customTheme"></textarea>
 </div>
+<ng-template cdkPortal #selectorPanelTemplate="cdkPortal">
+    <div class="share-popup">
+        <p>
+            Sharing is handled by the host application.
+        </p>
+
+        This is an example of how you might do a popout overlay.
+    </div>
+</ng-template>
