@@ -15,8 +15,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublishOnly": "npm run build"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Astronaut Labs, LLC",
+  "license": "MIT",
   "dependencies": {
     "@alterior/runtime": "^3.0.0-beta.98",
     "@alterior/tasks": "^3.0.0-beta.98",
