@@ -281,15 +281,15 @@ export class ChatService {
 
         await this.messages.insertOne(message);
         
-        // Post actions
-        
-        if (!message.hidden)
-            await this.modifyTopicMessageCount(message.topicId, +1);
+        setTimeout(async () => {
+            // Update the parent's submessage count, if needed
 
-        // Update the parent's submessage count, if needed
+            if (parentMessage)
+                await this.modifySubmessageCount(parentMessage, +1);
 
-        if (parentMessage)
-            await this.modifySubmessageCount(parentMessage, +1);
+            if (!message.hidden)
+                await this.modifyTopicMessageCount(message.topicId, +1);
+        });
 
         this.notifyMessageChange(message);
         this._events.next(<PostMessageEvent>{ type: 'post', message });
