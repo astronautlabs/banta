@@ -323,9 +323,21 @@ export class CommentViewComponent {
     }
 
     private sortMessages() {
-        this.messages.sort((a, b) => (a.sentAt - b.sentAt) * (this.newestLast ? 1 : -1));
-        this.olderMessages.sort((a, b) => (a.sentAt - b.sentAt) * (this.newestLast ? 1 : -1));
-        this.newMessages.sort((a, b) => (a.sentAt - b.sentAt) * (this.newestLast ? 1 : -1));
+        if (!this.source)
+            return;
+        
+        let sorter: (a: ChatMessage, b: ChatMessage) => number;
+
+        if (this.source.sortOrder === CommentsOrder.LIKES)
+            sorter = (a, b) => b.likes - a.likes;
+        else if (this.source.sortOrder === CommentsOrder.NEWEST)
+            sorter = (a, b) => (b.sentAt - a.sentAt) * (this.newestLast ? -1 : 1);
+        else if (this.source.sortOrder === CommentsOrder.OLDEST)
+            sorter = (a, b) => (a.sentAt - b.sentAt) * (this.newestLast ? -1 : 1);
+
+        this.messages.sort(sorter);
+        this.olderMessages.sort(sorter);
+        this.newMessages.sort(sorter);
     }
 
     private messageReceived(message: ChatMessage) {
