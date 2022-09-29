@@ -48,7 +48,7 @@ lerna bootstrap                    # installs all dependencies
 lerna link                         # links dependent packages together without using the published NPM packages
 lerna run build                    # build all packages from source
 
-cd packages/frontend && npm start  # start the Angular application & SDK cradle
+cd packages/frontend && npm run build:lib && npm start  # start the Angular application & SDK cradle
 cd packages/server && npm start    # start the server application
 ```
 
