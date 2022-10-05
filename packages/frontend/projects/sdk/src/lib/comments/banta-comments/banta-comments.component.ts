@@ -98,7 +98,7 @@ export class BantaCommentsComponent {
             let queryString = window.location.search.substring(1);
             let query = queryString.split('&')
                 .map(s => s.split('='))
-                .reduce((o, [k, v]) => (o[k] = v, o), {})
+                .reduce((o, [k, v]) => (o[decodeURIComponent(k)] = decodeURIComponent(v), o), {})
             ;
 
             const commentID = query['comment'];
