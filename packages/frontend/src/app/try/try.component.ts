@@ -67,6 +67,8 @@ export class TryComponent {
     messageCount: number;
     useInlineReplies = true;
     
+    sharedComment: ChatMessage;
+
     _customTheme = DEFAULT_CUSTOM_THEME;
 
     get customTheme() {
@@ -162,6 +164,8 @@ export class TryComponent {
                     overlayRef.detach();
                 }
             });
+
+            this.sharedComment = message;
             overlayRef.attach(this.selectorPanelTemplate);
         } else {
             this.alert(`messsage id: ${message.id} has been shared, but we couldnt find its element`)
