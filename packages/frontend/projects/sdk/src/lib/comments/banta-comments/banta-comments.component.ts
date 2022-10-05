@@ -472,7 +472,8 @@ export class BantaCommentsComponent {
             await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
 
         } else {
-            this.selectMessage(message);
+            message.transientState ??= {};
+            message.transientState.highlighted = true;
         }
 
         this.scrollToComment(id);
