@@ -440,7 +440,10 @@ export class BantaCommentsComponent {
           const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
           if (comment.length > 0) {
             // comment.item(0).scroll({behavior: 'smooth'});
-            comment.item(0).scrollIntoView();
+            comment.item(0).scrollIntoView({
+                inline: 'center',
+                block: 'center'
+            });
           }
         }, 1000);
     }
