@@ -83,6 +83,12 @@ export interface ChatMessage {
     submessages?: ChatMessage[];
 
     /**
+     * A place to store arbitrary metadata that is not used by Banta core 
+     * (ie additional functionality, plugins, or host-specific data).
+     */
+    metadata?: Record<string, any>;
+
+    /**
      * Number of likes this message has.
      */
     likes: number;
