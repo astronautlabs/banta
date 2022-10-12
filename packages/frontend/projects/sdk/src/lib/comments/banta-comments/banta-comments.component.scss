@@ -115,3 +115,25 @@ banta-comment-sort {
 :host-context(.banta-mobile) {
     @include banta-comments-mobile-styles;
 }
+
+.loading-comment {
+    // position: absolute;
+    // left: 0;
+    // right: 0;
+    z-index: 100;
+    border: 1px solid #333;
+    background: black;
+    color: white;
+    padding: 1em;
+    border-radius: 4px;
+    text-align: center;
+
+    h1 {
+        font-weight: 100;
+        text-align: center;
+    }
+
+    mat-spinner {
+        margin: 0 auto;
+    }
+}

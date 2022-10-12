@@ -123,6 +123,13 @@
         <banta-comment-sort
             [(sort)]="sortOrder"></banta-comment-sort>
 
+        <div class="loading-comment" *ngIf="loadingSharedComment">
+            <h1>Loading desired comment...</h1>
+            <mat-spinner [diameter]="300" [strokeWidth]="2"></mat-spinner>
+            <p>
+                If there are a lot of comments, this might take awhile!
+            </p>
+        </div>
         <banta-comment-view
             #commentView
             [class.faded]="selectedMessage && !useInlineReplies"

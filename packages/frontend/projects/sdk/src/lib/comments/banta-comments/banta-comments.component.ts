@@ -118,6 +118,9 @@ export class BantaCommentsComponent {
     @ContentChild(BantaReplySendOptionsDirective, {read: TemplateRef}) 
     sendReplyOptionsTemplate: any;
 
+    markViewReady: () => void;
+    viewReady = new Promise<void>(r => this.markViewReady = r);
+
     ngAfterViewInit() {
         this.threadViewQuery.changes.subscribe(changes => {
             console.log(`i see changes...`);
@@ -146,6 +149,8 @@ export class BantaCommentsComponent {
 
             callback();
         }
+
+        this.markViewReady();
     }
 
     ngOnDestroy() {
@@ -268,12 +273,16 @@ export class BantaCommentsComponent {
         return Array.from(this.threadViewQuery).filter(x => x !== this.commentView)[0];
     }
 
+    markLoaded: () => void;
+    loaded = new Promise<void>(r => this.markLoaded = r);
+
     private updateLoading(): boolean {
         if (this.source?.state && this.source?.state !== 'connecting') {
             clearInterval(this._loadingTimer);
             this.loadingMessage = `Here we go!`;
             setTimeout(() => {
                 this.loading = false;
+                this.markLoaded();
             }, 750);
             return true;
         }
@@ -436,11 +445,16 @@ export class BantaCommentsComponent {
         }, 1000);
     }
 
+    loadingSharedComment = false;
+
     async navigateToSharedComment(id: string) {
+        this.loadingSharedComment = true;
         let source = this.source;
 
         await source.ready;
-
+        await this.viewReady;
+        await this.loaded;
+        
         console.log(`Navigating to shared comment with ID '${id}'...`);
         let message: ChatMessage;
         
@@ -448,6 +462,7 @@ export class BantaCommentsComponent {
             message = await this.source.get(id);
         } catch (e) {
             console.error(`Failed to find comment from URL: ${e.message}`);
+            alert(`Could not load desired comment. It may have been removed.`);
             return;
         }
 
@@ -460,6 +475,10 @@ export class BantaCommentsComponent {
 
             let parentMessage = await this.source.get(message.parentMessageId);
             parentMessage.transientState ??= {};
+            
+            // Make sure that this message is loaded and visible to the user
+            await this.commentView.loadMessageInContext(parentMessage);
+            
             let thread = await this.selectMessage(parentMessage); 
 
             // Need to re-retrieve the message within the new chat source to affect its
@@ -472,11 +491,15 @@ export class BantaCommentsComponent {
             await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
 
         } else {
+            // Make sure that this message is loaded and visible to the user
+            await this.commentView.loadMessageInContext(message);
+
             message.transientState ??= {};
             message.transientState.highlighted = true;
         }
 
         this.scrollToComment(id);
+        this.loadingSharedComment = false;
     }
 
     handlePermissionDenied(errorMessage: string) {

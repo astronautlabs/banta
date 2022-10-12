@@ -52,6 +52,56 @@ export class CommentViewComponent {
     }
 
     /**
+     * Returns true if this message can be found within one of the message buffers (older, current, newer)
+     * @param message 
+     */
+    isMessageLoadedInContext(message: ChatMessage) {
+        return this.olderMessages.find(x => x.id === message.id)
+            || this.messages.find(x => x.id === message.id)
+            || this.newMessages.find(x => x.id === message.id);
+    }
+
+    async loadMessageInContext(message: ChatMessage) {
+        await this.sourceLoaded;
+        
+        console.log(`Loading message ${message.id} in context...`);
+        while (this.hasMore && !this.isMessageLoadedInContext(message)) {
+            console.log(`...Need to load more comments to find ${message.id}`);
+            await this.showMore();
+        }
+
+        console.log(`Finished loading comments, hasMore=${this.hasMore}`);
+
+        if (!this.isMessageLoadedInContext(message)) {
+            console.error(`Error while loading message in context: Failed to find message ${message.id}, maybe it was deleted!`);
+            return false;
+        }
+
+        let pageSize = this.maxVisibleMessages;
+        let items = [].concat(this.olderMessages, this.messages, this.newMessages);
+        let index = items.findIndex(x => x.id === message.id);
+
+        if (index < 0) {
+            console.error(`Error while loading message in context: Message was not present in message list!`);
+            return false;
+        }
+
+        console.log(`Total messages: ${items.length}`);
+        console.log(`Page size: ${pageSize}`);
+        console.log(`Message index: ${index}`);
+        let startIndex = Math.max(0, index - pageSize / 2);
+        console.log(`Start index: ${index}`);
+        
+        this.newMessages = items.splice(0, startIndex);
+        this.messages = items.splice(0, pageSize);
+        this.olderMessages = items;
+
+        console.log(`${this.olderMessages.length} older messages`);
+        console.log(`${this.messages.length} current messages`);
+        console.log(`${this.newMessages.length} newer messages`);
+    }
+
+    /**
      * Get the CommentComponent instantiated for the given ChatMessage,
      * if it exists in the current view. Note that messages which are not 
      * currently shown to the user will not return a CommentComponent.
@@ -146,6 +196,9 @@ export class CommentViewComponent {
 
     customSortEnabled = false;
 
+    markSourceLoaded: () => void;
+    sourceLoaded = new Promise<void>(r => this.markSourceLoaded = r);
+
     set source(value) {
         this.customSortEnabled = value?.sortOrder !== CommentsOrder.NEWEST;
         this.newMessages = [];
@@ -182,6 +235,8 @@ export class CommentViewComponent {
         messages.forEach(m => m.transientState ??= {});
         this.messages = this.newestLast ? messages.slice().reverse() : messages;
         this.sortMessages();
+        if (this.markSourceLoaded)
+            this.markSourceLoaded();
     }
 
     @Input()
@@ -229,6 +284,7 @@ export class CommentViewComponent {
         let overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
         this.olderMessages = overflow.concat(this.olderMessages);
         this.olderMessages.splice(this.maxMessages - this.maxVisibleMessages, this.olderMessages.length);
+        this.hasMore = this.olderMessages.length > 0;
     }
 
     async showMore() {
