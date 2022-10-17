@@ -294,10 +294,12 @@ export class CommentFieldComponent {
             }
 
             if (event.key === 'Enter') {
-                this.activateAutoComplete(this.autocompleteOptions[this.autoCompleteSelected]);
-                event.stopPropagation();
-                event.preventDefault();
-                return;
+                if (this.autocompleteOptions[this.autoCompleteSelected]) {
+                    this.activateAutoComplete(this.autocompleteOptions[this.autoCompleteSelected]);
+                    event.stopPropagation();
+                    event.preventDefault();
+                    return;
+                }
             }
 
             if (event.key === 'ArrowUp') {
