@@ -370,7 +370,8 @@ export class BantaCommentsComponent {
             this._source.messages.forEach(m => this.addParticipant(m));
 
             this._sourceSubscription.add(this._source.messageReceived.subscribe(m => this.addParticipant(m)));
-            this._sourceSubscription.add(this._source.messageSent.subscribe(m => this.addParticipant(m)));            
+            this._sourceSubscription.add(this._source.messageSent.subscribe(m => this.addParticipant(m)));
+            this._sourceSubscription.add(this._source.messageObserved.subscribe(m => this.addParticipant(m)));
             this._sourceSubscription.add(
                 this._source.messageUpdated.subscribe(msg => {
                     console.log(`comments received message: `, msg);

@@ -68,10 +68,12 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     private mapOrUpdateMessage(message: ChatMessage): ChatMessage {
         let existingMessage = this.messageMap.get(message.id);
-        if (existingMessage)
+        if (existingMessage) {
             message = Object.assign(existingMessage, message);
-        else
+        } else {
             this.messageMap.set(message.id, message);
+            this._messageObserved.next(message);
+        }
 
         return message;
     }
@@ -140,10 +142,12 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     private _messageReceived = new Subject<ChatMessage>();
     private _messageUpdated = new Subject<ChatMessage>();
     private _messageSent = new Subject<ChatMessage>();
+    private _messageObserved = new Subject<ChatMessage>();
 
     get messageReceived() { return this._messageReceived.asObservable(); }
     get messageUpdated() { return this._messageUpdated.asObservable(); }
     get messageSent() { return this._messageSent.asObservable(); }
+    get messageObserved() { return this._messageObserved.asObservable(); }
 
     messages: ChatMessage[] = [];
 

@@ -17,6 +17,7 @@ export interface ChatSourceBase {
     parentIdentifier?: string;
     sortOrder?: CommentsOrder;
     messageReceived: Observable<ChatMessage>;
+    messageObserved: Observable<ChatMessage>;
     messageUpdated: Observable<ChatMessage>;
     messageSent: Observable<ChatMessage>;
     messages: ChatMessage[];
