@@ -4,16 +4,16 @@
         {
             "type": "pwa-node",
             "request": "launch",
-            "name": "Debug test-server",
+            "name": "Debug Server",
             "skipFiles": [
                 "<node_internals>/**",
                 "node_modules/zone.js/**"
             ],
-            "program": "${workspaceFolder}\\packages\\test-server\\dist\\main.js",
-            "preLaunchTask": "tsc: build - packages/test-server/tsconfig.json",
-            "cwd": "${workspaceFolder}/packages/test-server",
+            "program": "${workspaceFolder}\\packages\\server\\dist\\main.js",
+            "preLaunchTask": "tsc: build - packages/server/tsconfig.json",
+            "cwd": "${workspaceFolder}/packages/server",
             "outFiles": [
-                "${workspaceFolder}/packages/test-server/dist/**/*.js"
+                "${workspaceFolder}/packages/server/dist/**/*.js"
             ]
         }
     ]
