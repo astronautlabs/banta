@@ -1,5 +1,5 @@
 import { Component, Input, Output, ViewChild } from "@angular/core";
-import { ChatMessageAttachment } from "@banta/common";
+import { ChatMessage, ChatMessageAttachment } from "@banta/common";
 import { Subject } from "rxjs";
 import { LightboxComponent } from "../lightbox/lightbox.component";
 
@@ -45,5 +45,9 @@ export class BantaAttachmentsComponent {
 
     get blockAttachments() {
         return this.attachments.filter(x => x.style === 'block' || x.type === 'card');
+    }
+
+    attachmentId(index: number, attachment: ChatMessageAttachment) {
+        return attachment.url;
     }
 }
