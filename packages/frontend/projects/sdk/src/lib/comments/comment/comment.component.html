@@ -45,7 +45,10 @@
     </div>
     <div class="content" *ngIf="!editing">
         <span class="banta-message-content" [innerHTML]="message.message | markdownToHtml"></span>
-        <banta-attachments [attachments]="message.attachments"></banta-attachments>
+        <banta-attachments 
+            [attachments]="message.attachments"
+            (loaded)="markAttachmentsLoaded()"
+            ></banta-attachments>
         <ul class="message-facts">
             <li *ngIf="message.edits?.length > 0">(Edited)</li>
         </ul>

@@ -122,11 +122,6 @@ export class BantaCommentsComponent {
     viewReady = new Promise<void>(r => this.markViewReady = r);
 
     ngAfterViewInit() {
-        this.threadViewQuery.changes.subscribe(changes => {
-            console.log(`i see changes...`);
-            console.dir(changes);
-        });
-
         if (typeof window !== 'undefined') {
             let callback = () => {
                 let size = this.elementRef.nativeElement.getBoundingClientRect();
@@ -433,10 +428,12 @@ export class BantaCommentsComponent {
 
     // UI Interactions
 
-    scrollToComment(commentId: ChatMessage['id']): void {
+    async scrollToComment(commentId: ChatMessage['id']) {
         if (typeof window === 'undefined')
             return;
         
+        await this.commentView.waitForAllCommentsToLoad();
+
         setTimeout(() => {
           const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
           if (comment.length > 0) {

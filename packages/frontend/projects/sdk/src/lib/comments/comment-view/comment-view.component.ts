@@ -70,8 +70,6 @@ export class CommentViewComponent {
             await this.showMore();
         }
 
-        console.log(`Finished loading comments, hasMore=${this.hasMore}`);
-
         if (!this.isMessageLoadedInContext(message)) {
             console.error(`Error while loading message in context: Failed to find message ${message.id}, maybe it was deleted!`);
             return false;
@@ -86,19 +84,10 @@ export class CommentViewComponent {
             return false;
         }
 
-        console.log(`Total messages: ${items.length}`);
-        console.log(`Page size: ${pageSize}`);
-        console.log(`Message index: ${index}`);
-        let startIndex = Math.max(0, index - pageSize / 2);
-        console.log(`Start index: ${index}`);
-        
+        let startIndex = Math.max(0, index - pageSize / 2);        
         this.newMessages = items.splice(0, startIndex);
         this.messages = items.splice(0, pageSize);
         this.olderMessages = items;
-
-        console.log(`${this.olderMessages.length} older messages`);
-        console.log(`${this.messages.length} current messages`);
-        console.log(`${this.newMessages.length} newer messages`);
     }
 
     /**
@@ -305,8 +294,6 @@ export class CommentViewComponent {
             lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
         }
 
-        console.dir(lastMessage);
-
         if (!lastMessage) {
             this.isLoadingMore = false;
             this.hasMore = false;
@@ -376,6 +363,16 @@ export class CommentViewComponent {
         }
 
         return maxPagingCursor;
+    }
+
+    /**
+     * Wait for all currently visible comments to be fully loaded, including all attachments.
+     * Doing this will prevent layout shift when scrolling to a specific comment.
+     */
+    async waitForAllCommentsToLoad() {
+        await new Promise(r => setTimeout(r, 100));
+        await this.sourceLoaded;
+        await Promise.all(this.comments.map(x => x.waitForLoad()));
     }
 
     private sortMessages() {

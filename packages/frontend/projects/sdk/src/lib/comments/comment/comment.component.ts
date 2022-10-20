@@ -2,6 +2,7 @@ import { Component, Output, Input, HostBinding, ElementRef } from "@angular/core
 import { Subject } from 'rxjs';
 import { ChatMessage, ChatPermissions, User } from '@banta/common';
 import { MessageMenuItem } from "../../message-menu-item";
+import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'banta-comment',
@@ -43,6 +44,11 @@ export class CommentComponent {
         }, randomTime);
     }
 
+    markAttachmentsLoaded() {
+        this.isLoaded = true;
+        this.loaded.next();
+    }
+
     @HostBinding('class.new')
     isNew = false;
 
@@ -54,14 +60,38 @@ export class CommentComponent {
     @HostBinding('class.visible')
     visible = false;
 
+    private _message : ChatMessage;
     @Input()
-    message : ChatMessage;
+    get message() {
+        return this._message;
+    }
+
+    set message(value) {
+        this._message = value;
+        if (this._message.attachments?.length > 0) {
+            this.isLoaded = false;
+        } else {
+            this.isLoaded = true;
+            this.loaded.next();
+        }
+    }
 
     @Input()
     customMenuItems: MessageMenuItem[];
 
     @Input()
     showReplyAction = true;
+
+    @Output()
+    loaded = new Subject<void>();
+
+    private isLoaded = false;
+
+    async waitForLoad() {
+        if (this.isLoaded)
+            return true;
+        await this.loaded.pipe(take(1)).toPromise();
+    }
 
 	@Output()
     get userSelected() {

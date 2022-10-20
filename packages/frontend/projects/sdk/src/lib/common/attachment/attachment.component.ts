@@ -1,4 +1,4 @@
-import { Component, HostBinding, Input, Output } from "@angular/core";
+import { Component, ElementRef, HostBinding, Input, Output } from "@angular/core";
 import { ChatMessageAttachment } from "@banta/common";
 import { Subject } from "rxjs";
 
@@ -8,11 +8,18 @@ import { Subject } from "rxjs";
     styleUrls: ['./attachment.component.scss']
 })
 export class BantaAttachmentComponent {
-    constructor() {
+    constructor(
+        private elementRef: ElementRef<HTMLElement>
+    ) {
 
     }
 
-    @Input() attachment: ChatMessageAttachment;
+    private _attachment: ChatMessageAttachment;
+    @Input() get attachment() { return this._attachment; }
+    set attachment(value) {
+        this._attachment = value;
+        this.checkLoad();
+    }
     @Input() loading = false;
     @Input() editing = false;
     @Input() loadingMessage: string = 'Please wait...';
@@ -20,6 +27,7 @@ export class BantaAttachmentComponent {
     @Input() errorMessage: string = 'An error has occurred';
     @Output() removed = new Subject<void>();
     @Output() activated = new Subject<void>();
+    @Output() loaded = new Subject<void>();
 
     ngOnInit() {
         if (typeof window !== 'undefined') {
@@ -29,6 +37,22 @@ export class BantaAttachmentComponent {
                 window['twttr'].widgets.load();
             }, 100);
         }
+    }
+
+    private _viewLoaded = false;
+    ngAfterViewInit() {
+        this._viewLoaded = true;
+        this.checkLoad();
+    }
+
+    private checkLoad() {
+        if (!this._attachment || !this._viewLoaded || !this.elementRef?.nativeElement)
+            return;
+
+        if (typeof window === 'undefined')
+            this.loaded.next();
+        else
+            setTimeout(() => this.loaded.next(), 250);
     }
 
     activate() {

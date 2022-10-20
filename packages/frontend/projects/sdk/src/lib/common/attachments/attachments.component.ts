@@ -13,6 +13,28 @@ export class BantaAttachmentsComponent {
     @Input() editing = false;
     @ViewChild('lightbox') lightbox: LightboxComponent;
     @Output() remove = new Subject<ChatMessageAttachment>();
+    @Output() loaded = new Subject<void>();
+
+    loadedAttachments = new WeakMap<ChatMessageAttachment, boolean>();
+
+    ngAfterViewInit() {
+
+    }
+
+    markAttachmentLoaded(attachment: ChatMessageAttachment) {
+        this.loadedAttachments.set(attachment, true);
+
+        if (this.allAttachmentsLoaded)
+            this.loaded.next();
+    }
+
+    isAttachmentLoaded(attachment: ChatMessageAttachment) {
+        return this.loadedAttachments.has(attachment);
+    }
+
+    get allAttachmentsLoaded() {
+        return this.attachments.every(x => this.isAttachmentLoaded(x));
+    }
 
     removeAttachment(attachment: ChatMessageAttachment) {
         this.remove.next(attachment);

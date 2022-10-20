@@ -5,6 +5,7 @@
             <banta-attachment 
                 [attachment]="attachment"
                 [editing]="editing"
+                (loaded)="markAttachmentLoaded(attachment)"
                 (removed)="removeAttachment(attachment)"
                 (activated)="showLightbox(attachment)"
                 ></banta-attachment>
@@ -16,10 +17,11 @@
         [class.single]="attachments?.length === 1" 
         *ngIf="attachments && attachments?.length > 0"
         >
-        <ng-container *ngFor="let attachment of inlineAttachments">
+        <ng-container *ngFor="let attachment of inlineAttachments; trackBy: attachmentId">
             <banta-attachment 
                 [attachment]="attachment"
                 [editing]="editing"
+                (loaded)="markAttachmentLoaded(attachment)"
                 (removed)="removeAttachment(attachment)"
                 (activated)="showLightbox(attachment)"
                 ></banta-attachment>

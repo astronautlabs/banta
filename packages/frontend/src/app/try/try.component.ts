@@ -45,7 +45,6 @@ export class TryComponent {
     private customThemeElement: HTMLStyleElement;
 
     ngAfterViewInit() {
-        console.log(`Installing`);
         this.customThemeElement = document.createElement('style');
         this.customThemeElement.textContent = this.customTheme;
         this.element.nativeElement.appendChild(this.customThemeElement);
