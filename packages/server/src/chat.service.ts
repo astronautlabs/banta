@@ -10,6 +10,7 @@ import createDOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom';
 import sanitizeHtml from 'sanitize-html';
 import { Logger } from '@alterior/logging';
+import * as fs from 'fs';
 
 export interface ChatEvent {
     type : 'post' | 'edit' | 'like' | 'unlike' | 'delete';
@@ -676,6 +677,9 @@ export class ChatService {
                     Logger.current.info(`Link Fetcher: Successfully retrieved content (${response.status}) for '${url}'`);
 
                     let text = await response.text();
+
+                    fs.writeFileSync(`TEST.html`, text);
+
                     let dom = new JSDOM(text);
                     let doc = dom.window.document;
                     let head = doc.head;
@@ -685,20 +689,22 @@ export class ChatService {
                         retrievedAt: Date.now()
                     };
 
-                    let title = head.querySelector('title');
-                    if (title)
+                    let title = doc.querySelector('title');
+                    if (title) {
                         card.title = title.textContent;
+                        console.log(`- Title: ${card.title}`);
+                    }
 
-                    let description = head.querySelector('meta[name="description"]');
+                    let description = doc.querySelector('meta[name="description"]');
                     if (description)
                         card.description = description.getAttribute('content');
 
-                    let twitterTitle = head.querySelector('meta[name="twitter:title"]');
-                    let twitterDescription = head.querySelector('meta[name="twitter:description"]')
-                    let twitterImage = head.querySelector('meta[name="twitter:image"]');
-                    let twitterPlayer = head.querySelector('meta[name="twitter:player"]');
-                    let twitterPlayerWidth = head.querySelector('meta[name="twitter:player:width"]');
-                    let twitterPlayerHeight = head.querySelector('meta[name="twitter:player:height"]');
+                    let twitterTitle = doc.querySelector('meta[name="twitter:title"]');
+                    let twitterDescription = doc.querySelector('meta[name="twitter:description"]')
+                    let twitterImage = doc.querySelector('meta[name="twitter:image"]');
+                    let twitterPlayer = doc.querySelector('meta[name="twitter:player"]');
+                    let twitterPlayerWidth = doc.querySelector('meta[name="twitter:player:width"]');
+                    let twitterPlayerHeight = doc.querySelector('meta[name="twitter:player:height"]');
 
                     if (twitterTitle)
                         card.title = twitterTitle.getAttribute('content');
@@ -712,7 +718,6 @@ export class ChatService {
                         card.playerWidth = Number(twitterPlayerWidth.getAttribute('content'));
                     if (twitterPlayer && !isNaN(Number(twitterPlayerHeight.getAttribute('content'))))
                         card.playerHeight = Number(twitterPlayerHeight.getAttribute('content'));
-                    
 
                     if (card.title && card.title.length > 280)
                         card.title = card.title.substring(0, 280) + '...';
@@ -724,7 +729,7 @@ export class ChatService {
                         retrievedAt: Date.now(),
                         statusCode: response.status,
                         url,
-                        card: card.title ? <UrlCard>card : null
+                        card: <UrlCard>card // TODO card.title ? <UrlCard>card : null
                     };
 
                     return urlCard.card;
