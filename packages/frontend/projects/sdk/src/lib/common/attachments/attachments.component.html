@@ -1,7 +1,7 @@
 <ng-container *ngIf="attachments?.length > 0">
     <banta-lightbox #lightbox></banta-lightbox>
     <div class="block-attachments">
-        <ng-container *ngFor="let attachment of blockAttachments">
+        <ng-container *ngFor="let attachment of blockAttachments; trackBy: attachmentId">
             <banta-attachment 
                 [attachment]="attachment"
                 [editing]="editing"
