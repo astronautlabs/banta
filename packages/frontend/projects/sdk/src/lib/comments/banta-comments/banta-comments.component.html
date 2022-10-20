@@ -124,12 +124,36 @@
             [(sort)]="sortOrder"></banta-comment-sort>
 
         <div class="loading-comment" *ngIf="loadingSharedComment">
-            <h1>Loading desired comment...</h1>
+            <h1>Loading the comment you linked to...</h1>
             <mat-spinner [diameter]="300" [strokeWidth]="2"></mat-spinner>
             <p>
                 If there are a lot of comments, this might take awhile!
             </p>
         </div>
+        <div class="loading-comment" *ngIf="!loadingSharedComment && lastSharedCommentID">
+            <ng-container *ngIf="sharedCommentMissing">
+
+                <a class="close" mat-icon-button matTooltip="Close this notice" href="javascript:;" (click)="lastSharedCommentID = null">
+                    <mat-icon>close</mat-icon>
+                </a>
+
+                <h1>
+                    <mat-icon>error</mat-icon>
+                    Uh oh!
+                </h1>
+
+                <p>The comment you linked to can't be found! It may have been removed.</p>
+            </ng-container>
+            <ng-container *ngIf="!sharedCommentMissing">
+                <a class="close" mat-icon-button matTooltip="Close this notice" href="javascript:;" (click)="lastSharedCommentID = null">
+                    <mat-icon>close</mat-icon>
+                </a>
+                <button mat-button (click)="navigateToSharedComment(lastSharedCommentID)">
+                    <mat-icon>move_down</mat-icon> Jump to shared comment
+                </button>
+            </ng-container>
+        </div>
+
         <banta-comment-view
             #commentView
             [class.faded]="selectedMessage && !useInlineReplies"

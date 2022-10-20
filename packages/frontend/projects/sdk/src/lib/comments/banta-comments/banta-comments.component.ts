@@ -189,6 +189,7 @@ export class BantaCommentsComponent {
     loadingStartedAt: number;
     messageChangedAt: number;
     sharedCommentID: string;
+    lastSharedCommentID: string;
 
     @Input() customMenuItems: MessageMenuItem[] = [];
 
@@ -359,6 +360,7 @@ export class BantaCommentsComponent {
         if (value) {
             if (this.sharedCommentID) {
                 this.navigateToSharedComment(this.sharedCommentID);
+                this.lastSharedCommentID = this.sharedCommentID;
                 this.sharedCommentID = null;
             }
 
@@ -434,22 +436,22 @@ export class BantaCommentsComponent {
         
         await this.commentView.waitForAllCommentsToLoad();
 
-        setTimeout(() => {
-          const comment = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
-          if (comment.length > 0) {
-            // comment.item(0).scroll({behavior: 'smooth'});
-            comment.item(0).scrollIntoView({
+        const comment = document.querySelector(`[data-comment-id="${commentId}"]`);
+        if (comment) {
+            comment.scrollIntoView({
                 inline: 'center',
                 block: 'center'
             });
-          }
-        }, 1000);
+        }
     }
 
     loadingSharedComment = false;
+    sharedCommentMissing = false;
 
     async navigateToSharedComment(id: string) {
         this.loadingSharedComment = true;
+        await new Promise(r => setTimeout(r, 10));
+        this.sharedCommentMissing = false;
         let source = this.source;
 
         await source.ready;
@@ -463,7 +465,18 @@ export class BantaCommentsComponent {
             message = await this.source.get(id);
         } catch (e) {
             console.error(`Failed to find comment from URL: ${e.message}`);
-            alert(`Could not load desired comment. It may have been removed.`);
+            this.sharedCommentMissing = true;
+            this.loadingSharedComment = false;
+
+            if (typeof window !== 'undefined') {
+                setTimeout(() => {
+                    let notice = this.element.querySelector('.loading-comment');
+                    notice.scrollIntoView({
+                        block: 'center',
+                        inline: 'center'
+                    });
+                }, 200);
+            }
             return;
         }
 
@@ -499,8 +512,8 @@ export class BantaCommentsComponent {
             message.transientState.highlighted = true;
         }
 
-        this.scrollToComment(id);
         this.loadingSharedComment = false;
+        await this.scrollToComment(id);
     }
 
     handlePermissionDenied(errorMessage: string) {

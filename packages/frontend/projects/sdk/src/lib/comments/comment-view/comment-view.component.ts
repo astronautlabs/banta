@@ -88,6 +88,7 @@ export class CommentViewComponent {
         this.newMessages = items.splice(0, startIndex);
         this.messages = items.splice(0, pageSize);
         this.olderMessages = items;
+        this.isViewingMore = true;
     }
 
     /**

@@ -127,6 +127,13 @@ banta-comment-sort {
     padding: 1em;
     border-radius: 4px;
     text-align: center;
+    position: relative;
+
+    a.close {
+        position: absolute;
+        top: 1em;
+        right: 1em;
+    }
 
     h1 {
         font-weight: 100;
