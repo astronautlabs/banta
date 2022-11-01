@@ -438,8 +438,12 @@ export class CommentFieldComponent {
                 await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
                 this.indicateError(e.message);
             }
+
         } finally {
             this.sending = false;
+            setTimeout(() => {
+                this.textareaEl.nativeElement.focus();
+            }, 100);
         }
     }
 

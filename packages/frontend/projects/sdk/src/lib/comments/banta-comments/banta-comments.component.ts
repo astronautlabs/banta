@@ -1,9 +1,11 @@
 /// <reference types="@types/resize-observer-browser" />
 
-import { AfterViewInit, Component, ContentChild, ElementRef, HostBinding, Input, NgZone, Output, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { Component, ContentChild, ElementRef, HostBinding, Input, NgZone, Output, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import { User, ChatMessage, CommentsOrder } from '@banta/common';
 import { HashTag } from '../comment-field/comment-field.component';
 import { Subject, Observable, Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
+
 import { ActivatedRoute } from '@angular/router';
 import { ChatBackendBase } from '../../chat-backend-base';
 import { ChatSourceBase } from '../../chat-source-base';
@@ -269,6 +271,14 @@ export class BantaCommentsComponent {
         return Array.from(this.threadViewQuery).filter(x => x !== this.commentView)[0];
     }
 
+    async waitForThreadView() {
+        if (this.threadView)
+            return this.threadView;
+        
+        await this.threadViewQuery.changes.pipe(take(1)).toPromise();
+        return this.threadView;
+    }
+
     markLoaded: () => void;
     loaded = new Promise<void>(r => this.markLoaded = r);
 
@@ -498,6 +508,11 @@ export class BantaCommentsComponent {
             // Need to re-retrieve the message within the new chat source to affect its
             // transient state.
             await thread.ready;
+            
+            // Make sure that this message is loaded and visible to the user
+            await this.waitForThreadView();
+            await this.threadView.loadMessageInContext(message);
+
             message = await thread.get(message.id);
             message.transientState ??= {};
             message.transientState.highlighted = true;

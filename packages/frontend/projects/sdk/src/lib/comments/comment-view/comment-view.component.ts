@@ -302,6 +302,10 @@ export class CommentViewComponent {
         }
 
         let messages = await this.source.loadAfter(lastMessage, nextPageSize);
+
+        if (this.newestLast)
+            messages = messages.slice().reverse();
+        
         messages.forEach(m => m.transientState ??= {});
 
         if (this.newestLast)
