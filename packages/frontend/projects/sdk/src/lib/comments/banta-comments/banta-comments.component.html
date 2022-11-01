@@ -36,7 +36,7 @@
             (liked)="likeMessage(source, selectedMessage)"
             (unliked)="unlikeMessage(source, selectedMessage)"
             (reported)="reportMessage(selectedMessage)"
-            (selected)="selectMessage(selectedMessage)"
+            (selected)="toggleSelectedMessage(selectedMessage)"
             (shared)="shareMessage($event)"
             (deleted)="deleteMessage(selectedMessage)"
             ></banta-comment>
@@ -165,7 +165,7 @@
             [customMenuItems]="customMenuItems"
             (userSelected)="selectMessageUser($event)"
             (sortOrderChanged)="sortOrder = $event"
-            (selected)="selectMessage($event)"
+            (selected)="toggleSelectedMessage($event)"
             (liked)="likeMessage(source, $event)"
             (unliked)="unlikeMessage(source, $event)"
             (messageEdited)="editMessage(source, $event.message, $event.newMessage)"

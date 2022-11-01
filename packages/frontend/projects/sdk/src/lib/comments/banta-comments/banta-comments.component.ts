@@ -613,17 +613,35 @@ export class BantaCommentsComponent {
             setTimeout(() => this.scrollToMessage(message));
     }
 
+    async toggleSelectedMessage(message: ChatMessage) {
+        if (this.selectedMessage === message) {
+            await this.unselectMessage();
+        } else {
+            await this.selectMessage(message);
+        }
+    }
+
     async selectMessage(message: ChatMessage) {
         if (this.selectedMessage === message) {
-            this.unselectMessage();
-            return;
+            console.log(`[Banta] Thread ${this.topicID}/${message.id} is already open.`);
+            return this.selectedMessageThread;
         }
+
         this._selected.next(message);
-        this.selectedMessage = message;
+
+        console.log(`[Banta] Opening thread for ${this.topicID}/${message.id}...`);
         let selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id);
+
+        if (!selectedMessageThread) {
+            console.warn(`Failed to locate thread for message ${this.topicID}/${message.id}!`);
+            return null;
+        }
+
+        console.log(`[Banta] Thread opened for ${this.topicID}/${message.id}.`);
 
         setTimeout(() => this.selectedMessageVisible = true);
         setTimeout(async () => {
+            this.selectedMessage = message;
             this.selectedMessageThread = selectedMessageThread;
         }, 250);
 
