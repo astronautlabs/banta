@@ -174,7 +174,14 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         
         await this.ensureConnection(`Could not get message`);
         let message = await this.peer.getMessage(id);
-        this.messageMap.set(id, message);
+
+        if (this.messageMap.has(id)) {
+            let existingMessage = this.messageMap.get(id);
+            Object.assign(existingMessage, message);
+            message = existingMessage;
+        } else {
+            this.messageMap.set(id, message);
+        }
 
         return message;
     }
