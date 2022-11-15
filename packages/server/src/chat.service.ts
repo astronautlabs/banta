@@ -285,11 +285,11 @@ export class ChatService {
         setTimeout(async () => {
             // Update the parent's submessage count, if needed
 
-            if (parentMessage)
-                await this.modifySubmessageCount(parentMessage, +1);
-
-            if (!message.hidden)
+            if (!message.hidden) {
+                if (parentMessage)
+                    await this.modifySubmessageCount(parentMessage, +1);
                 await this.modifyTopicMessageCount(message.topicId, +1);
+            }
         });
 
         this.notifyMessageChange(message);
@@ -315,13 +315,13 @@ export class ChatService {
      * Efficiently modify the `submessageCount` counter on the given ChatMessage.
      * 
      * @param messageOrId The message to modify
-     * @param delta The delta to apply to the likes counter.
+     * @param delta The delta to apply to the submessages counter.
      * @returns 
      */
     async modifySubmessageCount(messageOrId: ChatMessage | string, delta: number) {
         let message = await this.getMessage(messageOrId, true);
         message.submessageCount = (message.submessageCount || 0) + delta;
-        this.messages.updateOne({ id: message.id }, { $inc: { submessageCount: 1 } });
+        this.messages.updateOne({ id: message.id }, { $inc: { submessageCount: delta } });
         this.notifyMessageChange(message);
     }
 
