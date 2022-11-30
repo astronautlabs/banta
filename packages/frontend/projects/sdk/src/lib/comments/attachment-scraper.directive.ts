@@ -1,6 +1,6 @@
-import { Directive, ElementRef, Output } from "@angular/core";
+import { Directive, ElementRef, Input, Output } from "@angular/core";
 import { ChatMessage, ChatMessageAttachment } from "@banta/common";
-import { BehaviorSubject } from "rxjs";
+import { Subject } from "rxjs";
 import { AttachmentFragment } from "../attachment-scraper";
 import { ChatBackendBase } from "../chat-backend-base";
 
@@ -19,8 +19,8 @@ export class AttachmentScraperDirective {
     ) {
     }
 
-    attachments: ChatMessageAttachment[] = [];
-    @Output() attachmentsChanged = new BehaviorSubject<ChatMessageAttachment[]>([]);
+    @Input() attachments: ChatMessageAttachment[] = [];
+    @Output() attachmentsChange = new Subject<ChatMessageAttachment[]>();
     ngOnInit() {
         if (typeof window === 'undefined')
             return;
@@ -101,7 +101,7 @@ export class AttachmentScraperDirective {
                             console.log(`Resolved fragment ${key} into attachment:`);
                             console.dir(attachment);
                             this.attachments.push(attachment);
-                            this.attachmentsChanged.next(this.attachments.slice());
+                            this.attachmentsChange.next(this.attachments.slice());
                             resolve(attachment);
                             break;
                         }
