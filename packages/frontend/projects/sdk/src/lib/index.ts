@@ -16,5 +16,6 @@ export * from './youtube-attachments';
 export * from './giphy-attachments';
 export * from './tweet-attachments';
 export * from './message-menu-item';
+export * from './attachment-scraper';
 
 export * from './banta-sdk.module';

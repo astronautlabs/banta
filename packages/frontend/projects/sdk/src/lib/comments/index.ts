@@ -6,5 +6,6 @@ export * from './comment-field/comment-field.component';
 export * from './comment-sort/comment-sort.component';
 export * from './attachment-button/attachment-button.component';
 export * from './reply-send-options.directive';
+export * from './attachment-scraper.directive';
 
 export * from './comments.module';
