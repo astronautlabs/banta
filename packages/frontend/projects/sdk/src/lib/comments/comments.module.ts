@@ -22,6 +22,7 @@ import { AttachmentButtonComponent } from './attachment-button/attachment-button
 import { BantaReplySendOptionsDirective } from './reply-send-options.directive';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { PortalModule } from '@angular/cdk/portal';
+import { AttachmentScraperDirective } from './attachment-scraper.directive';
 
 const COMPONENTS = [
     CommentComponent,
@@ -31,7 +32,8 @@ const COMPONENTS = [
     CommentFieldComponent,
     CommentSortComponent,
     AttachmentButtonComponent,
-    BantaReplySendOptionsDirective
+    BantaReplySendOptionsDirective,
+    AttachmentScraperDirective
 ];
 
 @NgModule({
