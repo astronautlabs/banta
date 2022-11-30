@@ -58,7 +58,7 @@ import { TweetAttachmentResolver } from './tweet-attachments';
         BantaComponent,
         BantaLogoComponent,
         LiveMessageComponent,
-        CommonModule,
+        BantaCommonModule,
         ChatModule,
         CommentsModule,
         EmojiModule
