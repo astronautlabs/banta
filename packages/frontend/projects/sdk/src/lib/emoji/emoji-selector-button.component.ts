@@ -2,7 +2,7 @@
 
 import { FlexibleConnectedPositionStrategy, Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal, TemplatePortal } from '@angular/cdk/portal';
-import { Component, ElementRef, HostBinding, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostBinding, Output, ViewChild, Input } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { EmojiSelectorPanelComponent } from './emoji-selector-panel/emoji-selector-panel.component';
 
@@ -69,6 +69,9 @@ export class EmojiSelectorButtonComponent {
         }
     }
 
+    @Input() overlayX: 'start' | 'center' | 'end' = 'end';
+    @Input() overlayY: 'top' | 'center' | 'bottom' = 'top';
+
     show() {
         if (this.isOpen) {
             this.close();
@@ -81,8 +84,8 @@ export class EmojiSelectorButtonComponent {
                     { 
                         originX: 'end', 
                         originY: 'bottom',
-                        overlayX: 'end',
-                        overlayY: 'top'
+                        overlayX: this.overlayX,
+                        overlayY: this.overlayY
                     }
                 ])
                 .withFlexibleDimensions(true),
