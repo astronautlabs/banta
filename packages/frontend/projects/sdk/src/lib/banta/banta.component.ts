@@ -74,7 +74,14 @@ export class BantaComponent {
         if (message.parentMessageId) {
             // jump to the parent message thread...
 
-            let parentMessage = await this.backend.getMessage(message.topicId, message.parentMessageId);
+            let parentMessage: ChatMessage;
+            
+            try {
+                parentMessage = await this.backend.getMessage(message.topicId, message.parentMessageId);
+            } catch (e) {
+                console.error(`Received exception while fetching parent message:`);
+                console.error(e);
+            }
 
             if (!parentMessage) {
                 console.error(`Failed to look up parent message ${message.topicId}/${message.parentMessageId}`);
