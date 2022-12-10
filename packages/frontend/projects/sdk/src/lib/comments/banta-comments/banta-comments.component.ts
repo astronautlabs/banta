@@ -115,7 +115,7 @@ export class BantaCommentsComponent {
     private height: number;
 
     @HostBinding('class.banta-mobile')
-    get isMobileSized() { return this.width < 500; }
+    isMobileSized: boolean = false;
 
     @ContentChild(BantaReplySendOptionsDirective, {read: TemplateRef}) 
     sendReplyOptionsTemplate: any;
@@ -130,6 +130,7 @@ export class BantaCommentsComponent {
                 this.ngZone.run(() => {
                     this.width = size.width;
                     this.height = size.height;
+                    this.isMobileSized = this.width < 500;
                 })
             };
 
@@ -141,6 +142,7 @@ export class BantaCommentsComponent {
                 setTimeout(() => {
                     this.width = this.elementRef.nativeElement.clientWidth;
                     this.height = this.elementRef.nativeElement.clientHeight;
+                    this.isMobileSized = this.width < 500;
                 }, 1000);
             }
 
