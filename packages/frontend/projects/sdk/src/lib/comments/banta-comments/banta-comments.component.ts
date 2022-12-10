@@ -128,9 +128,11 @@ export class BantaCommentsComponent {
             let callback = () => {
                 let size = this.elementRef.nativeElement.getBoundingClientRect();
                 this.ngZone.run(() => {
-                    this.width = size.width;
-                    this.height = size.height;
-                    this.isMobileSized = this.width < 500;
+                    setTimeout(() => {
+                        this.width = size.width;
+                        this.height = size.height;
+                        this.isMobileSized = this.width < 500;
+                    });
                 })
             };
 
