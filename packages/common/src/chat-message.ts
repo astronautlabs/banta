@@ -113,7 +113,18 @@ export interface ChatMessage {
      */
     edits?: ChatMessageEdit[];
 
+    /**
+     * The mentions within the text which should be linked.
+     */
+    mentionLinks?: ChatMessageMention[];
+
     pagingCursor?: string;
+}
+
+export interface ChatMessageMention {
+    text: string;
+    link: string;
+    external: boolean;
 }
 
 export interface ChatMessageEdit {

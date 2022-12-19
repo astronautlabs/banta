@@ -113,6 +113,35 @@ export interface UrlOrigin {
     cooloffPeriodMS: number;
 }
 
+/**
+ * A function which scans the content of the given message and populates the mentionLinks attribute of that 
+ * message.
+ */
+export type MentionExtractor = (message: ChatMessage) => Promise<void>;
+
+/**
+ * For use with the extractMentions option of ChatService, this simple mention linker 
+ * will locate all "@" username references, call the passed linker function in order to 
+ * determine URLs for those usernames, and populate mentionLinks with the result. If 
+ * your platform requires more complex behavior (such as checking if the user exists
+ * before creating the mention link), then you should implement your own mention 
+ * linker from scratch.
+ * 
+ * @param linker A function which produces a URL for a given username (ie the profile page URL for the user or so)
+ * @returns 
+ */
+export const simpleMentionExtractor = (linker: (username: string) => string): MentionExtractor => {
+    return async (message: ChatMessage) => {
+        message.mentionLinks = 
+            Array.from(message.message.match(/@[A-Za-z0-9-]+/g))
+                .map(un => un.slice(1))
+                .reduce((uniq, username) => uniq.concat(uniq.includes(username) ? [] : [username]), [])
+                .map(un => ({ text: `@${un}`, link: linker(un), external: true }))
+        ;
+    };
+}
+
+
 @Injectable()
 export class ChatService {
     constructor(
@@ -166,6 +195,13 @@ export class ChatService {
      * - Hiding at time of post (hidden = true)
      */
     transformMessage: (message: ChatMessage, action: 'post' | 'edit', previousMessage?: string) => Promise<void>;
+
+    /**
+     * Extract username (and other) mentions from the text and sets mentionLinks to the ones that are found. A quick 
+     * way to implement this is to use simpleMentionExtractor. On the frontend, Banta SDK will automatically hyperlink 
+     * all matching mentions when displayed.
+     */
+    extractMentions: MentionExtractor;
 
     /**
      * Check whether authorizeAction() throws with the given arguments.
@@ -277,6 +313,8 @@ export class ChatService {
 
         if (this.transformMessage)
             await this.transformMessage(message, 'post');
+        
+        await this.extractMentions(message);
 
         // Definitely keeping this message at this point.
 
@@ -427,6 +465,8 @@ export class ChatService {
 
         if (this.transformMessage)
             this.transformMessage(message, 'edit', previousText);
+
+        await this.extractMentions(message);
 
         let edits = message.edits || [];
         edits.push({
