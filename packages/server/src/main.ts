@@ -7,7 +7,7 @@ WebServerEngine.default = ExpressEngine;
 import { CORSMiddleware } from "./cors";
 import { ChatModule } from "./chat.module";
 import { ChatController } from "./chat.controller";
-import { AuthorizableAction, ChatService } from "./chat.service";
+import { AuthorizableAction, ChatService, simpleMentionExtractor } from "./chat.service";
 import { ChatMessage, User } from "@banta/common";
 
 globalThis.fetch = require('node-fetch');
@@ -53,6 +53,7 @@ class BantaService {
             throw new Error(`The Banta integration must specify validateToken()`);
         };
 
+        this.chat.extractMentions = simpleMentionExtractor(un => `/@${un}`);
         this.chat.authorizeAction = (user: User, token: string, action: AuthorizableAction) => {
             // if (action.action === 'likeMessage') {
             //     if (action.precheck)

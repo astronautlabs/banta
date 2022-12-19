@@ -9,11 +9,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { BantaTrustResourceUrlPipe } from './trust-resource-url.pipe';
 import { BantaAttachmentComponent } from './attachment/attachment.component';
+import { BantaMentionLinkerPipe } from './mention-linker.pipe';
 
 const COMPONENTS = [
     TimestampComponent,
     LightboxComponent,
     BantaMarkdownToHtmlPipe,
+    BantaMentionLinkerPipe,
     BantaTrustResourceUrlPipe,
     BantaAttachmentComponent,
     BantaAttachmentsComponent

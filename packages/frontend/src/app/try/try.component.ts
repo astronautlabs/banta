@@ -53,10 +53,11 @@ export class TryComponent {
     customMenuItems: MessageMenuItem[] = [
         {
             icon: 'home',
-            label: 'This is custom!',
+            label: 'Dump comment to console',
             action(message: ChatMessage) {
-                alert(`Did you say '${message.message}'?`);
-                console.log(message);
+                alert(`Comment has been dumped to console.`);
+                console.log(`Comment ${message.id}:`);
+                console.dir(message);
             }
         }
     ];
