@@ -7,7 +7,8 @@
         "sourceMap": true,
         "esModuleInterop": true,
         "module": "commonjs",
-        "target": "es2022",
+        "target": "es2016",
+        "lib": ["es2022"],
         "outDir": "./dist"
     },
     "include": [
