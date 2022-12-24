@@ -231,7 +231,7 @@
     }
 
     private _onclose: (this: WebSocket, ev: CloseEvent) => any;
-    private _onerror: (this: WebSocket, ev: ErrorEvent) => any;
+    private _onerror: (this: WebSocket, ev: Event) => any;
     private _onmessage: (this: WebSocket, ev: MessageEvent) => any;
     private _onopen: (this: WebSocket, ev: Event) => any;
 
