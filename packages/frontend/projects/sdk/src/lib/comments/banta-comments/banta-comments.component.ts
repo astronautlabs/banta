@@ -349,7 +349,7 @@ export class BantaCommentsComponent {
     @Input() allowAttachments = true;
     @Input() fixedHeight: boolean;
     @Input() maxMessages: number;
-    @Input() maxVisibleMessages: number;
+    @Input() maxVisibleMessages: number = 20;
     @Input() genericAvatarUrl = `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`;
 
     @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
