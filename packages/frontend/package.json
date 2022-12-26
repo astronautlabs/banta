@@ -1,6 +1,6 @@
 {
   "name": "@banta/frontend",
-  "version": "2.2.11",
+  "version": "2.2.12",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
