@@ -77,7 +77,27 @@ export class ChatViewComponent {
                 this.backend.userChanged
                     .subscribe(user => this.currentUser = user)
             );
+            
+            this.getInitialMessages();
         }
+    }
+
+    private async getInitialMessages() {
+        let messages = (await this._source.getExistingMessages());
+        messages.forEach(m => m.transientState ??= {});
+        this.messages = messages.slice().reverse();
+        this.sortMessages();
+    }
+
+    private sortMessages() {
+        if (!this.source)
+            return;
+        
+        let sorter: (a: ChatMessage, b: ChatMessage) => number;
+
+        sorter = (a, b) => (a.sentAt - b.sentAt);
+
+        this.messages.sort(sorter);
     }
 
     messages : ChatMessage[] = [];
@@ -96,6 +116,7 @@ export class ChatViewComponent {
         }
 
         this.messages.push(message);
+        this.sortMessages();
     }
 
     private messageReceived(message : ChatMessage) {
