@@ -65,20 +65,30 @@ export class BantaChatComponent {
     @Input() permissionDeniedLabel = 'Send';
 
     private _selected = new Subject<ChatMessage>();
+    private _selected$ = this._selected.asObservable();
     private _reported = new Subject<ChatMessage>();
+    private _reported$ = this._reported.asObservable();
     private _upvoted = new Subject<ChatMessage>();
+    private _upvoted$ = this._upvoted.asObservable();
     private _userSelected = new Subject<ChatMessage>();
-    private _signInSelected = new Subject<void>();
+    private _userSelected$ = this._userSelected.asObservable();
     private _permissionDeniedError = new Subject<string>();
+    private _permissionDeniedError$ = this._permissionDeniedError.asObservable();
+    private _signInSelected = new Subject<void>();
+    private _signInSelected$ = this._signInSelected.asObservable();
+    private _received = new Subject<ChatMessage>();
+    private _received$ = this._received.asObservable();
 
-    @Output()
-    get signInSelected(): Observable<void> {
-        return this._signInSelected;
-    }
+    @Output() get selected() { return this._selected$; }
+    @Output() get reported() { return this._reported$; }
+    @Output() get upvoted() { return this._upvoted$; }
+    @Output() get userSelected() { return this._userSelected$; }
+    @Output() get permissionDeniedError() { return this._permissionDeniedError$; }
+    @Output() get signInSelected() { return this._signInSelected$; }
+    @Output() get received() { return this._received$; }
 
-    @Output()
-    get permissionDeniedError(): Observable<string> {
-        return this._permissionDeniedError;
+    onReceived(message: ChatMessage) {
+        this._received.next(message);
     }
 
     showEmojiPanel = false;
@@ -124,26 +134,6 @@ export class BantaChatComponent {
     async upvote(message : ChatMessage) {
         await this.source.likeMessage(message.id);
         this._upvoted.next(message);
-    }
-
-    @Output()
-    get selected() {
-        return this._selected;
-    }
-
-    @Output()
-    get reported() {
-        return this._reported;
-    }
-
-    @Output()
-    get upvoted() {
-        return this._upvoted;
-    }
-
-    @Output()
-    get userSelected() {
-        return this._userSelected;
     }
 
     get canChat() {

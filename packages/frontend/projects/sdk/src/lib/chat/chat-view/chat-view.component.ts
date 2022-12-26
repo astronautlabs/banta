@@ -26,29 +26,21 @@ export class ChatViewComponent {
     }
 
     private _selected = new Subject<ChatMessage>();
+    private _selected$ = this._selected.asObservable();
     private _reported = new Subject<ChatMessage>();
+    private _reported$ = this._reported.asObservable();
     private _upvoted = new Subject<ChatMessage>();
+    private _upvoted$ = this._upvoted.asObservable();
     private _userSelected = new Subject<ChatMessage>();
+    private _userSelected$ = this._userSelected.asObservable();
+    private _received = new Subject<ChatMessage>();
+    private _received$ = this._received.asObservable();
 
-    @Output()
-    get selected() {
-        return this._selected;
-    }
-
-    @Output()
-    get userSelected() {
-        return this._userSelected;
-    }
-
-    @Output()
-    get reported() {
-        return this._reported;
-    }
-
-    @Output()
-    get upvoted() {
-        return this._upvoted;
-    }
+    @Output() get selected() { return this._selected$; }
+    @Output() get userSelected() { return this._userSelected$; }
+    @Output() get reported() { return this._reported$; }
+    @Output() get upvoted() { return this._upvoted$; }
+    @Output() get received() { return this._received$; }
 
     set source(value) {
         if (this._sourceSubs) {
@@ -121,6 +113,7 @@ export class ChatViewComponent {
 
     private messageReceived(message : ChatMessage) {
         this.addMessage(message);
+        this._received.next(message);
 
         if (this.isScrolledToLatest())
             setTimeout(() => this.scrollToLatest());
