@@ -314,7 +314,7 @@ export class ChatService {
         if (this.transformMessage)
             await this.transformMessage(message, 'post');
         
-        await this.extractMentions(message);
+        await this.extractMentions?.(message);
 
         // Definitely keeping this message at this point.
 
@@ -466,7 +466,7 @@ export class ChatService {
         if (this.transformMessage)
             this.transformMessage(message, 'edit', previousText);
 
-        await this.extractMentions(message);
+        await this.extractMentions?.(message);
 
         let edits = message.edits || [];
         edits.push({
