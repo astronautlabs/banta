@@ -98,8 +98,8 @@ export class ChatViewComponent {
     @ViewChild('messageContainer')
     messageContainer : ElementRef<HTMLElement>;
 
-    @Input()
-    maxMessages : number = 200;
+    @Input() maxMessages : number = 200;
+    @Input() emptyLabel = 'Be the first to chat';
 
     private addMessage(message : ChatMessage) {
         if (this.messages.length > this.maxMessages + 1) {

@@ -63,6 +63,8 @@ export class BantaChatComponent {
     @Input() signInLabel = 'Sign In';
     @Input() sendLabel = 'Send';
     @Input() permissionDeniedLabel = 'Send';
+    @Input() messageFieldPlaceholder = 'Chat';
+    @Input() emptyLabel = 'Be the first to chat';
 
     private _selected = new Subject<ChatMessage>();
     private _selected$ = this._selected.asObservable();

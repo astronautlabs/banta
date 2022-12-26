@@ -1,5 +1,10 @@
 <div class="message-container" #messageContainer>
     <ng-content select="[data-before]"></ng-content>
+    
+    <div class="empty" *ngIf="messages.length === 0">
+        {{emptyLabel}}
+    </div>
+    
     <ng-container *ngFor="let message of messages">
         <banta-chat-message
             *ngIf="!message.hidden"

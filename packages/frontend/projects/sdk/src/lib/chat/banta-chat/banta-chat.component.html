@@ -1,6 +1,7 @@
 <banta-chat-view 
     #chatView
     [source]="source"
+    [emptyLabel]="emptyLabel"
     (upvoted)="upvote($event)"
     (reported)="report($event)"
     (selected)="select($event)"
@@ -15,6 +16,7 @@
             type="text"
             name="message" 
             autocomplete="off"
+            [placeholder]="messageFieldPlaceholder"
             (keydown)="onKeyDown($event)"
             [(ngModel)]="newMessage.message" />
             
