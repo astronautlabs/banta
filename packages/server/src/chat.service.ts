@@ -133,7 +133,7 @@ export type MentionExtractor = (message: ChatMessage) => Promise<void>;
 export const simpleMentionExtractor = (linker: (username: string) => string): MentionExtractor => {
     return async (message: ChatMessage) => {
         message.mentionLinks = 
-            Array.from(message.message.match(/@[A-Za-z0-9-]+/g))
+            Array.from(message.message.match(/@[A-Za-z0-9-]+/g) ?? [])
                 .map(un => un.slice(1))
                 .reduce((uniq, username) => uniq.concat(uniq.includes(username) ? [] : [username]), [])
                 .map(un => ({ text: `@${un}`, link: linker(un), external: true }))
