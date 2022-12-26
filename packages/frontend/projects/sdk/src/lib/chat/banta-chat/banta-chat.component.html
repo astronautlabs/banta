@@ -17,6 +17,7 @@
             type="text"
             name="message" 
             autocomplete="off"
+            enterkeyhint="send"
             [placeholder]="messageFieldPlaceholder"
             (keydown)="onKeyDown($event)"
             [(ngModel)]="newMessage.message" />
