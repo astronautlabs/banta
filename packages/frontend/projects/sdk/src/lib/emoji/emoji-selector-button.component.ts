@@ -59,13 +59,13 @@ export class EmojiSelectorButtonComponent {
      */
     insert(str) {
         this._selected.next(str);
+        this.close();
     }
 
     close() {
         if (this.overlayRef) {
             this.overlayRef.dispose();
             this.overlayRef = null;
-            return;
         }
     }
 
