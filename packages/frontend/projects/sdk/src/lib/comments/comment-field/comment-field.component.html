@@ -23,7 +23,9 @@
                         (keydown)="onKeyDown($event)"
                         (blur)="onBlur()"
                         [disabled]="sending"
-                        [(ngModel)]="text"></textarea>
+                        [(ngModel)]="text"
+                        autocomplete="off"
+                        ></textarea>
                 </mat-form-field>
                 <div class="options-line">
                     <mat-spinner *ngIf="sending" class="icon loading" diameter="18" strokeWidth="2"></mat-spinner>
