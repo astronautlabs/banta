@@ -1,4 +1,4 @@
-import { Component, Input, Output, ViewChild } from "@angular/core";
+import { Component, Input, Output, ViewChild, ElementRef } from "@angular/core";
 import { Subject, Observable, Subscription } from 'rxjs';
 
 import { User, ChatMessage, NewMessageForm } from '@banta/common';
@@ -113,8 +113,8 @@ export class BantaChatComponent {
         // TODO
     }
 
-    @ViewChild('chatView', { static: true })
-    chatView : ChatViewComponent;
+    @ViewChild('chatView') chatView : ChatViewComponent;
+    @ViewChild('input') inputElementRef: ElementRef<HTMLInputElement>;
 
     jumpToMessage(message : ChatMessage) {
         if (this.chatView)
@@ -179,6 +179,9 @@ export class BantaChatComponent {
             if (!intercept) {
                 await this.source.send(message);
             }
+
+            this.chatView.scrollToLatest();
+            this.inputElementRef.nativeElement.focus();
         } catch (e) {
             console.error(`Failed to send message: `, message);
             console.error(e);
