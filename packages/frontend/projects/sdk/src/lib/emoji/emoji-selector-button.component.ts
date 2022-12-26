@@ -71,6 +71,8 @@ export class EmojiSelectorButtonComponent {
 
     @Input() overlayX: 'start' | 'center' | 'end' = 'end';
     @Input() overlayY: 'top' | 'center' | 'bottom' = 'top';
+    @Input() originX: 'start' | 'center' | 'end' = 'end';
+    @Input() originY: 'top' | 'center' | 'bottom' = 'bottom';
 
     show() {
         if (this.isOpen) {
@@ -82,8 +84,8 @@ export class EmojiSelectorButtonComponent {
                 .flexibleConnectedTo(this.elementRef)
                 .withPositions([
                     { 
-                        originX: 'end', 
-                        originY: 'bottom',
+                        originX: this.originX, 
+                        originY: this.originY,
                         overlayX: this.overlayX,
                         overlayY: this.overlayY
                     }
