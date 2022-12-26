@@ -121,7 +121,8 @@ export class BantaChatComponent {
         this._reported.next(message);
     }
 
-    upvote(message : ChatMessage) {
+    async upvote(message : ChatMessage) {
+        await this.source.likeMessage(message.id);
         this._upvoted.next(message);
     }
 
