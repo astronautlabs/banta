@@ -17,7 +17,7 @@
     "@angular/router": "^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
     "@astronautlabs/datastore": "^3.1.2",
     "@astronautlabs/datastore-firestore": "^3.1.2",
-    "@banta/common": "^2.0.13",
+    "@banta/common": "^2.2.11",
     "@types/marked": "^4.0.3",
     "@types/dompurify": "^2.3.3",
     "dompurify": "^2.3.10",
