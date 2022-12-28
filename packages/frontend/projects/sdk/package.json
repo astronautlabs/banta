@@ -21,6 +21,7 @@
     "@types/marked": "^4.0.3",
     "@types/dompurify": "^2.3.3",
     "dompurify": "^2.3.10",
+    "jsdom": "^20.0.0",
     "marked": "^4.0.18",
     "rxjs": "^6.5.5 || ^7.0.0",
     "twemoji": "^12.1.4",
