@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "engage": {
+    "banta": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/engage",
+            "outputPath": "dist/banta",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -46,7 +46,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -68,18 +67,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "engage:build"
+            "browserTarget": "banta:build",
+            "port": 4202
           },
           "configurations": {
             "production": {
-              "browserTarget": "engage:build:production"
+              "browserTarget": "banta:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "engage:build"
+            "browserTarget": "banta:build"
           }
         },
         "test": {
@@ -117,11 +117,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "engage:serve"
+            "devServerTarget": "banta:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "engage:serve:production"
+              "devServerTarget": "banta:serve:production"
             }
           }
         }
@@ -134,7 +134,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
             "tsConfig": "projects/sdk/tsconfig.lib.json",
             "project": "projects/sdk/ng-package.json"
@@ -168,7 +168,7 @@
       }
     }
   },
-  "defaultProject": "engage",
+  "defaultProject": "banta",
   "cli": {
     "analytics": "4ee2ac6f-4fe6-4946-8540-3e5715c2bc63"
   }

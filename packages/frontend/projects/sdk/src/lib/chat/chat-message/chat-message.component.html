@@ -8,8 +8,8 @@
             {{message.message}}
         </div>
         <div class="status">
-            <div class="count-indicator" *ngIf="message.upvotes > 0">
-                {{message.upvotes}} <mat-icon [inline]="true">star</mat-icon>
+            <div class="count-indicator" *ngIf="message.likes > 0">
+                <mat-icon [inline]="true">star</mat-icon> {{message.likes}}
             </div>
         </div>
     </div>

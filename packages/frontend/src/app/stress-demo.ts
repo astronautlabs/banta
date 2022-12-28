@@ -137,7 +137,7 @@ export class MockFirehoseSource implements ChatSource {
             let message : ChatMessage = {
                 user,
                 sentAt: Date.now(),
-                upvotes: 0,
+                likes: 0,
                 message: messageText,
                 submessages: []
             }
@@ -213,14 +213,14 @@ export class MockPointSource implements ChatSource {
             let message : ChatMessage = {
                 user,
                 sentAt: Date.now(),
-                upvotes: 0,
+                likes: 0,
                 message: messageText,
                 submessages: [
                     {
                         user: this.currentUser,
                         message: `Good point!`,
                         sentAt: Date.now(),
-                        upvotes: 0
+                        likes: 0
                     },
                     {
                         user: { 
@@ -231,25 +231,25 @@ export class MockPointSource implements ChatSource {
                         },
                         sentAt: Date.now(),
                         message: `What would this mean for Buttigieg?`,
-                        upvotes: 0
+                        likes: 0
                     },
                     {
                         user,
                         sentAt: Date.now(),
                         message: `Klobucharino`,
-                        upvotes: 0
+                        likes: 0
                     },
                     {
                         user: this.currentUser,
                         sentAt: Date.now(),
                         message: `Good question!`,
-                        upvotes: 0
+                        likes: 0
                     },
                     {
                         user,
                         sentAt: Date.now(),
                         message: `But whyigieg`,
-                        upvotes: 0
+                        likes: 0
                     }
                 ]
             }

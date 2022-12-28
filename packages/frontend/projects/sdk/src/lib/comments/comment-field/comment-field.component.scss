@@ -1,0 +1,322 @@
+@keyframes comment-field-appear {
+    from {
+        transform: translate(0, 128px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+}
+
+:host {
+    margin: 0 2em 0 0;
+    display: block;
+    animation-name: comment-field-appear;
+    animation-duration: 800ms;
+    animation-delay: 400ms;
+    animation-fill-mode: both;
+    position: relative;
+    z-index: 20;
+}
+
+.avatar-container {
+    width: calc(48px + 1.75em);
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+
+    .avatar {
+        width: 48px;
+        height: 48px;
+        background: black;
+        border-radius: 100%;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        margin-top: 0.75em;
+        margin-right: 0.75em;
+    }
+}
+
+
+form {
+    display: flex;
+    padding: 0.5em;
+    align-items: center;
+
+    .text-container {
+        position: relative;
+        display: flex;
+        flex-grow: 1;
+        min-width: 0;
+
+        textarea {
+            font-size: 14pt;
+            width: 100%;
+
+            &[disabled] {
+                opacity: 0.5;
+            }
+        }
+
+        mat-spinner.loading {
+            position: absolute;
+            left: 0.5em;
+            bottom: 0.5em;
+        }
+
+        .options-line {
+            display: flex;
+            align-items: center;
+
+            & > * {
+                flex-shrink: 0;
+            }
+
+            .transient-message {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5em;
+            }
+
+            .error-message {
+                left: 0.5em;
+                bottom: 0.5em;
+                color: #683333;
+                overflow-x: hidden;
+                max-width: 1.5em;
+                white-space: nowrap;
+                transition: 2s max-width ease-in-out;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                flex-shrink: 1;
+    
+                &.expanded, &:hover {
+                    max-width: 100%;
+                }
+    
+                mat-icon {
+                    vertical-align: middle;
+                }
+            }
+        }
+        
+    }
+
+    input[type=text] {
+        background: black;
+        color: white;
+        border: 1px solid #333;
+        width: 100%;
+        height: 1em;
+    }
+
+
+
+    .actions {
+        margin-left: 1em;
+        flex-shrink: 0;
+    }
+
+    button {
+        display: block;
+        margin: 0 0 0 auto;
+    }
+}
+
+form.new-message {
+    display: flex;
+    align-items: flex-start;
+    min-width: 0;
+
+    .field-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    mat-form-field {
+        width: 100%;
+
+        ::ng-deep .mat-form-field-wrapper {
+            padding-bottom: 0;
+        }
+    }
+
+    button {
+        margin: 1.25em 0 0 0;
+    }
+}
+
+button.send {
+    min-width: 9em;
+}
+
+textarea {
+    max-height: 7em;
+}
+
+.autocomplete-container {
+    width: calc(100% - 2em);
+    position: relative;
+    pointer-events: none;
+    top: -2em;
+}
+
+.autocomplete {
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+    background: #333;
+    padding: 0.5em;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+
+    &.visible {
+        visibility: visible;
+        pointer-events: initial;
+    }
+
+    a {
+        width: 100%;
+        text-align: left;
+
+        &.active {
+            background: #555;
+        }
+    }
+}
+
+.image-attachments-container {
+    display: flex;
+    gap: 20px;
+
+    .image-attachment {
+        width: 300px;
+        position: relative;
+        text-align: center;
+
+        &.with-border {
+            outline: 1px solid #333;
+            padding: 1em 0;
+        }
+
+        mat-spinner {
+            display: block;
+            margin: 0 auto 0.5em auto;
+            width: fit-content;
+        }
+
+        mat-icon.error {
+            display: block;
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 0.5em auto;
+        }
+
+        .error {
+            color: #b76363;
+        }
+
+        img {
+            width: 300px;
+            border-radius: 10px;
+        }
+        .remove-img {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            margin: 0;
+        }
+    }
+}
+
+.field-row {
+    position: relative;
+}
+
+.card-attachment {
+    position: relative;
+    a {
+        display: flex;
+        align-items: flex-start;
+        gap: 1em;
+
+        width: 100%;
+        border: 1px solid #666;
+        border-radius: 4px;
+        padding: 2em;
+        box-sizing: border-box;
+        background-color: #191919;
+        
+        img {
+            width: 300px;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+    }
+    .remove-img {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        margin: 0;
+    }
+}
+
+@mixin banta-comment-field-mobile-styles {
+    :host {
+        margin: 0;
+    }
+
+    .avatar-container {
+        width: auto;
+        flex-shrink: 0;
+        .avatar {
+            width: 32px;
+            height: 32px;
+            margin-top: 1.5em;
+        }
+    }
+
+    :host:not(.can-comment) {
+        mat-form-field.message-field {
+            display: none;
+        }
+
+        .text-container {
+            display: none;
+        }
+    }
+
+    :host.can-comment {
+        button.send {
+            .label {
+                display: none;
+            }
+        }
+    }
+    button.send {
+        min-width: auto;
+        margin-top: 1.5em;
+    }
+}
+
+@media (max-width: 500px) {
+    @include banta-comment-field-mobile-styles;
+}
+
+:host-context(.banta-mobile) {
+    @include banta-comment-field-mobile-styles;
+}

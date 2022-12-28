@@ -6,7 +6,7 @@
     "sourceMap": true,
     "declaration": false,
     "downlevelIteration": true,
-    "module": "esnext",
+    "module": "es2020",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
@@ -14,7 +14,7 @@
     "importHelpers": true,
     "target": "es2015",
     "lib": [
-      "es2018",
+      "es2020",
       "dom"
     ],
     "paths": {

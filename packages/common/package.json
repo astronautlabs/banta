@@ -1,9 +1,12 @@
 {
   "name": "@banta/common",
-  "version": "0.0.37",
+  "version": "2.2.11",
   "description": "",
   "private": false,
   "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p .",
     "prepublishOnly": "npm run build",
@@ -12,7 +15,12 @@
   "author": "Astronaut Labs, LLC",
   "license": "MIT",
   "peerDependencies": {
+    "reflect-metadata": "^0.1.13",
     "rxjs": "^6.6.7"
   },
-  "gitHead": "e1a1c17e3174f70f4245b08a9de392936dc9e01b"
+  "gitHead": "0cb1cd13e2196f54d2fd67e17f447cc2b70df1bf",
+  "devDependencies": {
+    "reflect-metadata": "^0.1.13",
+    "typescript": "^4.6.3"
+  }
 }

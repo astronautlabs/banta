@@ -1,43 +1,107 @@
 
 <mat-menu #pointItemMenu="matMenu">
-    <button mat-menu-item (click)="report()">Report</button>
-    <button mat-menu-item>Help</button>
+    <button mat-menu-item (click)="share()">
+        <mat-icon>share</mat-icon>
+        Share
+    </button>
+    <button *ngIf="!mine" mat-menu-item (click)="report()">
+        <mat-icon>warning</mat-icon>
+        Report
+    </button>
+    <button *ngIf="mine" [disabled]="!permissions?.canEdit" mat-menu-item (click)="startEdit()">
+        <mat-icon>edit</mat-icon>
+        Edit
+    </button>
+    <button *ngIf="mine" [disabled]="!permissions?.canDelete" mat-menu-item (click)="delete()">
+        <mat-icon>delete</mat-icon>
+        Delete
+    </button>
+
+    <button *ngFor="let menuItem of customMenuItems" mat-menu-item (click)="menuItem.action(message)">
+        <mat-icon>{{menuItem.icon}}</mat-icon>
+        {{menuItem.label}}
+    </button>
+
 </mat-menu>
 
 <div class="message-content">
     <div class="user">
-        <div class="avatar" 
-            (click)="selectUser()"
-            [style.background-image]="avatarForUser(message.user)"></div>
-        <label class="display-name" (click)="selectUser()">{{message.user.displayName}}</label>
-        <label class="username" (click)="selectUser()">@{{message.user.username}}</label>
+        <div class="user-1">
+            <a
+                href="javascript:;"
+                class="avatar"
+                (click)="selectAvatar(message.user)"
+                [style.background-image]="avatarForUser(message.user)"></a>
+            <div class="user-identity">
+                <a href="javascript:;" class="display-name" (click)="selectUser()">{{message.user.displayName}}</a>
+                <a href="javascript:;" class="username" (click)="selectUsername(message.user)">@{{message.user.username}}</a>
+            </div>
+        </div>
+        <div class="user-2">
+            <span class="user-tag" *ngIf="message.user.tag">{{message.user.tag}}</span>
+            <banta-timestamp [value]="message.sentAt"></banta-timestamp>
+            <span class="spacer"></span>
+        </div>
+    </div>
+    <div class="content" *ngIf="!editing">
+        <span class="banta-message-content" [innerHTML]="message.message | mentionLinker: message.mentionLinks | markdownToHtml"></span>
+        <banta-attachments 
+            [attachments]="message.attachments"
+            (loaded)="markAttachmentsLoaded()"
+            ></banta-attachments>
+        <ul class="message-facts">
+            <li *ngIf="message.edits?.length > 0">(Edited)</li>
+        </ul>
+    </div>
+    <div class="content" *ngIf="editing" style="padding-bottom: 2em;">
+        <div>
+            <mat-form-field floatLabel="always" appearance="outline" style="width: 100%;">
+                <mat-label>Edit Message</mat-label>
+                <textarea matInput [(ngModel)]="editedMessage" [maxlength]="maxLength"></textarea>
+            </mat-form-field>
+        </div>
+        <button mat-raised-button (click)="saveEdit()">Save</button> &nbsp;
+        <button mat-button (click)="endEditing()">Cancel</button>
+    </div>
+
+
+    <div class="actions">
+        <div class="spacer"></div>
+        <div class="counted-action" *ngIf="showReplyAction">
+            <button mat-button [matTooltip]="replyCount > 0 ? 'Replies' : 'Reply'" matTooltipPosition="below" (click)="select()">
+                <mat-icon [inline]="true">comment</mat-icon>
+                <span class="count-indicator">
+                    {{replyCount > 0 ? 'Replies' : 'Reply'}}
+                    {{replyCount > 0 ? '(' + replyCount + ')' : ''}}
+                </span>
+            </button>
+        </div>
+        <div class="counted-action" [class.active]="message.userState?.liked">
+            <button 
+                *ngIf="message.transientState?.liking"
+                mat-icon-button 
+                [disabled]="true" 
+                [matTooltip]="upvoting ? 'Please wait...' : message.userState?.liked ? 'Unlike' : 'Like'" 
+                matTooltipPosition="below" 
+                >
+                <mat-spinner [diameter]="15" style="margin-left: 1em;"></mat-spinner>
+            </button>
+            <button 
+                *ngIf="!message.transientState?.liking"
+                mat-button 
+                [matTooltip]="permissions?.canLike ? upvoting ? 'Please wait...' : 'Like' : permissions?.canLikeErrorMessage" 
+                matTooltipPosition="below" 
+                (click)="message.userState?.liked ? unlike() : like()" 
+                >
+                <mat-icon [inline]="true">thumb_up</mat-icon>
+                <span class="count-indicator" *ngIf="message.likes > 0">
+                    {{message.likes}}
+                </span>
+            </button>
+        </div>
 
         <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
             <mat-icon [inline]="true">more_vert</mat-icon>
         </button>
-    </div>
-    <div class="content" (click)="select()">
-        {{message.message}}
-    </div>
-    
-    <div class="actions">
-        <banta-timestamp [value]="message.sentAt"></banta-timestamp>
-        <div class="spacer"></div>
-        <div class="counted-action" *ngIf="showReplyAction">
-            <div class="count-indicator">
-                {{message.submessages?.length || 0}}
-            </div>
-            <button mat-icon-button matTooltip="Comment" matTooltipPosition="below" (click)="select()">
-                <mat-icon [inline]="true">comment</mat-icon>
-            </button>
-        </div>
-        <div class="counted-action">
-            <div class="count-indicator">  
-                {{message.upvotes}}
-            </div>
-            <button mat-icon-button matTooltip="Upvote" matTooltipPosition="below" (click)="upvote()">
-                <mat-icon [inline]="true">thumb_up</mat-icon>
-            </button>
-        </div>
     </div>
 </div>

@@ -1,15 +1,71 @@
 # @/banta
+> **⚠ Beta** | [🌐 Website](http://bantachat.com/) | [📦 NPM](https://npmjs.com/package/@banta/sdk)
 
-This is the Banta project, an effort to create an open framework for chatting/comments on the web. The codebase is a 
-monorepo, containing several components. You can find the components under the `packages/` directory.
+Banta is an effort to create an open, extensible system for chatting/comments on the web.
+
+- Real-time: Live-updating comments & chat widgets
+    * Both the Banta Comments and Banta Chat widgets are fully live updated.
+- Easy to use: Easy to add to an existing Angular application, easy to manage server-side component.
+- Flexible: Built with customizability and extension in mind
+
+![demo](demo.gif)
+
+[Try it out](https://bantachat.com/try)
+
+## Features
+
+- Simple addressing of conversations by alphanumeric topic identifiers
+- Replies / threading (single layer)
+- Likes
+- Social sharing
+- Editable/deletable messages
+- Emojis
+- Efficient message counters for related UIs
+- Pluggable authentication and permission checks
+- Pluggable message transformation (ie editing out specific words as a comment/chat message is posted)
 
 ## Components
 
 `packages/`
-- `client/` -- @banta/client: Contains shared code for connecting to a Banta backend
-- `common/` -- @banta/common: Contains code common to both the frontend and backend
-- `firebase/` -- @banta/firebase: A plugin for using Firebase/Firestore as the backing store for Banta
-- `frontend/` -- @banta/frontend: Contains the Banta website as well as the Angular SDK
+- `common/` -- @banta/common: Code common to both frontend & server
+- `frontend/` -- @banta/frontend: Banta website & Angular SDK
     - `projects/sdk` -- @banta/sdk: Contains the client SDK for Angular
-- `server/` -- @banta/server: Library for creating Banta backend servers
-- `test-server/` -- @banta/test-server: A sample Banta backend server using @banta/server library
+- `server/` -- @banta/server: Banta server
+
+# Dependencies
+
+- Frontend: Angular 11+ (latest version recommended)
+- Server
+    * MongoDB
+    * Redis
+
+# Development
+
+First, make sure to install MongoDB and Redis and have them running on your machine. Then:
+
+```shell
+lerna bootstrap                    # installs all dependencies
+lerna link                         # links dependent packages together without using the published NPM packages
+lerna run build                    # build all packages from source
+
+cd packages/frontend && npm run build:lib && npm start  # start the Angular application & SDK cradle
+cd packages/server && npm start    # start the server application
+```
+
+## Live developing SDK within external apps 
+
+> Warning: This workflow is rather flaky.
+
+If you wish to use `npm link` to work on the SDK from within the context of your own app, you will need to do:
+
+```shell
+# In banta project:
+cd packages/frontend
+npm run build:lib
+cd dist/sdk             # IMPORTANT!
+npm run start:lib       # will rebuild the SDK package whenever it changes
+
+# In your app project:
+npm link @banta/sdk
+npm start               # will rebuild your project whenever the SDK changes
+```

@@ -1,11 +1,10 @@
-import { Component, Input, Output, ElementRef, ViewChild } from "@angular/core";
-import { Subject, Observable } from 'rxjs';
+import { Component, Input, Output, ViewChild, ElementRef } from "@angular/core";
+import { Subject, Observable, Subscription } from 'rxjs';
 
-import { User, ChatSource, ChatMessage, NewMessageForm, UserAccount } from '@banta/common';
-import { SubSink } from 'subsink';
+import { User, ChatMessage, NewMessageForm } from '@banta/common';
 import { ChatViewComponent } from '../chat-view/chat-view.component';
-import { BantaService } from '../../common';
-import { ChatBackendService } from "../../chat-backend.service";
+import { ChatBackendBase } from "../../chat-backend-base";
+import { ChatSourceBase } from "../../chat-source-base";
 
 /**
  * Chat component
@@ -17,20 +16,19 @@ import { ChatBackendService } from "../../chat-backend.service";
 })
 export class BantaChatComponent {
     constructor(
-        private banta : BantaService,
-        private backend : ChatBackendService,
-        private elementRef : ElementRef<HTMLElement>
+        private backend : ChatBackendBase
     ) {
     }
 
-    private _source : ChatSource;
-    private _subs = new SubSink();
-    user : UserAccount = null;
+    private _source : ChatSourceBase;
+    private _subs = new Subscription();
+    user : User = null;
+
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
+
 
     ngOnInit() {
-        this._subs.add(
-            this.banta.userChanged.subscribe(user => this.user = user)
-        );
+        this._subs.add(this.backend.userChanged.subscribe(user => this.user = user));
     }
 
     ngOnDestroy() {
@@ -38,7 +36,7 @@ export class BantaChatComponent {
     }
 
     @Input()
-    get source() : ChatSource {
+    get source() : ChatSourceBase {
         return this._source;
     }
 
@@ -65,22 +63,34 @@ export class BantaChatComponent {
     @Input() signInLabel = 'Sign In';
     @Input() sendLabel = 'Send';
     @Input() permissionDeniedLabel = 'Send';
+    @Input() messageFieldPlaceholder = 'Chat';
+    @Input() emptyLabel = 'Be the first to chat';
 
     private _selected = new Subject<ChatMessage>();
+    private _selected$ = this._selected.asObservable();
     private _reported = new Subject<ChatMessage>();
+    private _reported$ = this._reported.asObservable();
     private _upvoted = new Subject<ChatMessage>();
+    private _upvoted$ = this._upvoted.asObservable();
     private _userSelected = new Subject<ChatMessage>();
+    private _userSelected$ = this._userSelected.asObservable();
+    private _permissionDeniedError = new Subject<string>();
+    private _permissionDeniedError$ = this._permissionDeniedError.asObservable();
     private _signInSelected = new Subject<void>();
-    private _permissionDeniedError = new Subject<void>();
+    private _signInSelected$ = this._signInSelected.asObservable();
+    private _received = new Subject<ChatMessage>();
+    private _received$ = this._received.asObservable();
 
-    @Output()
-    get signInSelected(): Observable<void> {
-        return this._signInSelected;
-    }
+    @Output() get selected() { return this._selected$; }
+    @Output() get reported() { return this._reported$; }
+    @Output() get upvoted() { return this._upvoted$; }
+    @Output() get userSelected() { return this._userSelected$; }
+    @Output() get permissionDeniedError() { return this._permissionDeniedError$; }
+    @Output() get signInSelected() { return this._signInSelected$; }
+    @Output() get received() { return this._received$; }
 
-    @Output()
-    get permissionDeniedError(): Observable<void> {
-        return this._permissionDeniedError;
+    onReceived(message: ChatMessage) {
+        this._received.next(message);
     }
 
     showEmojiPanel = false;
@@ -89,8 +99,8 @@ export class BantaChatComponent {
         this._signInSelected.next();
     }
 
-    sendPermissionError() {
-        this._permissionDeniedError.next();
+    sendPermissionError(message: string) {
+        this._permissionDeniedError.next(message);
     }
 
     insertEmoji(emoji) {
@@ -103,8 +113,8 @@ export class BantaChatComponent {
         // TODO
     }
 
-    @ViewChild('chatView', { static: true })
-    chatView : ChatViewComponent;
+    @ViewChild('chatView') chatView : ChatViewComponent;
+    @ViewChild('input') inputElementRef: ElementRef<HTMLInputElement>;
 
     jumpToMessage(message : ChatMessage) {
         if (this.chatView)
@@ -118,45 +128,35 @@ export class BantaChatComponent {
     selectUser(message : ChatMessage) {
         this._userSelected.next(message);
     }
-    
+
     report(message : ChatMessage) {
         this._reported.next(message);
     }
-    
-    upvote(message : ChatMessage) {
+
+    async upvote(message : ChatMessage) {
+        await this.source.likeMessage(message.id);
         this._upvoted.next(message);
     }
 
-    @Output()
-    get selected() {
-        return this._selected;
-    }
-
-    @Output()
-    get reported() {
-        return this._reported;
-    }
-
-    @Output()
-    get upvoted() {
-        return this._upvoted;
-    }
-
-    @Output()
-    get userSelected() {
-        return this._userSelected;
-    }
-
     get canChat() {
-        if (!this.user.permissions)
-            return true;
+        if (!this.user)
+            return false;
+
+        // TODO
+        // if (!this.user.permissions)
+        //     return true;
+
+        // if (!this.user.permissions.canChat)
+        //     return true;
+
+        // return this.user.permissions?.canChat(this.source);
         
-        return this.user.permissions?.canChat(this.source);
+        return true;
     }
 
     newMessage : NewMessageForm = {};
 
-    sendMessage() {
+    async sendMessage() {
         if (!this.source)
             return;
 
@@ -166,13 +166,25 @@ export class BantaChatComponent {
         if (text === '')
             return;
 
-        let message : ChatMessage = { 
+        let message : ChatMessage = {
             user: null,
             sentAt: Date.now(),
-            upvotes: 0,
+            likes: 0,
+            url: typeof window !== 'undefined' ? location.href : undefined,
             message: text
         };
 
-        this.source.send(message);
+        try {
+            const intercept = await this.shouldInterceptMessageSend?.(message, this.source);
+            if (!intercept) {
+                await this.source.send(message);
+            }
+
+            this.chatView.scrollToLatest();
+            this.inputElementRef.nativeElement.focus();
+        } catch (e) {
+            console.error(`Failed to send message: `, message);
+            console.error(e);
+        }
     }
 }

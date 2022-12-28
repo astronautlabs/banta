@@ -1,7 +1,8 @@
 import { Component, Input, ViewChild, ElementRef, Output } from "@angular/core";
-import { ChatSource, User, ChatMessage } from '@banta/common';
-import { SubSink } from 'subsink';
-import { Subject } from 'rxjs';
+import { User, ChatMessage } from '@banta/common';
+import { Subject, Subscription } from 'rxjs';
+import { ChatBackendBase } from "../../chat-backend-base";
+import { ChatSourceBase } from "../../chat-source-base";
 
 @Component({
     selector: 'banta-chat-view',
@@ -10,13 +11,14 @@ import { Subject } from 'rxjs';
 })
 export class ChatViewComponent {
     constructor(
+        private backend: ChatBackendBase,
         private elementRef : ElementRef<HTMLElement>
     ) {
 
     }
 
-    private _sourceSubs = new SubSink();
-    private _source : ChatSource;
+    private _sourceSubs = new Subscription();
+    private _source : ChatSourceBase;
 
     @Input()
     get source() {
@@ -24,29 +26,21 @@ export class ChatViewComponent {
     }
 
     private _selected = new Subject<ChatMessage>();
+    private _selected$ = this._selected.asObservable();
     private _reported = new Subject<ChatMessage>();
+    private _reported$ = this._reported.asObservable();
     private _upvoted = new Subject<ChatMessage>();
+    private _upvoted$ = this._upvoted.asObservable();
     private _userSelected = new Subject<ChatMessage>();
+    private _userSelected$ = this._userSelected.asObservable();
+    private _received = new Subject<ChatMessage>();
+    private _received$ = this._received.asObservable();
 
-    @Output()
-    get selected() {
-        return this._selected;
-    }
-
-    @Output()
-    get userSelected() {
-        return this._userSelected;
-    }
-
-    @Output()
-    get reported() {
-        return this._reported;
-    }
-
-    @Output()
-    get upvoted() {
-        return this._upvoted;
-    }
+    @Output() get selected() { return this._selected$; }
+    @Output() get userSelected() { return this._userSelected$; }
+    @Output() get reported() { return this._reported$; }
+    @Output() get upvoted() { return this._upvoted$; }
+    @Output() get received() { return this._received$; }
 
     set source(value) {
         if (this._sourceSubs) {
@@ -59,7 +53,7 @@ export class ChatViewComponent {
         this.messages = [];
 
         if (value) {
-            this._sourceSubs = new SubSink();
+            this._sourceSubs = new Subscription();
             this.messages = value.messages.slice();
 
             console.log(`Source set:`);
@@ -68,21 +62,34 @@ export class ChatViewComponent {
             console.log(`Messages loaded:`);
             console.dir(this.messages); 
             
-            this._sourceSubs.add(
-                this._source.messageReceived
-                    .subscribe(msg => this.messageReceived(msg)),
-                this._source.messageSent
-                    .subscribe(msg => this.messageSent(msg))
-            );
+            this._sourceSubs.add(this._source.messageReceived.subscribe(msg => this.messageReceived(msg)));
+            this._sourceSubs.add(this._source.messageSent.subscribe(msg => this.messageSent(msg)));
 
+            this._sourceSubs.add(
+                this.backend.userChanged
+                    .subscribe(user => this.currentUser = user)
+            );
             
-            if (this._source.currentUserChanged) {
-                this._sourceSubs.add(
-                    this._source.currentUserChanged
-                        .subscribe(user => this.currentUser = user)
-                );
-            }
+            this.getInitialMessages();
         }
+    }
+
+    private async getInitialMessages() {
+        let messages = (await this._source.getExistingMessages());
+        messages.forEach(m => m.transientState ??= {});
+        this.messages = messages.slice().reverse();
+        this.sortMessages();
+    }
+
+    private sortMessages() {
+        if (!this.source)
+            return;
+        
+        let sorter: (a: ChatMessage, b: ChatMessage) => number;
+
+        sorter = (a, b) => (a.sentAt - b.sentAt);
+
+        this.messages.sort(sorter);
     }
 
     messages : ChatMessage[] = [];
@@ -91,8 +98,8 @@ export class ChatViewComponent {
     @ViewChild('messageContainer')
     messageContainer : ElementRef<HTMLElement>;
 
-    @Input()
-    maxMessages : number = 200;
+    @Input() maxMessages : number = 200;
+    @Input() emptyLabel = 'Be the first to chat';
 
     private addMessage(message : ChatMessage) {
         if (this.messages.length > this.maxMessages + 1) {
@@ -101,10 +108,12 @@ export class ChatViewComponent {
         }
 
         this.messages.push(message);
+        this.sortMessages();
     }
 
     private messageReceived(message : ChatMessage) {
         this.addMessage(message);
+        this._received.next(message);
 
         if (this.isScrolledToLatest())
             setTimeout(() => this.scrollToLatest());

@@ -1,0 +1,14 @@
+<div 
+    class="banta-lightbox-container" 
+    #container
+    [class.open]="isOpen"
+    >
+
+    <a class="underlay" (click)="close()" href="javascript:;"></a>
+
+    <a class="close-button" href="javascript:;" (click)="close()">
+        <mat-icon>close</mat-icon>
+    </a>
+
+    <img [src]="currentImage" />
+</div>

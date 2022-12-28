@@ -1,9 +1,11 @@
 <banta-chat-view 
     #chatView
     [source]="source"
+    [emptyLabel]="emptyLabel"
     (upvoted)="upvote($event)"
     (reported)="report($event)"
     (selected)="select($event)"
+    (received)="onReceived($event)"
     (userSelected)="selectUser($event)"
     ></banta-chat-view>
 
@@ -11,13 +13,20 @@
     
     <div class="entry-container">
         <input
+            #input
             type="text"
             name="message" 
+            autocomplete="off"
+            enterkeyhint="send"
+            [placeholder]="messageFieldPlaceholder"
             (keydown)="onKeyDown($event)"
             [(ngModel)]="newMessage.message" />
             
         <emoji-selector-button
             (selected)="insertEmoji($event)"
+            overlayY="bottom"
+            overlayX="end"
+            originY="top"
             ></emoji-selector-button>
     </div>
 

@@ -1,0 +1,41 @@
+<button type="button" (click)="remove()" mat-mini-fab color="primary" class="remove-button" *ngIf="editing">
+    <mat-icon>close</mat-icon>
+</button>
+
+<ng-container *ngIf="isError">
+    <mat-icon class="error">close</mat-icon>
+    <em class="error">{{theErrorMessage}}</em>
+</ng-container>
+<ng-container *ngIf="!isError">
+    <ng-container *ngIf="isLoading">
+        <mat-spinner></mat-spinner>
+        <em>{{loadingMessage}}</em>
+    </ng-container>
+    <ng-container *ngIf="!isLoading">
+        <iframe *ngIf="hasFrame"
+            sandbox="allow-scripts allow-popups allow-same-origin allow-presentation" 
+            [src]="frameUrl | trustResourceUrl"></iframe>
+        <a *ngIf="attachment.type === 'card'" class="card-attachment" [href]="attachment.url" target="_blank" [class.has-image]="attachment.card.image">
+            <img 
+                *ngIf="attachment.card.image"
+                class="thumbnail" 
+                [src]="attachment.card.image"
+                />
+            <div class="description">
+                <h1>{{attachment.card.title}}</h1>
+                <div class="summary">
+                    {{attachment.card.description}}
+                </div>
+                <cite>{{attachment.card.url}}</cite>
+            </div>
+        </a>
+        <a class="image-attachment" *ngIf="isImageAttachment" href="javascript:;" (click)="activate()">
+            <img [src]="attachment.url" alt="Image Attachment">
+        </a>
+        <blockquote *ngIf="attachment.type === 'tweet'" 
+            class="twitter-tweet">
+                <p lang="en" dir="ltr"></p>
+                <a [href]="attachment.url"></a>
+        </blockquote>
+    </ng-container>
+</ng-container>

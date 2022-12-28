@@ -1,32 +1,32 @@
 {
   "name": "@banta/sdk",
-  "version": "1.0.3",
+  "version": "4.6.26",
   "private": false,
   "publishConfig": {
     "access": "public"
   },
   "peerDependencies": {
-    "@angular/common": "^9.1.12",
-    "@angular/core": "^9.1.12",
-    "@angular/animations": "~9.1.12",
-    "@angular/cdk": "^9.2.4",
-    "@angular/forms": "^9.1.11",
-    "@angular/material": "^9.2.4",
-    "@angular/platform-browser": "~9.1.11",
-    "@angular/platform-browser-dynamic": "~9.1.11",
-    "@angular/router": "~9.1.11",
+    "@angular/common": "^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
+    "@angular/core": "^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
+    "@angular/animations": "^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
+    "@angular/cdk": "^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
+    "@angular/forms": "^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
+    "@angular/material": "^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
+    "@angular/platform-browser": "^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
+    "@angular/platform-browser-dynamic": "^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
+    "@angular/router": "^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
     "@astronautlabs/datastore": "^3.1.2",
     "@astronautlabs/datastore-firestore": "^3.1.2",
-    "@banta/common": "0.0.37",
-    "firebase": "^7.15.4",
-    "ngx-markdown": "^9.1.1",
-    "rxjs": "^6.5.5",
-    "subsink": "^1.0.1",
-    "tslib": "^1.10.0",
+    "@banta/common": "^2.0.13",
+    "@types/marked": "^4.0.3",
+    "@types/dompurify": "^2.3.3",
+    "dompurify": "^2.3.10",
+    "marked": "^4.0.18",
+    "rxjs": "^6.5.5 || ^7.0.0",
     "twemoji": "^12.1.4",
     "yaml": "^1.10.0"
   },
   "dependencies": {
-    "tslib": "^1.10.0"
+    "tslib": "^2.0.0"
   }
 }

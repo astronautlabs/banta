@@ -1,16 +1,23 @@
-import { Component, Output } from '@angular/core';
+/// <reference types="@types/resize-observer-browser" />
+
+import { FlexibleConnectedPositionStrategy, Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { ComponentPortal, TemplatePortal } from '@angular/cdk/portal';
+import { Component, ElementRef, HostBinding, Output, ViewChild, Input } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
+import { EmojiSelectorPanelComponent } from './emoji-selector-panel/emoji-selector-panel.component';
 
 @Component({
     selector: 'emoji-selector-button',
     template: `
-        <button mat-icon-button (click)="show()">
+        <button #button type="button" mat-icon-button (click)="show()">
             <mat-icon>emoji_emotions</mat-icon>
         </button>
-        <emoji-selector-panel 
-            (selected)="insert($event)"
-            [class.visible]="showEmojiPanel"
-            ></emoji-selector-panel>
+        <ng-template cdkPortal #selectorPanelTemplate="cdkPortal">
+            <emoji-selector-panel 
+                #panel
+                (selected)="insert($event)"
+                ></emoji-selector-panel>
+        </ng-template>
     `,
     styles: [`
         :host {
@@ -18,96 +25,88 @@ import { Subject, Observable } from 'rxjs';
             position: relative;
         }
 
-        emoji-selector-panel {
-            position: absolute;
-            bottom: 2.5em;
-            right: 0;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        emoji-selector-panel.visible {
-            pointer-events: initial;
-            opacity: 1;
-        }
-
         button {
             color: #666
-        }
-
-        :host.bottom-left emoji-selector-panel {
-            right: auto;
-            left: 0;
-        }
-
-        :host.top-right emoji-selector-panel {
-            top: 2.4em;
-            bottom: auto;
-        }
-
-        :host.top-left emoji-selector-panel {
-            top: 2.4em;
-            bottom: auto;
-            left: 0;
-            right: auto;
         }
     `]
 })
 export class EmojiSelectorButtonComponent {
+    constructor(
+        private elementRef: ElementRef<HTMLElement>,
+        private overlay: Overlay
+    ) {
+    }
+
+    @ViewChild('selectorPanelTemplate') selectorPanelTemplate: TemplatePortal<any>;
 
     private _selected = new Subject<string>();
+    showEmojiPanel = false;
 
     @Output()
     get selected() : Observable<string> {
         return this._selected;
     }
 
-    ngOnDestroy() {
-        this.removeListener();
+    private overlayRef: OverlayRef;
+
+    get isOpen() {
+        return this.overlayRef;
     }
 
-    private removeListener() {
-        document.removeEventListener('click', this.clickListener);
-    }
-
-    show() {
-        if (this.showEmojiPanel) {
-            this.showEmojiPanel = false;
-            return;
-        }
-
-        this.showEmojiPanel = true;
-
-        setTimeout(() => {
-            this.clickListener = (ev : MouseEvent) => {
-
-                let parent = <HTMLElement> ev.target;
-                let isInDialog = false;
-                
-                while (parent) {
-                    if (parent.matches('emoji-selector-panel'))
-                        isInDialog = true;
-
-                    parent = parent.parentElement;
-                }
-
-                if (isInDialog)
-                    return;
-
-                this.showEmojiPanel = false;
-                this.removeListener();
-            };
-    
-            document.addEventListener('click', this.clickListener);
-        });
-    }
-
-    private clickListener : any;
-
-    showEmojiPanel = false;
-
+    /**
+     * Insert the given emoji.
+     * @param str 
+     */
     insert(str) {
         this._selected.next(str);
+        this.close();
+    }
+
+    close() {
+        if (this.overlayRef) {
+            this.overlayRef.dispose();
+            this.overlayRef = null;
+        }
+    }
+
+    @Input() overlayX: 'start' | 'center' | 'end' = 'end';
+    @Input() overlayY: 'top' | 'center' | 'bottom' = 'top';
+    @Input() originX: 'start' | 'center' | 'end' = 'end';
+    @Input() originY: 'top' | 'center' | 'bottom' = 'bottom';
+
+    show() {
+        if (this.isOpen) {
+            this.close();
+        }
+
+        this.overlayRef = this.overlay.create({
+            positionStrategy: this.overlay.position()
+                .flexibleConnectedTo(this.elementRef)
+                .withPositions([
+                    { 
+                        originX: this.originX, 
+                        originY: this.originY,
+                        overlayX: this.overlayX,
+                        overlayY: this.overlayY
+                    }
+                ])
+                .withFlexibleDimensions(true),
+            hasBackdrop: true,
+            disposeOnNavigation: true,
+            scrollStrategy: this.overlay.scrollStrategies.reposition({
+                autoClose: true
+            })
+        });
+
+        this.overlayRef.backdropClick().subscribe(() => {
+            this.close();
+        })
+
+        this.overlayRef.keydownEvents().subscribe(event => {
+            if (event.key === 'Escape') {
+                this.close();
+            }
+        });
+        this.overlayRef.attach(this.selectorPanelTemplate);
     }
 }

@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Debug Server",
+            "skipFiles": [
+                "<node_internals>/**",
+                "node_modules/zone.js/**"
+            ],
+            "program": "${workspaceFolder}\\packages\\server\\dist\\main.js",
+            "preLaunchTask": "tsc: build - packages/server/tsconfig.json",
+            "cwd": "${workspaceFolder}/packages/server",
+            "outFiles": [
+                "${workspaceFolder}/packages/server/dist/**/*.js"
+            ]
+        }
+    ]
+}

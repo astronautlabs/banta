@@ -1,17 +1,17 @@
 <!--The content below is only a placeholder and can be replaced.-->
 <nav>
-  <a routerLink="/">
+  <a class="logo" routerLink="/">
     <img class="logo" src="/assets/logo.svg" />
+    <img class="icon" src="/assets/icon.svg" />
   </a>
   <a mat-button routerLink="/source" routerLinkActive="active">Source</a>
-  <a mat-button routerLink="/try" routerLinkActive="active">Try it out</a>
+  <a mat-button routerLink="/try" routerLinkActive="active">Try out Comments</a>
+  <a mat-button routerLink="/try-chat" routerLinkActive="active">Try out Chat</a>
   <div class="spacer"></div>
 </nav>
 <main>
   <router-outlet></router-outlet>
 </main>
-
-<pre>{{user | json }}</pre>
 
 <footer>
   <div>

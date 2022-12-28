@@ -1,8 +1,35 @@
+@keyframes comment-appear {
+    from {
+        transform: translate(6em, 0);
+    }
+
+    to {
+        transform: translate(0, 0);
+    }
+}
+
 :host {
     display: flex;
     flex-direction: column;
     position: relative;
     padding: 0.5em;
+    visibility: hidden;
+
+    &.new {
+        visibility: visible;
+        animation-name: comment-appear;
+        animation-duration: 250ms;
+        animation-fill-mode: both;
+    }
+
+    &.highlighted {
+        background: #00223a;
+        outline: 2px solid #003277;
+    }
+
+    &.visible {
+        visibility: visible;
+    }
 
     &:hover {
         background: #eee;
@@ -10,15 +37,30 @@
 
     .message-content {
         .content {
-            margin-left: 4em;
-            margin-right: 3em;
+            margin-left: 60px;
+            margin-right: 0.5em;
         }
+
+		.attachments-row {
+			margin-top: 15px;
+			display: flex;
+			gap: 10px;
+
+			img {
+				border-radius: 10px;
+				width: 300px;
+                max-width: 100%;
+                max-height: 20em;
+                object-fit: cover;
+			}
+		}
+
     }
 
     &.abbreviated {
         .message-content {
             .content {
-                max-height: 8.5em;
+                // max-height: 8.5em;
                 text-overflow: ellipsis;
                 overflow-y: hidden;
             }
@@ -27,18 +69,23 @@
     .actions {
         display: flex;
         padding-right: 10px;
-        margin-left: 4em;
+        margin-left: 60px;
         align-items: center;
 
         button {
             color: #666;
-        }
-
-        banta-timestamp {
-            color: #666;
-            font-size: 10pt;
+            flex-shrink: 0;
         }
     }
+}
+
+
+banta-timestamp {
+    color: #666;
+    font-size: 10pt;
+    flex-shrink: 0;
+    margin-left: 1em;
+    text-align: right;
 }
 
 .user {
@@ -46,8 +93,25 @@
     margin: 1em 0 0 0;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 
-    label {
+    .user-1, .user-2 {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .user-2 {
+        margin: 1em 0;
+    }
+    .user-identity {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .display-name, .username {
         z-index: 1;
         position: relative;
         padding: 0 0 0 1em;
@@ -63,18 +127,17 @@
         overflow: hidden;
         flex-shrink: 1;
         flex-grow: 0;
+        min-width: 0;
 
-        &.username {
+        &.username.username.username {  // overcoming default dark theme styles
             color: #666;
-            flex-shrink: 0;
-            flex-grow: 1;
         }
     }
 }
 
 .avatar {
-    height: 3em;
-    width: 3em;
+    height: 48px;
+    width: 48px;
     background-position: center;
     background-size: cover;
     background-color: #333;
@@ -86,14 +149,21 @@
 .counted-action {
     display: flex;
     align-items: center;
+
+    &.active {
+        button, .count-indicator {
+            color: #00a5ff;
+        }
+    }
+
+    button .count-indicator {
+        margin-left: 0.5em;
+    }
 }
 
 .count-indicator {
     font-size: 9pt;
-    padding: 0 3px;
-    border-radius: 3px;
-    border: 1px solid;
-    border-color: #ccc;
+    padding: 0 0 0 3px;
     color: #666;
 }
 
@@ -107,8 +177,104 @@
     }
 
     .user {
-        label {
+        .display-name, .username {
             color: white;
+        }
+    }
+}
+
+.user-tag {
+    text-transform: uppercase;
+    font-size: 12px;
+    border: 1px solid #b27373;
+    background: #7a412b;
+    color: white;
+    padding: 3px 5px;
+    margin: 0 0.5em 0 1em;
+    border-radius: 3px;
+}
+
+.spacer {
+    flex-shrink: 1;
+    flex-grow: 1;
+}
+
+ul.message-facts {
+    margin: 0;
+    padding: 0;
+    color: #666;
+
+    li {
+        list-style-type: none;
+        border-left: 1px solid #666;
+        font-size: 10pt;
+        padding-left: 0.5em;
+        margin-left: 0.5em;
+    }
+
+    li {
+        margin-top: 0.5em;
+    }
+
+    li:first-child {
+        border-left: 1px solid transparent;
+        margin-left: 0;
+        padding-left: 0;
+
+    }
+}
+
+@mixin banta-comment-mobile-styles {
+    .avatar {
+        height: 32px;
+        width: 32px;
+    }
+
+    :host {
+        .actions {
+            margin-left: 0;
+            margin-top: 0.5em;
+        }
+        .message-content {
+            .content {
+                margin-left: 44px;
+                margin-right: 0.5em;
+            }
+        }
+    }
+}
+
+@media (max-width: 400px) {
+    @include banta-comment-mobile-styles;
+}
+
+:host-context(.banta-mobile) {
+    @include banta-comment-mobile-styles;
+}
+
+.card-attachment {
+    a {
+        display: flex;
+        align-items: flex-start;
+        gap: 1em;
+        
+        width: 100%;
+        border: 1px solid #666;
+        border-radius: 4px;
+        padding: 1em;
+        box-sizing: border-box;
+        background-color: #191919;
+
+        img {
+            width: 300px;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
         }
     }
 }

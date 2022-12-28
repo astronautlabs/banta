@@ -1,0 +1,43 @@
+::ng-deep .banta-lightbox-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    pointer-events: none;
+    background-color: rgba(0,0,0,0.75);
+    color: white;
+    z-index: 10000;
+    transition: 250ms opacity ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    a.underlay {
+        z-index: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+    }
+
+    img {
+        z-index: 10;
+        max-width: 95%;
+    }
+
+    &.open {
+        opacity: 1;
+        pointer-events: initial;
+    }
+    a.close-button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 0.75em;
+        z-index: 20;
+    }
+}

@@ -1,16 +1,23 @@
 <div class="message-container" #messageContainer>
     <ng-content select="[data-before]"></ng-content>
-    <banta-chat-message 
-        *ngFor="let message of messages"
-        [message]="message"
-        [class.highlight]="mentionsMe(message)" 
-        [class.flash]="message.id === flashedMessageId"
-        (selected)="selectMessage(message)"
-        (upvoted)="upvoteMessage(message)"
-        (reported)="reportMessage(message)"
-        (userSelected)="selectMessageUser(message)"
-        [attr.data-id]="message.id"
-        >
-        </banta-chat-message>
+    
+    <div class="empty" *ngIf="messages.length === 0">
+        {{emptyLabel}}
+    </div>
+    
+    <ng-container *ngFor="let message of messages">
+        <banta-chat-message
+            *ngIf="!message.hidden"
+            [message]="message"
+            [class.highlight]="mentionsMe(message)" 
+            [class.flash]="message.id === flashedMessageId"
+            (selected)="selectMessage(message)"
+            (upvoted)="upvoteMessage(message)"
+            (reported)="reportMessage(message)"
+            (userSelected)="selectMessageUser(message)"
+            [attr.data-id]="message.id"
+            >
+            </banta-chat-message>
+    </ng-container>
     <ng-content select=":not([data-before])"></ng-content>
 </div>

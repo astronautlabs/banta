@@ -1,0 +1,40 @@
+banta-comments {
+    display: block;
+    width: 960px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.fullscreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+}
+
+:host.small-mode {
+    banta-comments {
+        max-width: 365px;
+        margin: 0 auto;
+    }
+}
+
+textarea.custom-theme {
+    background-color: black;
+    border-color: #666;
+    color: #ccc;
+    width: 100%;
+    min-height: 20em;
+    font-family: monospace;
+}
+
+.custom-theme-editor {
+    width: 960px;
+    margin: 0 auto;
+}
+
+.share-popup {
+    background: white;
+    color: black;
+    padding: 1em;
+}

@@ -1,12 +1,11 @@
-import { Component, Input, ViewChild, ElementRef, HostBinding } from "@angular/core";
-import { NewMessageForm, ChatMessage, User, ChatSource, Notification } from '@banta/common';
-import { Subject, BehaviorSubject, Observable } from 'rxjs';
-import { SubSink } from 'subsink';
+import { Component, Input, ViewChild, HostBinding } from "@angular/core";
+import { NewMessageForm, ChatMessage, User, Notification } from '@banta/common';
+import { Subject, Observable, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { BantaChatComponent } from '../chat';
-import { BantaService } from '../common';
-import { ChatBackendService } from "../chat-backend.service";
 import { Output } from "@angular/core";
+import { ChatBackendBase } from "../chat-backend-base";
+import { ChatSourceBase } from "../chat-source-base";
 
 /**
  * Unified chat and comments component
@@ -18,36 +17,27 @@ import { Output } from "@angular/core";
 })
 export class BantaComponent {
     constructor(
-        private banta : BantaService,
-        private backend : ChatBackendService,
+        private backend : ChatBackendBase,
         private matDialog : MatDialog
     ) {
-        // this.firehoseSource = new MockFirehoseSource();
-        // this.pointSource = new MockPointSource();
     }
 
-    firehoseSource : ChatSource;
-    pointSource : ChatSource;
+    firehoseSource : ChatSourceBase;
+    pointSource : ChatSourceBase;
 
     private _topicID : string;
-    private _subs = new SubSink();
+    private _subs = new Subscription();
 
     auxOpen = false;
     auxTitle = 'Notifications';
     auxMode = 'notifications';
 
     ngOnInit() {
-        this._subs.add(
-            this.banta.userChanged.subscribe(user => this.currentUser = user),
-            this.backend.notificationsChanged.subscribe(notifs => this.notifications = notifs),
-            this.backend.newNotification.subscribe(notif => {
+        this._subs.add(this.backend.userChanged.subscribe(user => this.currentUser = user));
+        this._subs.add(this.backend.notificationsChanged.subscribe(notifs => this.notifications = notifs));
+        this._subs.add(this.backend.newNotification.subscribe(notif => {
                 this.newNotifications = true;
-            })
-        );
-    }
-
-    newPointSubMessageKeyDown(event : KeyboardEvent) {
-        // TODO
+        }));
     }
     
     mobileFocus : string = null;
@@ -62,7 +52,7 @@ export class BantaComponent {
         let message : ChatMessage = {
             user: null,
             sentAt: Date.now(),
-            upvotes: 0,
+            likes: 0,
             message: text
         };
 
@@ -84,7 +74,14 @@ export class BantaComponent {
         if (message.parentMessageId) {
             // jump to the parent message thread...
 
-            let parentMessage = await this.backend.getMessage(message.topicId, message.parentMessageId);
+            let parentMessage: ChatMessage;
+            
+            try {
+                parentMessage = await this.backend.getMessage(message.topicId, message.parentMessageId);
+            } catch (e) {
+                console.error(`Received exception while fetching parent message:`);
+                console.error(e);
+            }
 
             if (!parentMessage) {
                 console.error(`Failed to look up parent message ${message.topicId}/${message.parentMessageId}`);
@@ -193,7 +190,7 @@ export class BantaComponent {
     }
 
     pointOpen : ChatMessage = null;
-    pointSubChat : ChatSource = null;
+    pointSubChat : ChatSourceBase = null;
 
     closeAux() {
         this.auxOpen = false;
@@ -210,11 +207,8 @@ export class BantaComponent {
     }
 
     async upvoteMessage(message : ChatMessage) {
-        if (message.parentMessageId)
-            await this.backend.upvoteMessage(message.topicId, message.parentMessageId, message.id);
-        else
-            await this.backend.upvoteMessage(message.topicId, message.id);
-        //message.upvotes += 1;
+        // TODO
+        //await this.backend.likeMessage(message.id);
     }
 
     showProfile(user : User) {

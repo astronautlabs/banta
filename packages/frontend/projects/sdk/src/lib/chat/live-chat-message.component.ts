@@ -1,7 +1,7 @@
 import { Component, Input, Output } from '@angular/core';
 import { ChatMessage } from '@banta/common';
 import { Subject, Observable } from 'rxjs';
-import { ChatBackendService } from '../chat-backend.service';
+import { ChatBackendBase } from '../chat-backend-base';
 
 @Component({
     selector: 'banta-live-chat-message',
@@ -18,7 +18,7 @@ import { ChatBackendService } from '../chat-backend.service';
 })
 export class LiveChatMessageComponent {
     constructor(
-        private backend : ChatBackendService
+        private backend : ChatBackendBase
     ) {
 
     }

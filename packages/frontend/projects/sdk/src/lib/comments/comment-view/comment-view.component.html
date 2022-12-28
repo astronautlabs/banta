@@ -1,14 +1,68 @@
 <div class="message-container">
     <ng-content select="[data-before]"></ng-content>
-    <banta-comment 
-        *ngFor="let message of messages"
-        class="abbreviated"
-        [message]="message"
-        [showReplyAction]="allowReplies"
-        (userSelected)="selectMessageUser(message)"
-        (upvoted)="upvoteMessage(message)"
-        (reported)="reportMessage(message)"
-        (selected)="selectMessage(message)"
-        ></banta-comment>
-    <ng-content select=":not([data-before])"></ng-content>
+
+    <a mat-button class="nav" [class.visible]="!newestLast && (isViewingMore || customSortEnabled)" href="javascript:;" (click)="showNew()">
+        <mat-icon>file_upload</mat-icon>
+        New
+        <ng-container *ngIf="newMessages.length >= 1">
+            ({{newMessages.length}})
+        </ng-container>
+    </a>
+    <a mat-button class="nav" [class.visible]="newestLast && hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show earlier</a>
+
+    <ng-container *ngIf="messages.length === 0">
+        <div class="empty-state" *ngIf="showEmptyState">
+            Be the first to comment!
+        </div>
+    </ng-container>
+    <ng-container *ngFor="let message of messages; trackBy: messageIdentity">
+        <banta-comment
+            *ngIf="!message.hidden"
+            class="abbreviated"
+            
+            [customMenuItems]="customMenuItems"
+            [message]="message"
+            [mine]="currentUser?.id === message.user?.id"
+            [permissions]="source?.permissions"
+            [showReplyAction]="allowReplies"
+            [editing]="message.transientState.editing"
+            [genericAvatarUrl]="genericAvatarUrl"
+            (click)="isViewingMore = true"
+            (editStarted)="startEditing(message)"
+            (deleted)="deleteMessage(message)"
+            (editEnded)="message.transientState.editing = false"
+            (edited)="saveEdit(message, $event)"
+            (userSelected)="selectMessageUser(message)"
+            (avatarSelected)="selectAvatar($event)"
+            (usernameSelected)="selectUsername($event)"
+            (liked)="likeMessage(message)"
+            (unliked)="unlikeMessage(message)"
+            (reported)="reportMessage(message)"
+            (selected)="selectMessage(message)"
+            (shared)="sharedMessage($event)"
+            ></banta-comment>
+        <div class="inline-replies-container" *ngIf="selectedMessage === message">
+            <ng-content select=".inline-replies"></ng-content>
+        </div>
+    </ng-container>
+
+    <a mat-button class="nav" [class.visible]="newestLast && (isViewingMore || customSortEnabled)" href="javascript:;" (click)="showNew()">
+        <mat-icon>file_download</mat-icon>
+        New
+        <ng-container *ngIf="newMessages.length >= 1">
+            ({{newMessages.length}})
+        </ng-container>
+    </a>
+    <a mat-button class="nav" [class.visible]="!newestLast && hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
+
+    <div class="loading-more" *ngIf="isLoadingMore">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <!-- <div style="color: #666">
+        n={{newMessages.length}}, m={{messages.length}}, o={{olderMessages.length}},
+        v={{maxVisibleMessages}}, M={{maxMessages}}
+    </div> -->
+
+    <ng-content select=":not([data-before]):not(.inline-replies)"></ng-content>
 </div>
