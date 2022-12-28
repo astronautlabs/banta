@@ -1,6 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import * as marked from 'marked';
-import { JSDOM } from 'jsdom';
 import createDOMPurify from 'dompurify';
 import { DomSanitizer } from '@angular/platform-browser';
 
@@ -50,16 +49,10 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
         if (!value)
             return '';
 
-        let domWindow;
-
-        if (typeof window === undefined) {
-            let dom = new JSDOM('');
-            domWindow = dom.window;
-        } else {
-            domWindow = window;
-        }
-
-        let purifier = createDOMPurify(domWindow);
+        let purifier = createDOMPurify(window);
+        
+        // https://github.com/cure53/DOMPurify/blob/e1c19cf6407d782b666cb1d02a6af191f9cbc09e/demos/hooks-target-blank-demo.html
+        // Add a hook to make all links open a new window
         purifier.addHook('afterSanitizeAttributes', function(node: HTMLElement & { target?: string }) {
             // set all elements owning target to target=_blank
             if ('target' in node) {
@@ -88,6 +81,3 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
         );
     }
 }
-
-// https://github.com/cure53/DOMPurify/blob/e1c19cf6407d782b666cb1d02a6af191f9cbc09e/demos/hooks-target-blank-demo.html
-// Add a hook to make all links open a new window
