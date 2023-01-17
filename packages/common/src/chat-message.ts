@@ -130,6 +130,8 @@ export interface ChatMessageMention {
 export interface ChatMessageEdit {
     newText: string;
     previousText: string;
+    newAttachments: ChatMessageAttachment[];
+    previousAttachments: ChatMessageAttachment[];
     createdAt: number;
 
     /**
