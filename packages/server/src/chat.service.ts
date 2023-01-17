@@ -146,7 +146,7 @@ export const simpleMentionExtractor = (linker: (username: string) => string): Me
 export class ChatService {
     constructor(
     ) {
-        this.mongoClient = new mongodb.MongoClient(process.env.BANTA_DB_URL || process.env.MONGO_URL || 'mongodb://localhost:27017');
+        this.mongoClient = new mongodb.MongoClient(process.env.BANTA_DB_URL || process.env.MONGO_URL || 'mongodb://127.0.0.1:27017');
         this.db = this.mongoClient.db(process.env.BANTA_DB_NAME || 'banta');
         this.redis = new IORedis(Number(process.env.REDIS_PORT ?? 6379), process.env.REDIS_HOST ?? 'localhost', {
             password: process.env.REDIS_PASSWORD,
