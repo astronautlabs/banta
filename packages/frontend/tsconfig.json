@@ -10,7 +10,6 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "importHelpers": true,
     "target": "es2015",
     "lib": [
