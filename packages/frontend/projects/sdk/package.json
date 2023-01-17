@@ -23,7 +23,7 @@
     "dompurify": "^2.3.10",
     "marked": "^4.0.18",
     "rxjs": "^6.5.5 || ^7.0.0",
-    "twemoji": "^12.1.4",
+    "twemoji": "^14.0.2",
     "yaml": "^1.10.0"
   },
   "dependencies": {

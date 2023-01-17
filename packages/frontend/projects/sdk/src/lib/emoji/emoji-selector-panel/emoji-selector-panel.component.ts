@@ -1,5 +1,5 @@
 declare var twemoji: {
-    parse(str: string, options?: { folder: string, ext: string }): string;
+    parse(str: string, options?: { folder?: string, ext?: string, base?: string }): string;
 }
 
 import { Component, OnInit, Output } from '@angular/core';
@@ -100,7 +100,9 @@ export class EmojiSelectorPanelComponent implements OnInit {
 				}
 			}
 
-			emoji.html = this.sanitizer.bypassSecurityTrustHtml(twemoji.parse(emoji.char || ''));
+			emoji.html = this.sanitizer.bypassSecurityTrustHtml(
+				twemoji.parse(emoji.char || '', { base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/' })
+			);
 
 			cats[emoji.category].emojis.push(emoji);
 		}

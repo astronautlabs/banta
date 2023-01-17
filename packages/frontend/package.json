@@ -33,7 +33,7 @@
     "popular-movie-quotes": "^1.2.4",
     "rxjs": "^6.6.7",
     "tslib": "^2.0.0",
-    "twemoji": "^12.1.6",
+    "twemoji": "^14.0.2",
     "uuid": "^3.4.0",
     "yaml": "^1.10.0",
     "zone.js": "~0.10.2"
