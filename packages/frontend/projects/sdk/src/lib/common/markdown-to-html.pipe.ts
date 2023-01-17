@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import * as marked from 'marked';
-import * as DOMPurify from 'dompurify';
+import createDOMPurify from 'dompurify';
 import { DomSanitizer } from '@angular/platform-browser';
 
 const underline = {
@@ -49,8 +49,27 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
         if (!value)
             return '';
 
+        let purifier = createDOMPurify(window);
+        
+        // https://github.com/cure53/DOMPurify/blob/e1c19cf6407d782b666cb1d02a6af191f9cbc09e/demos/hooks-target-blank-demo.html
+        // Add a hook to make all links open a new window
+        purifier.addHook('afterSanitizeAttributes', function(node: HTMLElement & { target?: string }) {
+            // set all elements owning target to target=_blank
+            if ('target' in node) {
+                node.setAttribute('target','_blank');
+                // prevent https://www.owasp.org/index.php/Reverse_Tabnabbing
+                node.setAttribute('rel', 'noopener noreferrer');
+            }
+            // set non-HTML/MathML links to xlink:show=new
+            if (!node.hasAttribute('target')
+                && (node.hasAttribute('xlink:href')
+                    || node.hasAttribute('href'))) {
+                node.setAttribute('xlink:show', 'new');
+            }
+        });
+
         return this.sanitizer.bypassSecurityTrustHtml(
-            DOMPurify.sanitize(
+            purifier.sanitize(
                 marked.marked.parse(value, {
                     renderer: this.renderer
                 }),
@@ -62,21 +81,3 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
         );
     }
 }
-
-// https://github.com/cure53/DOMPurify/blob/e1c19cf6407d782b666cb1d02a6af191f9cbc09e/demos/hooks-target-blank-demo.html
-// Add a hook to make all links open a new window
-
-DOMPurify.addHook('afterSanitizeAttributes', function(node: HTMLElement & { target?: string }) {
-    // set all elements owning target to target=_blank
-    if ('target' in node) {
-        node.setAttribute('target','_blank');
-        // prevent https://www.owasp.org/index.php/Reverse_Tabnabbing
-        node.setAttribute('rel', 'noopener noreferrer');
-    }
-    // set non-HTML/MathML links to xlink:show=new
-    if (!node.hasAttribute('target')
-        && (node.hasAttribute('xlink:href')
-            || node.hasAttribute('href'))) {
-        node.setAttribute('xlink:show', 'new');
-    }
-});
