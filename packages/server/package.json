@@ -1,6 +1,6 @@
 {
   "name": "@banta/server",
-  "version": "2.2.14",
+  "version": "2.2.15",
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -21,7 +21,7 @@
     "@alterior/runtime": "^3.0.0-beta.98",
     "@alterior/tasks": "^3.0.0-beta.98",
     "@alterior/web-server": "^3.0.0-rc.8",
-    "@banta/common": "^2.2.13",
+    "@banta/common": "^2.2.15",
     "@types/express-serve-static-core": "^4.17.24",
     "@types/ioredis": "^4.28.10",
     "@types/sanitize-html": "^2.6.2",
