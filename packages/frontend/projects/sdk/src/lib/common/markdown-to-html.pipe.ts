@@ -40,7 +40,7 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
         const linkRenderer = this.renderer.link;
         this.renderer.link = (href, title, text) => {
             const html = linkRenderer.call(this.renderer, href, title, text);
-            return html.replace(/^<a /, '<a target="_blank" rel="noopener nofollow" ');
+            return html.replace(/^<a /, '<a target="_blank" rel="noopener noreferrer nofollow" ');
         };
     }
 
@@ -58,7 +58,7 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
             if ('target' in node) {
                 node.setAttribute('target','_blank');
                 // prevent https://www.owasp.org/index.php/Reverse_Tabnabbing
-                node.setAttribute('rel', 'noopener noreferrer');
+                node.setAttribute('rel', 'noopener noreferrer nofollow');
             }
             // set non-HTML/MathML links to xlink:show=new
             if (!node.hasAttribute('target')
