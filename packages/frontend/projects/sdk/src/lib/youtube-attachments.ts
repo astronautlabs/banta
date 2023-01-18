@@ -8,7 +8,16 @@ export class YouTubeAttachmentResolver implements AttachmentResolver {
 
         let videoId: string;
 
-        if (fragment.text.match(/https?:\/\/(www\.|m\.)?youtube.com\/watch\?v=/)) {
+        // https://youtu.be/jXzJ7FlqX6M
+
+        if (fragment.text.match(/^https:\/\/youtu\.be\//)) {
+            let match = /^https:\/\/youtu\.be\/([^\/]+)/.exec(fragment.text);
+            if (match) {
+                videoId = match[1];
+            }
+        }
+
+        if (!videoId && fragment.text.match(/^https?:\/\/(www\.|m\.)?youtube.com\/watch\?v=/)) {
             let match = /watch\?v=([^&]+)/.exec(fragment.text);
             if (match) {
                 videoId = match[1];
