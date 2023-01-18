@@ -717,9 +717,6 @@ export class ChatService {
                     Logger.current.info(`Link Fetcher: Successfully retrieved content (${response.status}) for '${url}'`);
 
                     let text = await response.text();
-
-                    fs.writeFileSync(`TEST.html`, text);
-
                     let dom = new JSDOM(text);
                     let doc = dom.window.document;
                     let head = doc.head;
