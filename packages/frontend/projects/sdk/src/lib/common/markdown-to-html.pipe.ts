@@ -40,7 +40,7 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
         const linkRenderer = this.renderer.link;
         this.renderer.link = (href, title, text) => {
             const html = linkRenderer.call(this.renderer, href, title, text);
-            return html.replace(/^<a /, '<a target="_blank" rel="noopener" ');
+            return html.replace(/^<a /, '<a target="_blank" rel="noopener nofollow" ');
         };
     }
 
