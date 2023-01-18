@@ -472,7 +472,9 @@ export class ChatService {
         edits.push({
             createdAt: Date.now(),
             previousText,
-            newText
+            newText,
+            previousAttachments: undefined,
+            newAttachments: undefined
         });
 
         message.edits = edits;
