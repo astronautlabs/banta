@@ -53,7 +53,7 @@ export class AttachmentButtonComponent {
 
         console.error(`[Banta] Caught an error while uploading image to CDN:`);
         console.error(e);
-        alert(`Failed to upload image. Please try again later.`);
+        alert(e.message);
 
         this._attachmentError.next(attachment);
         return;
