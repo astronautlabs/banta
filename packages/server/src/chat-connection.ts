@@ -293,7 +293,8 @@ export class ChatConnection extends SocketRPC {
         message.likes = 0;
         message.edits = [];
         message.submessageCount = 0;
-        
+        message.attachments.forEach(attachment => delete attachment.transientState);
+
         delete message.user.token;
 
         if (!message)
