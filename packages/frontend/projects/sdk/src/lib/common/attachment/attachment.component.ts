@@ -73,7 +73,10 @@ export class BantaAttachmentComponent {
 
     @HostBinding('class.loading')
     get isLoading() {
-        return this.loading || !this.attachment || this.attachment.transientState?.loading || !this.attachment.url;
+        return !this.editing && (
+            this.loading || !this.attachment || this.attachment.transientState?.loading 
+            || !this.attachment.url
+        );
     }
 
     get isImageAttachment() {

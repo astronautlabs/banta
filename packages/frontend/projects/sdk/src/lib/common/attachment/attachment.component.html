@@ -11,7 +11,7 @@
         <mat-spinner></mat-spinner>
         <em>{{loadingMessage}}</em>
     </ng-container>
-    <ng-container *ngIf="!isLoading">
+    <ng-container *ngIf="!isLoading && attachment">
         <iframe *ngIf="hasFrame"
             sandbox="allow-scripts allow-popups allow-same-origin allow-presentation" 
             [src]="frameUrl | trustResourceUrl"></iframe>
