@@ -29,7 +29,7 @@
                 <cite>{{attachment.card.url}}</cite>
             </div>
         </a>
-        <a class="image-attachment" *ngIf="isImageAttachment" href="javascript:;" (click)="activate()">
+        <a class="image-attachment" *ngIf="isImageAttachment && attachment.url" href="javascript:;" (click)="activate()">
             <img [src]="attachment.url" alt="Image Attachment">
         </a>
         <blockquote *ngIf="attachment.type === 'tweet'" 
