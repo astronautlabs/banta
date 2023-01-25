@@ -1,6 +1,6 @@
 {
   "name": "@banta/sdk",
-  "version": "4.7.7",
+  "version": "4.7.8",
   "private": false,
   "publishConfig": {
     "access": "public"
