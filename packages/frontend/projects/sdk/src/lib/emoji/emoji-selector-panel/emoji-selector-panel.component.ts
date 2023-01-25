@@ -2,8 +2,9 @@ declare var twemoji: {
     parse(str: string, options?: { folder?: string, ext?: string, base?: string }): string;
 }
 
-import { Component, OnInit, Output } from '@angular/core';
+import { Component, Inject, Input, OnInit, Optional, Output } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { BANTA_SDK_OPTIONS, SdkOptions } from '../../sdk-options';
 import { Subject } from 'rxjs';
 
 interface Emoji {
@@ -23,7 +24,9 @@ import { EMOJIS } from '../emojis';
 export class EmojiSelectorPanelComponent implements OnInit {
 
 	constructor(
-		private sanitizer : DomSanitizer
+		private sanitizer : DomSanitizer,
+		@Inject(BANTA_SDK_OPTIONS) @Optional()
+		private sdkOptions: SdkOptions
 	) { }
 
 	categories : any[];
@@ -75,6 +78,10 @@ export class EmojiSelectorPanelComponent implements OnInit {
         });
     }
 
+	private get emojiUrl() {
+		return this.sdkOptions?.emojiUrl ?? 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/';
+	}
+
 	ngOnInit() {
 
 		let cats = {};
@@ -101,7 +108,7 @@ export class EmojiSelectorPanelComponent implements OnInit {
 			}
 
 			emoji.html = this.sanitizer.bypassSecurityTrustHtml(
-				twemoji.parse(emoji.char || '', { base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/' })
+				twemoji.parse(emoji.char || '', { base: this.emojiUrl })
 			);
 
 			cats[emoji.category].emojis.push(emoji);
