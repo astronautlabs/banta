@@ -1,7 +1,9 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, Inject, Optional } from '@angular/core';
 import * as marked from 'marked';
 import createDOMPurify from 'dompurify';
 import { DomSanitizer } from '@angular/platform-browser';
+import twemoji from 'twemoji';
+import { BANTA_SDK_OPTIONS, SdkOptions } from '../sdk-options';
 
 const underline = {
     name: 'underline',
@@ -32,7 +34,10 @@ marked.marked.use({
 })
 export class BantaMarkdownToHtmlPipe implements PipeTransform {
     constructor(
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+
+        @Inject(BANTA_SDK_OPTIONS) @Optional()
+        private sdkOptions: SdkOptions
     ) {
         this.renderer = new marked.Renderer({
             headerPrefix: ''
@@ -43,6 +48,10 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
             return html.replace(/^<a /, '<a target="_blank" rel="noopener noreferrer nofollow" ');
         };
     }
+
+	private get emojiUrl() {
+		return this.sdkOptions?.emojiUrl ?? 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/';
+	}
 
     renderer: marked.Renderer;
     transform(value: string) {
@@ -68,11 +77,14 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
             }
         });
 
+        value = marked.marked.parse(value, {
+            renderer: this.renderer
+        });
+
+        value = twemoji.parse(value, { base: this.emojiUrl });
+
         return this.sanitizer.bypassSecurityTrustHtml(
-            purifier.sanitize(
-                marked.marked.parse(value, {
-                    renderer: this.renderer
-                }),
+            purifier.sanitize(value,
                 {
                     FORBID_TAGS: ['h1', 'h2', 'h3', 'h4'],
                     KEEP_CONTENT: true

@@ -278,3 +278,10 @@ ul.message-facts {
         }
     }
 }
+
+::ng-deep .banta-message-content {
+    img.emoji {
+        height: 1.5em;
+        vertical-align: middle;
+    }
+}
