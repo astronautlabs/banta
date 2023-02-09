@@ -69,6 +69,15 @@ export class SocketRPC<PeerT = Peer> {
 
         this._socket = socket;
         this._socket.onmessage = ev => this.onReceiveMessage(JSON.parse(ev.data));
+        this._socket.onerror = ev => {
+            console.error(`[Banta] Error in socket: ${ev}`);
+            try {
+                this._socket.close();
+            } catch (e) {
+                console.error(`[Banta] Failed to close the error'ed socket!`);
+            }
+        };
+
         return this;
     }
 
