@@ -26,7 +26,7 @@ export class BantaMentionLinkerPipe implements PipeTransform {
     }
 
     formatLink(link: ChatMessageMention) {
-        return `<a${ link.external ? ` target="_blank" rel="noopener"` : `` } href="${link.link}">${link.text}</a>`;
+        return `<a${ link.external ? ` target="_blank" rel="noopener"` : `` } class="mention" href="${link.link}">${link.text}</a>`;
     }
 
     /**
