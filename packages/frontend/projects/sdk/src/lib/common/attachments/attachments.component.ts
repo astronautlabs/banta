@@ -61,12 +61,16 @@ export class BantaAttachmentsComponent {
         )
     }
 
+    get validAttachments() {
+        return this.attachments.filter(x => x.type);
+    }
+
     get inlineAttachments() {
-        return this.attachments.filter(x => x.type !== 'card' && (x.style === 'inline' || !x.style));
+        return this.validAttachments.filter(x => x.type !== 'card' && (x.style === 'inline' || !x.style));
     }
 
     get blockAttachments() {
-        return this.attachments.filter(x => x.style === 'block' || x.type === 'card');
+        return this.validAttachments.filter(x => x.style === 'block' || x.type === 'card');
     }
 
     attachmentId(index: number, attachment: ChatMessageAttachment) {

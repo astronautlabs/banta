@@ -80,9 +80,7 @@ export class BantaAttachmentComponent {
     }
 
     get isImageAttachment() {
-        if (this.attachment.type.startsWith('image/'))
-            return true;
-        return false;
+        return this.attachment?.type?.startsWith('image/');
     }
 
     get hasFrame() {
@@ -91,7 +89,7 @@ export class BantaAttachmentComponent {
 
         return this.attachment.type === 'iframe' || (
             this.attachment.type === 'card' 
-            && this.attachment.card.player
+            && this.attachment.card?.player
         );
     }
 
