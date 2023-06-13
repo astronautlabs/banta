@@ -159,7 +159,7 @@
             return;
         }
 
-        this.reconnect();
+        this.attemptToReconnect();
     }
 
     private get actualReconnectTime() {
@@ -171,9 +171,13 @@
         );
     }
 
-    private reconnect() {
+    private attemptToReconnect() {
         console.log(`[Socket] Waiting ${this.actualReconnectTime}ms before reconnect (attempt ${this._attempt}) [${this.url}]`);
         setTimeout(() => this.connect(), this.actualReconnectTime);
+    }
+
+    reconnect() {
+        this._socket?.close();
     }
 
     private _open = false;
