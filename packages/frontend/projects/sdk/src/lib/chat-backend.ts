@@ -48,14 +48,25 @@ export class ChatBackend extends ChatBackendBase {
             .bind(await this.connectToService());
     }
 
+    /**
+     * Get the count of the given topic
+     * @param topicId 
+     * @returns 
+     */
     async getSourceCountForTopic(topicId: string): Promise<number> {
-        let response = await fetch(`${this.serviceUrl}/topics/${topicId}`)
+        try {
+            let response = await fetch(`${this.serviceUrl}/topics/${topicId}`)
 
-        if (response.status >= 400)
-            return 0;
+            if (response.status >= 400)
+                return 0;
 
-        let topic = await response.json();
-        return topic.messageCount || 0;
+            let topic = await response.json();
+            return topic.messageCount || 0;
+        } catch (e) {
+            console.error(`[Banta/${topicId}] Failed to get message count for topic:`);
+            console.error(e);
+            return undefined;
+        }
     }
 
     refreshMessage(message: ChatMessage): Promise<ChatMessage> {
