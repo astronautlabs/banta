@@ -192,10 +192,10 @@
     get binaryType() { return this._socket.binaryType; }
     get bufferedAmount() { return this._socket.bufferedAmount; }
     get extensions() { return this._socket.extensions; }
-    get CLOSED() { return WebSocket.CLOSED; }
-    get CLOSING() { return WebSocket.CLOSING; }
-    get CONNECTING() { return WebSocket.CONNECTING; }
-    get OPEN() { return WebSocket.OPEN; }
+    get CLOSED(): typeof WebSocket.CLOSED { return WebSocket.CLOSED; }
+    get CLOSING(): typeof WebSocket.CLOSING { return WebSocket.CLOSING; }
+    get CONNECTING(): typeof WebSocket.CONNECTING { return WebSocket.CONNECTING; }
+    get OPEN(): typeof WebSocket.OPEN { return WebSocket.OPEN; }
 
     get onclose() { return this._onclose; }
     get onerror() { return this._onerror; }
