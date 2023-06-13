@@ -10,7 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { BantaTrustResourceUrlPipe } from './trust-resource-url.pipe';
 import { BantaAttachmentComponent } from './attachment/attachment.component';
 import { BantaMentionLinkerPipe } from './mention-linker.pipe';
-import { TimerPool } from 'projects/sdk/src/lib/common/timer-pool.service';
+import { TimerPool } from './timer-pool.service';
 
 const COMPONENTS = [
     TimestampComponent,
