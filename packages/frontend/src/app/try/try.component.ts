@@ -66,6 +66,7 @@ export class TryComponent {
     newTopicID: string;
     messageCount: number;
     useInlineReplies = true;
+    hidden = false;
     
     sharedComment: ChatMessage;
 

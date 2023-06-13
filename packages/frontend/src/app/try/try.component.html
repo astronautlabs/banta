@@ -13,18 +13,27 @@
 </div>
 
 <a href="javascript:;" (click)="goFullScreen()">Fullscreen</a> |
+
+<a *ngIf="hidden" href="javascript:;" (click)="hidden = false">Show</a> 
+<a *ngIf="!hidden" href="javascript:;" (click)="hidden = true">Hide</a> 
+
+|
+
 <a *ngIf="!isSmallMode" href="javascript:;" (click)="isSmallMode = true">Small Mode</a>
 <a *ngIf="isSmallMode" href="javascript:;" (click)="isSmallMode = false">Wide Mode</a>
 
 | 
+
 <a *ngIf="useInlineReplies" href="javascript:;" (click)="useInlineReplies = false">Use Focused Replies</a>
 <a *ngIf="!useInlineReplies" href="javascript:;" (click)="useInlineReplies = true">Use Inline Replies</a>
 
 | 
+
 <a href="javascript:;" (click)="dumpComponent()">Dump Component</a>
 <div class="fullscreen" #fullscreenElement>
     <a *ngIf="isFullScreen" href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>
     <banta-comments
+        *ngIf="!hidden"
         #comments
         topicID="{{topicID}}_comments"
         [customMenuItems]="customMenuItems"
