@@ -6,5 +6,6 @@ export * from './trust-resource-url.pipe';
 export * from './mention-linker.pipe';
 export * from './attachment/attachment.component';
 export * from './attachments/attachments.component';
+export * from './timer-pool.service';
 
 export * from './common.module';
