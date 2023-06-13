@@ -1,5 +1,6 @@
 import { Observable, Subject } from 'rxjs';
 import { v4 as uuid } from 'uuid';
+import { DurableSocket } from './durable-socket';
 
 interface RPCMessage {
     type: string;
@@ -102,6 +103,11 @@ export class SocketRPC<PeerT = Peer> {
 
     sendEvent<EventT>(name: string, object: EventT) {
         this.rawSend(<RPCEvent>{ type: 'event', name, object });
+    }
+
+    reconnect() {
+        if (this._socket instanceof DurableSocket)
+            this._socket.reconnect();
     }
 
     call<ResponseT>(method: string, ...parameters: any[]): Promise<ResponseT> {
