@@ -13,22 +13,64 @@
  export class DurableSocket implements WebSocket {
     constructor(
         readonly url : string,
-        readonly protocols? : string | string[]
+        readonly protocols? : string | string[],
+        sessionId?: string
     ) {
+        this._sessionId = sessionId;
         this.connect();
+        this.ready = new Promise<this>((resolve, reject) => {
+            this.addEventListener('open', () => resolve(this));
+            this.addEventListener('close', e => {
+                if (e.code === 503) {
+                    //console.error(`Failed to connect to service!`);
+                    reject(e);
+                }
+            });
+        });
+
+        let wasRestored: () => void = () => {};
+        this.addEventListener('lost', () => this.ready = new Promise<this>((res, _) => wasRestored = () => res(this)));
+        this.addEventListener('restore', e => wasRestored());
+    }
+
+    ready: Promise<this>;
+
+    /**
+     * Wait until this connection is ready to receive a message. If connection is lost, this method will
+     * return a new promise that will resolve when connection is restored.
+     * @returns 
+     */
+    waitUntilReady() {
+        return this.ready;
     }
 
     private connect() {
         let connected = false;
-        this._socket = new WebSocket(this.url, this.protocols);
+        this._socket = new WebSocket(this.urlWithSessionId, this.protocols);
         this._socket.onopen = ev => (connected = true, this.handleConnect(ev));
         this._socket.onerror = ev => this.dispatchEvent(ev);
         this._socket.onclose = ev => this.handleLost();
         this._socket.onmessage = ev => this.handleMessage(ev);
     }
 
+    get urlWithSessionId() {
+        if (this.sessionId)
+            return `${this.url}${this.url.includes('?') ? '&' : '?'}sessionId=${this.sessionId}`;
+        return this.url;
+    }
+
     private pingTimer;
     private lastPong : number = 0;
+    private _sessionId: string;
+
+    /**
+     * Get the session ID assigned to this session by the server.
+     * This session ID will be included when reconnecting to allow for 
+     * state retention even after reconnecting.
+     */
+    get sessionId() {
+        return this._sessionId;
+    }
 
     private handleConnect(ev : Event) {
         let first = !this._open;
@@ -91,7 +133,7 @@
             if (this.lastPong < Date.now() - this.pingKeepAliveInterval) {
                 console.log(`[Socket] No keep-alive response in ${this.pingKeepAliveInterval}ms. Forcing reconnect... [${this.url}]`);
                 try {
-                    this._socket?.close();
+                    this.handleLost();
                 } catch (e) {
                     console.error(`[Socket] Failed to close socket after timeout waiting for pong: ${e.message} [${this.url}]`);
                 }
@@ -108,6 +150,8 @@
         if (message.type === 'pong') {
             this.lastPong = Date.now();
             return;
+        } else if (message.type === 'setSessionId') {
+            this._sessionId = message.id;
         }
         this.dispatchEvent(ev);
     }
