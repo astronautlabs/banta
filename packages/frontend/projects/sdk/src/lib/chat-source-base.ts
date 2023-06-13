@@ -34,4 +34,6 @@ export interface ChatSourceBase {
 
     connectionStateChanged?: Observable<'connected' | 'connecting' | 'lost' | 'restored'>;
     state?: 'connecting' | 'connected' | 'lost' | 'restored';
+
+    get errorState();
 }

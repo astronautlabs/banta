@@ -97,6 +97,10 @@ export class MockSource implements ChatSourceBase {
     messageSent = new Subject<ChatMessage>();
     messages: ChatMessage[] = [];
 
+    get errorState() {
+        return undefined;
+    }
+    
     async getExistingMessages(): Promise<ChatMessage[]> {
         return [];
     }

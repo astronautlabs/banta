@@ -37,16 +37,15 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         return this._connectionStateChanged.asObservable();
     }
 
+    private wasRestored = false;
+
     async bind(socket: DurableSocket): Promise<this> {
         super.bind(socket);
-        this.state = 'connected';
-        this.markReady();
 
-        await this.subscribeToTopic();
         this.subscription.add(this.backend.userChanged.subscribe(() => this.authenticate()));
 
         socket.addEventListener('open', async () => {
-            this.state = 'connected';
+            console.log(`[Banta/${this.identifier}] Socket is open`);
         });
 
         socket.addEventListener('lost', async () => {
@@ -54,11 +53,13 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         });
 
         socket.addEventListener('restore', async () => {
-            this.state = 'restored';
+            this.wasRestored = true;
             await this.authenticate();
             await this.subscribeToTopic();
         });
 
+        await this.subscribeToTopic();
+        
         return this;
     }
 
@@ -79,9 +80,15 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     async getExistingMessages(): Promise<ChatMessage[]> {
-        let messages = await this.peer.getExistingMessages();
-        messages = this.mapOrUpdateMessages(messages);
-        return messages;
+        try {
+            let messages = await this.peer.getExistingMessages();
+            messages = this.mapOrUpdateMessages(messages);
+            return messages;
+        } catch (e) {
+            console.error(`[Banta/${this.identifier}] Error occurred while trying to get existing messages:`);
+            console.error(e);
+            return [];
+        }
     }
 
     private async ensureConnection(errorMessage?: string) {
@@ -99,8 +106,37 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         await this.peer.editMessage(messageId, text);
     }
 
+    private subscribeAttempt = 0;
+    private _errorState: string;
+
+    get errorState() {
+        return this._errorState;
+    }
+
     async subscribeToTopic() {
-        await this.peer.subscribe(this.identifier, this.parentIdentifier, this.sortOrder);
+        try {
+            await this.peer.subscribe(this.identifier, this.parentIdentifier, this.sortOrder);
+            this.subscribeAttempt = 0;
+            this._errorState = undefined;
+            this.state = this.wasRestored ? 'restored' : 'connected';
+            this.markReady();
+
+        } catch (e) {
+            console.error(`[Banta/${this.identifier}] Error while subscribing to topic`);
+            console.error(e);
+
+            this.state = 'lost';
+            this._errorState = 'server-issue';
+
+            this.subscribeAttempt += 1;
+            let delay = Math.min(30*1000, (3*1000 * this.subscribeAttempt) * (1 + Math.random()));
+            console.error(`[Banta/${this.identifier}] Waiting ${delay}ms before attempting to reconnect...`);
+
+            setTimeout(() => {
+                console.info(`Attempting reconnection after error in subscribeToTopic...`);
+                this.reconnect();
+            }, delay);
+        }
     }
 
     async authenticate() {

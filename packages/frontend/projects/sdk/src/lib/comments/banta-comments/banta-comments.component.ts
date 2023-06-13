@@ -287,7 +287,7 @@ export class BantaCommentsComponent {
     loaded = new Promise<void>(r => this.markLoaded = r);
 
     private updateLoading(): boolean {
-        if (this.source?.state && this.source?.state !== 'connecting') {
+        if (this.source?.state && !['connecting', 'lost'].includes(this.source?.state)) {
             clearInterval(this._loadingTimer);
             this.loadingMessage = `Here we go!`;
             setTimeout(() => {

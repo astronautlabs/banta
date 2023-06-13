@@ -49,7 +49,10 @@ export class CommentFieldComponent {
                 if (this._source.connectionStateChanged) {
                     this._subs.add(this._source.connectionStateChanged.subscribe(state => {
                         if (state === 'lost') {
-                            this.transientMessage = `Reconnecting...`;
+                            if (this._source.errorState === 'server-issue')
+                                this.transientMessage = `Error occurred, trying again...`;
+                            else
+                                this.transientMessage = `Reconnecting...`;
                         } else if (state === 'restored') {
                             this.transientMessage = undefined;
                         } else if (state === 'connecting') {
