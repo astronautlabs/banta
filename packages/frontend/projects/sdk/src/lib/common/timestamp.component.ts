@@ -1,5 +1,5 @@
 import { Component, Input } from "@angular/core";
-import { TimerPool } from "projects/sdk/src/lib/common/timer-pool.service";
+import { TimerPool } from "../../lib/common/timer-pool.service";
 
 @Component({
     selector: 'banta-timestamp',
