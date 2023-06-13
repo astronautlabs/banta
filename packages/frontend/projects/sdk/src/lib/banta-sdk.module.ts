@@ -32,7 +32,7 @@ import { TweetAttachmentResolver } from './tweet-attachments';
     imports: [
         CommonModule,
         FormsModule,
-        BantaCommonModule,
+        BantaCommonModule.forRoot(),
         CommentsModule,
         ChatModule,
         EmojiModule,

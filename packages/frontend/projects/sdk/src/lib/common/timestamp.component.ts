@@ -1,4 +1,5 @@
 import { Component, Input } from "@angular/core";
+import { TimerPool } from "projects/sdk/src/lib/common/timer-pool.service";
 
 @Component({
     selector: 'banta-timestamp',
@@ -13,15 +14,23 @@ import { Component, Input } from "@angular/core";
     styles: [``]
 })
 export class TimestampComponent {
+    constructor(
+        private timerPool: TimerPool
+    ) {
+    }
+
     private _value : number;
     relative = '';
     tooltip = '';
 
-    private updateInterval = null;
+    private timerUnsubscribe: () => void;
+    private timerInterval: number = 0;
+
+    private _destroyed = false;
 
     ngOnDestroy() {
-        if (this.updateInterval)
-            clearInterval(this.updateInterval);
+        this._destroyed = true;
+        this.timerUnsubscribe?.();
     }
 
     @Input()
@@ -32,6 +41,8 @@ export class TimestampComponent {
     showAbsolute = false;
 
     update() {
+        if (this._destroyed)
+            return;
         
         let now = Date.now();
         let diff = now - this.value;
@@ -95,15 +106,20 @@ export class TimestampComponent {
         }
         
         if (typeof window !== 'undefined') {
-            clearInterval(this.updateInterval);
-            if (updateTime > 0) {
-                this.updateInterval = setInterval(() => this.update());
+            if (this.timerInterval !== updateTime) {
+                this.timerInterval = updateTime;
+                this.timerUnsubscribe?.();
+                if (updateTime > 0) {
+                    this.timerUnsubscribe = this.timerPool.addTimer(updateTime, () => this.update());
+                }
             }
         }
     }
 
     set value(v) {
-        this._value = v;
-        this.update();
+        if (this._value !== v) {
+            this._value = v;
+            this.update();
+        }
     }
 }
