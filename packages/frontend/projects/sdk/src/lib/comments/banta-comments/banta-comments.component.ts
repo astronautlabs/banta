@@ -668,6 +668,12 @@ export class BantaCommentsComponent {
             return this.selectedMessageThread;
         }
 
+        if (this.selectedMessageThread) {
+            if (this.selectedMessageThread.close)
+                this.selectedMessageThread.close();
+            this.selectedMessageThread = null;
+        }
+
         this._selected.next(message);
 
         console.log(`[Banta] Opening thread for ${this.topicID}/${message.id}...`);
