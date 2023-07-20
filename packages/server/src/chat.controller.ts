@@ -30,6 +30,12 @@ export class ChatController {
 
     @Get('/socket')
     async socket() {
+        if (!WebEvent.request.headers.upgrade) {
+            throw new HttpError(400, {
+                message: `This endpoint is used for Banta's WebSocket connection (must send Upgrade header)`
+            });
+        }
+
         let conn = new ChatConnection(
             this.chat, 
             (WebEvent.request as express.Request).ip,
