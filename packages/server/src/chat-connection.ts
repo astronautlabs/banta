@@ -183,9 +183,6 @@ export class ChatConnection extends SocketRPC {
         if (Math.random() < chaosFactor) {
             console.log(`[Banta Chaos] Randomly simulating crash on topic subscribe [CRASH]`);
             throw new Error(`Oh no! Topology!`);
-        } else {
-            console.log(`[Banta Chaos] Allowing topic subscribe [SAFE]`);
-            console.log(`The user is safe FOR NOW. Subscribed to topic ${topicId}`);
         }
 
         if (parentMessageId) {
