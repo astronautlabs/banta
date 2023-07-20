@@ -680,8 +680,10 @@ export class ChatService {
         
         if (throwIfMissing && !topic)
             throw new Error(`No such topic with ID '${id}'`);
-        
-        delete topic._id;
+
+        if (topic)
+            delete topic._id;
+
         return topic;
     }
 
