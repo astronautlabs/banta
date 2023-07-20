@@ -1,8 +1,11 @@
 import { ChatMessage, ChatPermissions, CommentsOrder, DurableSocket, User } from "@banta/common";
-import { Observable, Subject, Subscription } from "rxjs";
+import { BehaviorSubject, Subject, Subscription } from "rxjs";
 import { RpcEvent, SocketRPC } from "@banta/common";
 import { ChatSourceBase } from "./chat-source-base";
 import { ChatBackend } from "./chat-backend";
+import { v4 as uuid } from "uuid";
+
+export type SignInState = 'signed-out' | 'signed-in' | 'signing-in';
 
 export class ChatSource extends SocketRPC implements ChatSourceBase {
     constructor(
@@ -33,9 +36,8 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     private _connectionStateChanged = new Subject<'connected' | 'connecting' | 'lost' | 'restored'>();
-    get connectionStateChanged() {
-        return this._connectionStateChanged.asObservable();
-    }
+    private _connectionStateChanged$ = this._connectionStateChanged.asObservable();
+    get connectionStateChanged() { return this._connectionStateChanged$; }
 
     private wasRestored = false;
 
@@ -58,7 +60,11 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
             await this.subscribeToTopic();
         });
 
-        await this.subscribeToTopic();
+        try {
+            await this.subscribeToTopic();
+        } catch (e) {
+            console.error(`[Banta/ChatSource] Error during initial subscribeToTopic: ${e.message}`);
+        }
         
         return this;
     }
@@ -81,7 +87,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     async getExistingMessages(): Promise<ChatMessage[]> {
         try {
-            let messages = await this.peer.getExistingMessages();
+            let messages = await this.idempotentPeer.getExistingMessages();
             messages = this.mapOrUpdateMessages(messages);
             return messages;
         } catch (e) {
@@ -92,13 +98,13 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     private async ensureConnection(errorMessage?: string) {
-        let reason = `Connection to chat services is not currently available.`;
-        if (this.state !== 'connected' && this.state !== 'restored') {
-            if (errorMessage)
-                throw new Error(`${errorMessage}: ${reason}`);
-            else
-                throw new Error(`${reason}`);
-        }
+        // let reason = `Connection to chat services is not currently available.`;
+        // if (this.state !== 'connected' && this.state !== 'restored') {
+        //     if (errorMessage)
+        //         throw new Error(`${errorMessage}: ${reason}`);
+        //     else
+        //         throw new Error(`${reason}`);
+        // }
     }
 
     async editMessage(messageId: string, text: string): Promise<void> {
@@ -115,7 +121,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     async subscribeToTopic() {
         try {
-            await this.peer.subscribe(this.identifier, this.parentIdentifier, this.sortOrder);
+            await this.immediatePeer.subscribe(this.identifier, this.parentIdentifier, this.sortOrder);
             this.subscribeAttempt = 0;
             this._errorState = undefined;
             this.state = this.wasRestored ? 'restored' : 'connected';
@@ -133,19 +139,40 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
             console.error(`[Banta/${this.identifier}] Waiting ${delay}ms before attempting to reconnect...`);
 
             setTimeout(() => {
-                console.info(`Attempting reconnection after error in subscribeToTopic...`);
-                this.reconnect();
+                if (this.state === 'lost') {
+                    console.info(`Attempting reconnection after error in subscribeToTopic...`);
+                    this.reconnect();
+                }
             }, delay);
+
+            throw e;
         }
     }
 
+    private _signInState: SignInState = 'signed-out';
+    private _signInStateChanged = new BehaviorSubject<SignInState>(this._signInState);
+    private _signInStateChanged$ = this._signInStateChanged.asObservable();
+
+    get signInState() { return this._signInState; }
+    get signInStateChanged() { return this._signInStateChanged$; }
+
+    private setSignInState(state: SignInState) {
+        this._signInState = state;
+        this._signInStateChanged.next(state);
+    }
     async authenticate() {
+        this.setSignInState('signing-in');
         if (this.backend.user) {
             try {
-                await this.peer.authenticate(this.backend.user?.token);
+                // console.log(`Artificial delay...`);
+                // await new Promise(r => setTimeout(r, 30_000));
+                // console.log(`Artificial delay complete...`);
+                await this.immediatePeer.authenticate(this.backend.user?.token);
+                this.setSignInState('signed-in');
             } catch (e) {
-                console.error(`Could not authenticate with Banta server:`);
+                console.error(`[Banta] Could not authenticate:`);
                 console.error(e);
+                this.setSignInState('signed-out');
             }
         }
     }
@@ -189,7 +216,8 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     async send(message: ChatMessage): Promise<ChatMessage> {
         await this.ensureConnection();
-        return await this.peer.sendMessage(message);
+        message.id ??= uuid();
+        return await this.idempotentPeer.sendMessage(message);
     }
 
     async loadAfter(message: ChatMessage, count: number): Promise<ChatMessage[]> {
@@ -200,7 +228,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
             return [];
         
         return this.mapOrUpdateMessages(
-            await this.peer.loadAfter(Number(message.pagingCursor), count)
+            await this.idempotentPeer.loadAfter(Number(message.pagingCursor), count)
         );
     }
 
@@ -209,7 +237,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
             return this.messageMap.get(id);
         
         await this.ensureConnection(`Could not get message`);
-        let message = await this.peer.getMessage(id);
+        let message = await this.idempotentPeer.getMessage(id);
 
         if (this.messageMap.has(id)) {
             let existingMessage = this.messageMap.get(id);
@@ -223,22 +251,22 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     }
 
     async getCount(): Promise<number> {
-        return await this.peer.getCount();
+        return await this.idempotentPeer.getCount();
     }
 
     async likeMessage(messageId: string): Promise<void> {
         await this.ensureConnection();
-        return await this.peer.likeMessage(messageId);
+        return await this.idempotentPeer.likeMessage(messageId);
     }
 
     async unlikeMessage(messageId: string): Promise<void> {
         await this.ensureConnection();
-        return await this.peer.unlikeMessage(messageId);
+        return await this.idempotentPeer.unlikeMessage(messageId);
     }
 
     async deleteMessage(messageId: string): Promise<void> {
         await this.ensureConnection();
-        return await this.peer.deleteMessage(messageId);
+        return await this.idempotentPeer.deleteMessage(messageId);
     }
 
 }

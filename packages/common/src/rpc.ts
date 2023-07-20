@@ -38,9 +38,18 @@ function isEvent(message: RPCMessage): message is RPCEvent {
     return message.type === 'event';
 }
 
-export function RpcCallable() {
+export interface RpcCallableOptions {
+    /**
+     * When true, this call is done in "immediate mode", where the underlying socket message 
+     * is sent immediately without being queued if the connection is not marked as ready, 
+     */
+    immediate?: boolean;
+}
+
+export function RpcCallable(options?: RpcCallableOptions) {
     return (target, propertyKey) => {
         Reflect.defineMetadata('rpc:type', 'call', target, propertyKey);
+        Reflect.defineMetadata('rpc:callableOptions', options ?? {}, target, propertyKey);
     }
 }
 
@@ -54,12 +63,47 @@ export interface Peer {
     [name: string]: (...args) => Promise<any>;
 }
 
+export interface CallOptions {
+    /**
+     * If true, this request can be held and retried when connection is re-established.
+     * If false, a disconnect while the request is outstanding will cause it to throw 
+     * an error.
+     */
+    idempotent?: boolean;
+
+    /**
+     * If true, this request should never be queued for sending, even if the message was 
+     * never sent as the request to send it came in when the socket was disconnected.
+     */
+    immediate?: boolean;
+}
+
+export interface PendingCall {
+    id: string;
+    request: RPCRequest;
+    options: CallOptions;
+    idempotent: boolean;
+    handler: (response: RPCResponse) => void;
+}
+
 export class SocketRPC<PeerT = Peer> {
     constructor() {
+        this._peer = this.createPeer({ immediate: false });
+        this._immediatePeer = this.createPeer({ immediate: true });
+        this._idempotentPeer = this.createPeer({ idempotent: true });
+    }
+
+    private createPeer(options: CallOptions) {
         let self = this;
-        this._peer = <PeerT>new Proxy({}, {
+        let methodMap = new Map<string | symbol, Function>();
+        return <PeerT>new Proxy({}, {
             get(target, methodName, receiver) {
-                return (...parameters) => self.call(String(methodName), ...parameters);
+                if (methodMap.has(methodName))
+                    return methodMap.get(methodName);
+                
+                const method = (...parameters) => self.call(options, String(methodName), ...parameters);
+                methodMap.set(methodName, method);
+                return method;
             }
         })
     }
@@ -70,25 +114,40 @@ export class SocketRPC<PeerT = Peer> {
 
         this._socket = socket;
         this._socket.onmessage = ev => this.onReceiveMessage(JSON.parse(ev.data));
-        this._socket.onerror = ev => {
-            console.error(`[Banta] Error in socket: ${ev}`);
-            // try {
-            //     this._socket.close();
-            // } catch (e) {
-            //     console.error(`[Banta] Failed to close the error'ed socket!`);
-            // }
-        };
+        this._socket.onerror = ev => console.error(`[Banta/RPC] Socket reports error.`);
+
+        if (this._socket instanceof DurableSocket) {
+            console.log(`[Banta/RPC] Detected DurableSocket, enabling enhancements`);
+            this._socket.addEventListener('lost', () => this.handleStateLost());
+            this._socket.addEventListener('ready', () => this.resendQueuedRequests());
+        }
 
         return this;
     }
 
     private _peer: PeerT;
+    private _immediatePeer: PeerT;
+    private _idempotentPeer: PeerT;
     private _socket: WebSocket;
-    private _requestMap = new Map<string, (response: any) => void>();
+    private _callMap = new Map<string, PendingCall>();
     private _eventMap = new Map<string, Subject<any>>();
 
     get peer() { return this._peer; }
 
+    /**
+     * Get a peer proxy which performs all of its calls in "immediate mode". Immediate mode
+     * bypasses the message queue and attempts to send the message on the socket immediately even if 
+     * it appears the socket is not ready. This is needed when sending messages to Banta during the 'restore'
+     * event handler of DurableSocket.
+     */
+    get immediatePeer() { return this._immediatePeer; }
+
+    /**
+     * Get a peer proxy which performs all of its calls in "idempotent mode". Idempotent requests
+     * can be resent if connection fails after the initial request was sent, because it is assumed the 
+     * server will correctly discard the request if it has already been processed.
+     */
+    get idempotentPeer() { return this._idempotentPeer; }
     private getEventInternal(name: string) {
         if (!this._eventMap.has(name)) {
             this._eventMap.set(name, new Subject<any>());
@@ -97,8 +156,16 @@ export class SocketRPC<PeerT = Peer> {
         return this._eventMap.get(name);
     }
 
-    private rawSend(message: RPCMessage) {
-        this._socket.send(JSON.stringify(message));
+    private rawSend(message: RPCMessage, immediate = false) {
+        if (this._socket instanceof DurableSocket) {
+            if (immediate) {
+                this._socket.sendImmediately(JSON.stringify(message));
+            } else {
+                this._socket.send(JSON.stringify(message));
+            }
+        } else {
+            this._socket.send(JSON.stringify(message));
+        }
     }
 
     sendEvent<EventT>(name: string, object: EventT) {
@@ -110,7 +177,7 @@ export class SocketRPC<PeerT = Peer> {
             this._socket.reconnect();
     }
 
-    call<ResponseT>(method: string, ...parameters: any[]): Promise<ResponseT> {
+    call<ResponseT>(options: CallOptions, method: string, ...parameters: any[]): Promise<ResponseT> {
         let rpcRequest = <RPCRequest>{
             type: 'request',
             id: uuid(),
@@ -119,15 +186,64 @@ export class SocketRPC<PeerT = Peer> {
         };
         
         return new Promise<ResponseT>((resolve, reject) => {
-            this._requestMap.set(rpcRequest.id, (response: RPCResponse) => {
-                if (response.error)
-                    reject(response.error);
-                else
-                    resolve(response.value);
+            this.startCall({
+                id: rpcRequest.id,
+                request: rpcRequest,
+                options,
+                idempotent: options.idempotent,
+                handler: (response: RPCResponse) => {
+                    if (response.error)
+                        reject(response.error);
+                    else
+                        resolve(response.value);
+                }
             });
-
-            this.rawSend(rpcRequest);
         });
+    }
+
+    private startCall(request: PendingCall) {
+        // Short circuit: If we are not currently connected and the call is idempotent, go directly to 
+        // retry queue.
+        if (this._socket instanceof DurableSocket && !this._socket.isReady && request.options.idempotent) {
+            console.warn(`[Banta/RPC] Call ${request.request.method}() is being scheduled to send when connection is restored.`);
+            this.retryOnReconnectQueue.push(request);
+            return;
+        }
+
+        this._callMap.set(request.id, request);
+        this.rawSend(request.request, request.options.immediate ?? false);
+    }
+
+    private retryOnReconnectQueue: PendingCall[] = [];
+
+    private resendQueuedRequests() {
+        let calls = this.retryOnReconnectQueue.splice(0);
+
+        console.log(`Resending ${calls.length} idempotent call requests...`);
+        calls.forEach(req => this.startCall(req));
+    }
+
+    private handleStateLost() {
+        let failed = 0;
+        let rescheduled = 0;
+        for (let [ id, request ] of Array.from(this._callMap.entries())) {
+            if (request.idempotent) {
+                this.retryOnReconnectQueue.push(request);
+                rescheduled += 1;
+                continue;
+            }
+
+            request.handler({ id, type: 'response', error: new Error(`Connection was lost`), value: undefined });
+            failed += 1;
+        }
+
+        this._callMap.clear();
+        
+        if (failed > 0)
+            console.error(`[Banta/RPC] Failed ${failed} in-flight requests due to connection failure`);
+        if (rescheduled > 0)
+            console.warn(`[Banta/RPC] Rescheduled ${rescheduled} in-flight requests due to connection failure`);
+
     }
 
     private async onReceiveMessage(message: RPCMessage) {
@@ -165,13 +281,13 @@ export class SocketRPC<PeerT = Peer> {
         }
 
         if (isResponse(message)) {
-            let handler = this._requestMap.get(message.id);
+            let { request, handler } = this._callMap.get(message.id);
             if (!handler) {
                 console.error(`Received response to unknown request '${message.id}'`);
                 return;
             }
 
-            this._requestMap.delete(message.id);
+            this._callMap.delete(message.id);
             handler(message);
             return;
         }
@@ -196,6 +312,10 @@ export class SocketRPC<PeerT = Peer> {
 
     private getRpcType(name: string) {
         return Reflect.getMetadata('rpc:type', this.constructor.prototype, name) || 'none';
+    }
+
+    private getRpcCallableOptions(name: string): RpcCallableOptions {
+        return Reflect.getMetadata('rpc:callableOptions', this.constructor.prototype, name) ?? {};
     }
 
     close() {

@@ -1,11 +1,13 @@
 import { Body, Controller, Get, Post, WebEvent, WebServer } from "@alterior/web-server";
-import { ChatService } from "./chat.service";
+import { Cache } from "@alterior/common";
+import { ChatService, Topic } from "./chat.service";
 import * as bodyParser from 'body-parser';
 import { HttpError } from "@alterior/common";
 import type * as express from 'express';
 import { ChatConnection } from "./chat-connection";
-import * as mongodb from 'mongodb';
 import { Logger } from "@alterior/logging";
+import { v4 as uuid } from "uuid";
+import { UrlCard } from "@banta/common";
 
 export interface SignInRequest {
     email : string;
@@ -21,6 +23,11 @@ export class ChatController {
     ) {
     }
 
+    @Get()
+    async info() {
+        return { service: `@banta/server` };
+    }
+
     @Get('/socket')
     async socket() {
         let conn = new ChatConnection(
@@ -32,30 +39,45 @@ export class ChatController {
         conn.bind(await WebServer.startSocket());
     }
 
+    private topicsCache = new Cache<Topic>(1000 * 60 * 15, 5000);
+
     @Get('/topics/:id')
     async getTopic(id: string) {
-        let topic = await this.chat.getTopic(id, false);
+        let topic: Topic;
+
+        try {
+            topic = await this.topicsCache.fetch(id, () => this.chat.getTopic(id, false));
+        } catch (e) {
+            let errorId = uuid();
+            Logger.current.error(`Error occurred while getting topic information: ${e.message}. Stack: ${e.stack}. Error ID: ${errorId}`);
+            throw new HttpError(500, { message: 'An internal error occurred', errorId })
+        }
+
         if (!topic)
             throw new HttpError(404, { error: `not-found` });
 
         return topic;
     }
 
+    private urlCardsCache = new Cache<UrlCard>(1000 * 60 * 15, 5000);
+
     @Post('/urls')
     async getUrlCard(@Body() body: { url: string }) {
         let url = body.url;
         console.log(`finding url card for '${url}'`);
-        try {
-            let card = await this.chat.getUrlCard(url);
+        let card: UrlCard;
 
-            if (card)
-                return card;
-            
-            return new HttpError(404, { code: 'not-found', message: 'No card available for this URL' });
+        try {
+            card = await this.urlCardsCache.fetch(url, () => this.chat.getUrlCard(url));
         } catch (e) {
             Logger.current.error(`Failed to retrieve URL card for '${url}': ${e.message}`);
             Logger.current.error(`Returning null.`);
             return null;
         }
+
+        if (!card)
+            return new HttpError(404, { code: 'not-found', message: 'No card available for this URL' });
+
+        return card;
     }
 }

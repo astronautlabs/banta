@@ -151,8 +151,21 @@ export class ChatService {
             Logger.current.error(`MongoDB topology was closed. Exiting.`);
             process.exit(1);
         });
+        this.mongoClient.addListener('error', ev => {
+            Logger.current.error(`Exiting due to MongoDB error: ${ev.message}. Cause: ${String(ev.cause)}`);
+            process.exit(1);
+        });
+        this.mongoClient.addListener('commandFailed', ev => {
+            Logger.current.error(`Exiting due to MongoDB commandFailed: ${ev.failure.message}. Command: ${String(ev.commandName)}`);
+            process.exit(1);
+        });
+        this.mongoClient.addListener('timeout', ev => {
+            Logger.current.error(`Exiting due to MongoDB timeout: ${ev.failure.message}. Command: ${String(ev.commandName)}`);
+            process.exit(1);
+        });
 
         this.db = this.mongoClient.db(process.env.BANTA_DB_NAME || 'banta');
+
         this.redis = new IORedis(Number(process.env.REDIS_PORT ?? 6379), process.env.REDIS_HOST ?? 'localhost', {
             password: process.env.REDIS_PASSWORD,
         });
@@ -234,22 +247,22 @@ export class ChatService {
     /**
      * The MongoDB `urlCards` collection
      */
-    get urlCards() { return this.db.collection<PersistedUrlCard>('urlCards'); }
+    private get urlCards() { return this.db.collection<PersistedUrlCard>('urlCards'); }
 
     /**
      * The MongoDB `origins` collection
      */
-    get origins() { return this.db.collection<UrlOrigin>('origins'); }
+    private get origins() { return this.db.collection<UrlOrigin>('origins'); }
 
     /**
      * The MongoDB `topics` collection
      */
-    get likes() { return this.db.collection<Like>('likes'); }
+    private get likes() { return this.db.collection<Like>('likes'); }
 
     /**
      * The MongoDB `topics` collection
      */
-    get topics() { return this.db.collection<Topic>('topics'); }
+    private get topics() { return this.db.collection<Topic>('topics'); }
 
     private _events = new Subject<ChatEvent>();
 
@@ -270,14 +283,18 @@ export class ChatService {
             return topicOrId;
         
         let id = <string>topicOrId;
-        await this.topics.updateOne({ id }, {
-            $setOnInsert: {
-                id,
-                createdAt: Date.now()
-            }
-        }, { upsert: true });
+        await this.updateOne(this.topics, 
+            { id }, 
+            {
+                $setOnInsert: {
+                    id,
+                    createdAt: Date.now()
+                }
+            }, 
+            { upsert: true }
+        );
 
-        return await this.topics.findOne({ id });
+        return await this.findOne(this.topics, { id });
     }
 
     /**
@@ -286,7 +303,14 @@ export class ChatService {
      * @returns 
      */
     async postMessage(message : ChatMessage) {
-        message.id = uuid();
+        if (!message.id) {
+            message.id = uuid();
+        } else {
+            if (await this.findOne(this.messages, { id: message.id })) {
+                throw new Error(`A message with this ID already exists.`);
+            }
+        }
+        
         message.hidden = false;
 
         // Make sure we strip the user's auth token, we never need that to be stored.
@@ -323,7 +347,7 @@ export class ChatService {
 
         // Definitely keeping this message at this point.
 
-        await this.messages.insertOne(message);
+        await this.insertOne(this.messages, message);
         
         setTimeout(async () => {
             // Update the parent's submessage count, if needed
@@ -351,7 +375,7 @@ export class ChatService {
     async modifyTopicMessageCount(topicOrId: Topic | string, delta: number) {
         let topic = await this.getOrCreateTopic(topicOrId);
         topic.messageCount += delta;
-        await this.topics.updateOne({ id: topic.id }, { $inc: { messageCount: delta }});
+        await this.updateOne(this.topics, { id: topic.id }, { $inc: { messageCount: delta }});
     }
 
     /**
@@ -364,7 +388,7 @@ export class ChatService {
     async modifySubmessageCount(messageOrId: ChatMessage | string, delta: number) {
         let message = await this.getMessage(messageOrId, true);
         message.submessageCount = (message.submessageCount || 0) + delta;
-        this.messages.updateOne({ id: message.id }, { $inc: { submessageCount: delta } });
+        this.updateOne(this.messages, { id: message.id }, { $inc: { submessageCount: delta } });
         this.notifyMessageChange(message);
     }
 
@@ -378,7 +402,7 @@ export class ChatService {
     async modifyMessageLikesCount(messageOrId: string | ChatMessage, delta: number) {
         let message = await this.getMessage(messageOrId, true);
         message.likes += delta;
-        await this.messages.updateOne({ id: message.id }, { $inc: { likes: delta } });
+        await this.updateOne(this.messages, { id: message.id }, { $inc: { likes: delta } });
         this.notifyMessageChange(message);
         return message;
     }
@@ -403,7 +427,7 @@ export class ChatService {
             return;
         
         // Update the message itself to reflect the new status.
-        this.messages.updateOne({ id: message.id }, { $set: { hidden }});
+        this.updateOne(this.messages, { id: message.id }, { $set: { hidden }});
         message.hidden = hidden;
 
         // Address the effect this operation will have on cached message counters.
@@ -483,7 +507,7 @@ export class ChatService {
         });
 
         message.edits = edits;
-        await this.messages.updateOne({ id: message.id }, {
+        await this.updateOne(this.messages, { id: message.id }, {
             $set: {
                 message: newText,
                 edits: edits
@@ -512,12 +536,16 @@ export class ChatService {
         await this.setMessageHiddenStatus(message.id, true);
 
         message.deleted = true;
-        await this.messages.updateOne({ id: message.id }, { $set: { deleted: true }});
+        await this.updateOne(this.messages, { id: message.id }, { $set: { deleted: true }});
         
         this._events.next(<DeleteMessageEvent>{
             type: 'delete',
             message
         });
+    }
+
+    async getLike(userId: string, messageId: string) {
+        return await this.findOne(this.likes, { messageId, userId });
     }
 
     /**
@@ -530,22 +558,64 @@ export class ChatService {
         if (!message)
             throw new Error(`Message cannot be null`);
 
-        let like = await this.likes.findOne({ messageId: message.id, userId: user.id });
+        let like = await this.getLike(user.id, message.id);
         if (like) 
             return;
 
-        await this.likes.updateOne({ messageId: message.id, user: user.id }, {
-            $setOnInsert: {
-                liked: true,
-                createdAt: Date.now(),
-                messageId: message.id, 
-                userId: user.id
-            }
-        }, { upsert: true });
+        await this.dbOperation(`Insert/update like`, async () => {
+            this.updateOne(this.likes, 
+                { messageId: message.id, user: user.id }, 
+                {
+                    $setOnInsert: {
+                        liked: true,
+                        createdAt: Date.now(),
+                        messageId: message.id, 
+                        userId: user.id
+                    }
+                }, 
+                { upsert: true }
+            );
+        });
 
         await this.modifyMessageLikesCount(message, +1);
         await this.pubsubs.publish(message.topicId, { like });
         this._events.next(<LikeEvent>{ type: 'like', message, user });
+    }
+
+    private async findOne<T>(collection: mongodb.Collection<T>, criteria: mongodb.Filter<T>) {
+        return await this.dbOperation(`${collection.collectionName}.findOne(${JSON.stringify(criteria)})`, async () => {
+            return await collection.findOne(criteria);
+        });
+    }
+
+    private async updateOne<T>(
+        collection: mongodb.Collection<T>, 
+        filter: mongodb.Filter<T>, 
+        update: Partial<T> | mongodb.UpdateFilter<T>, 
+        options?: mongodb.UpdateOptions
+    ) {
+        const label = `${collection.collectionName}.updateOne(` 
+            + `${JSON.stringify(filter)}, ${JSON.stringify(update)}, ${JSON.stringify(options)}` 
+        + `)`;
+        return await this.dbOperation(label, () => {
+            return collection.updateOne(filter, update, options);
+        })
+    }
+
+    private async insertOne<T>(collection: mongodb.Collection<T>, record: mongodb.OptionalUnlessRequiredId<T>) {
+        return await this.dbOperation(`${collection.collectionName}.insertOne(${JSON.stringify(record)})`, () => {
+            return collection.insertOne(record);
+        })
+    }
+
+    private async dbOperation<T extends Promise<any>>(label: string, handler: () => T): Promise<Awaited<T>> {
+        try {
+            return await handler();
+        } catch (e) {
+            let errorId = uuid();
+            Logger.current.error(`Error occurred during database operation '${label}': ${e.message}. Stack: ${e.stack}. Error ID: ${errorId}`);
+            throw new Error(`internal-error:disconnect-and-retry|${errorId}`);
+        }
     }
 
     /**
@@ -558,7 +628,7 @@ export class ChatService {
         if (!message)
             throw new Error(`Message cannot be null`);
 
-        let like = await this.likes.findOne({ messageId: message.id, userId: user.id });
+        let like = await this.findOne(this.likes, { messageId: message.id, userId: user.id });
         if (!like)
             return;
 
@@ -586,7 +656,7 @@ export class ChatService {
             return messageOrId;
 
         let id = <string>messageOrId;
-        let message = await this.messages.findOne({ id });
+        let message = await this.findOne(this.messages, { id });
 
         if (throwIfMissing && !message)
             throw new Error(`No such message with ID '${id}'`);
@@ -606,20 +676,21 @@ export class ChatService {
             return topicOrId;
 
         let id = <string>topicOrId;
-        let topic = await this.topics.findOne({ id });
+        let topic = await this.findOne(this.topics, { id });
         
         if (throwIfMissing && !topic)
             throw new Error(`No such topic with ID '${id}'`);
         
+        delete topic._id;
         return topic;
     }
 
     async getOrigin(origin: string) {
-        return await this.origins.findOne({ origin });
+        return await this.findOne(this.origins, { origin });
     }
 
     async getUrlCard(url: string): Promise<UrlCard> {
-        let urlCard = <PersistedUrlCard> await this.urlCards.findOne({ url });
+        let urlCard = <PersistedUrlCard> await this.findOne(this.urlCards, { url });
         const URL_CARD_TIMEOUT = 1000 * 60 * 15;
         if (urlCard && urlCard.retrievedAt + URL_CARD_TIMEOUT > Date.now())
             return urlCard.card || null;
@@ -780,7 +851,7 @@ export class ChatService {
                 }
             }
         } finally {
-            await this.origins.updateOne({ origin: originName }, { $set: origin }, { upsert: true });
+            await this.updateOne(this.origins, { origin: originName }, { $set: origin }, { upsert: true });
 
             if (urlCard) {
                 await this.urlCards.replaceOne({ url }, urlCard, { upsert: true });

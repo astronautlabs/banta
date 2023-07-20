@@ -102,7 +102,7 @@ export class ChatConnection extends SocketRPC {
         delete message.user?.userAgent;
 
         if (this.user) {
-            let like = await this.chat.likes.findOne({ messageId: message.id, userId: this.user.id });
+            let like = await this.chat.getLike(this.user.id, message.id);
             message.userState.liked = !!like;
         }
 
@@ -170,6 +170,23 @@ export class ChatConnection extends SocketRPC {
     @RpcCallable()
     async subscribe(topicId: string, parentMessageId: string, order: CommentsOrder) {
         this.sortOrder = order ?? CommentsOrder.NEWEST;
+
+        let chaosFactor = 0;
+
+        if (process.argv.includes(`--full-chaos`))
+            chaosFactor = 1;
+        else if (process.argv.includes(`--half-chaos`))
+            chaosFactor = 0.5;
+        else if (process.argv.includes(`--quarter-chaos`))
+            chaosFactor = 0.25;
+
+        if (Math.random() < chaosFactor) {
+            console.log(`[Banta Chaos] Randomly simulating crash on topic subscribe [CRASH]`);
+            throw new Error(`Oh no! Topology!`);
+        } else {
+            console.log(`[Banta Chaos] Allowing topic subscribe [SAFE]`);
+            console.log(`The user is safe FOR NOW. Subscribed to topic ${topicId}`);
+        }
 
         if (parentMessageId) {
             let parentMessage = await this.chat.getMessage(parentMessageId);
@@ -288,6 +305,14 @@ export class ChatConnection extends SocketRPC {
 
         message.user = { ...this.user };
         message.sentAt = Date.now();
+
+        if (message.id) {
+            let existingMessage = await this.chat.getMessage(message.id);
+            if (existingMessage && existingMessage.user?.id === this.user.id) {
+                return existingMessage;
+            }
+        }
+
         message.attachments ??= [];
         message.deleted = false;
         message.likes = 0;

@@ -116,7 +116,7 @@ export class BotSession extends SocketRPC {
         this._token = token;
         if (!token)
             return;
-        await this.peer.authenticate(token);
+        await this.immediatePeer.authenticate(token);
     }
 
     close(): void {

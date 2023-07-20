@@ -28,15 +28,26 @@
                         ></textarea>
                 </mat-form-field>
                 <div class="options-line">
-                    <mat-spinner *ngIf="sending" class="icon loading" diameter="18" strokeWidth="2"></mat-spinner>
-                    <div *ngIf="sendError" class="error-message" [class.expanded]="expandError" [matTooltip]="sendError.message" (click)="alertError()">
-                        <mat-icon *ngIf="sendError">error</mat-icon>
-                        {{sendError.message}}
-                    </div>
-                    <div *ngIf="!sendError && transientMessage" class="transient-message" [class.expanded]="true" [matTooltip]="transientMessage" (click)="alertError()">
-                        <mat-spinner [inline]="true" [diameter]="15"></mat-spinner>
-                        {{transientMessage}}
-                    </div>
+                    <ng-container *ngIf="indicatorState === 'transient'">
+                        <div class="transient-message" [class.expanded]="true" [matTooltip]="transientMessage" (click)="alertError()">
+                            <mat-spinner [inline]="true" [diameter]="15"></mat-spinner>
+                            {{transientMessage}}
+                        </div>
+                    </ng-container>
+                    <ng-container *ngIf="indicatorState === 'sending'">
+                        <div class="transient-message" [class.expanded]="true" (click)="alertError()">
+                            <mat-spinner [inline]="true" [diameter]="15"></mat-spinner>
+                            {{sendingLabel}}...
+                        </div>
+                    </ng-container>
+                    <ng-container *ngIf="indicatorState === 'error'">
+                        <div class="error-message" [class.expanded]="expandError" [matTooltip]="sendError.message" (click)="alertError()">
+                            <mat-icon *ngIf="sendError">error</mat-icon>
+                            {{sendError.message}}
+                        </div>
+                    </ng-container>
+
+
                     <div class="spacer"></div>
                     <div class="custom">
                         <ng-content></ng-content>
@@ -90,23 +101,21 @@
                 color="primary"
                 [disabled]="!sendButtonEnabled"
                 >
-                <ng-container *ngIf="canComment">
-                    <mat-icon *ngIf="!sending">chevron_right</mat-icon>
-                    <mat-spinner *ngIf="sending" class="icon" diameter="18" strokeWidth="2"></mat-spinner>
+                <ng-container *ngIf="buttonState === 'send'">
+                    <mat-icon>chevron_right</mat-icon>
+                    <span class="label">{{sendLabel}}</span>
                 </ng-container>
-                <span class="label">
-                    <ng-container *ngIf="!canComment">
-                        {{permissionDeniedLabel}}
-                    </ng-container>
-                    <ng-container *ngIf="canComment">
-                        <ng-container *ngIf="!sending">
-                            {{sendLabel}}
-                        </ng-container>
-                        <ng-container *ngIf="sending">
-                            {{sendingLabel}}
-                        </ng-container>
-                    </ng-container>
-                </span>
+                <ng-container *ngIf="buttonState === 'sending'">
+                    <mat-spinner class="icon" diameter="18" strokeWidth="2"></mat-spinner>
+                    <span class="label">{{sendingLabel}}</span>
+                </ng-container>
+                <ng-container *ngIf="buttonState === 'signing-in'">
+                    <mat-spinner class="icon" diameter="18" strokeWidth="2"></mat-spinner>
+                    {{signingInLabel}}
+                </ng-container>
+                <ng-container *ngIf="buttonState === 'permission-denied'">
+                    {{permissionDeniedLabel}}
+                </ng-container>
             </button>
         </ng-container>
     </div>

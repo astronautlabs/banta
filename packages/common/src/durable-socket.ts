@@ -30,7 +30,7 @@
 
         let wasRestored: () => void = () => {};
         this.addEventListener('lost', () => this.ready = new Promise<this>((res, _) => wasRestored = () => res(this)));
-        this.addEventListener('restore', e => wasRestored());
+        this.addEventListener('ready', e => wasRestored());
     }
 
     ready: Promise<this>;
@@ -45,12 +45,17 @@
     }
 
     private connect() {
-        let connected = false;
-        this._socket = new WebSocket(this.urlWithSessionId, this.protocols);
-        this._socket.onopen = ev => (connected = true, this.handleConnect(ev));
-        this._socket.onerror = ev => this.dispatchEvent(ev);
-        this._socket.onclose = ev => this.handleLost();
-        this._socket.onmessage = ev => this.handleMessage(ev);
+        if (this._socket) {
+            this.safelyClose(this._socket);
+            this._socket = null;
+        }
+
+        const socket = new WebSocket(this.urlWithSessionId, this.protocols);
+        this._socket = socket;
+        this._socket.onopen = ev => this.handleConnect(socket, ev);
+        this._socket.onerror = ev => this.dispatchSocketEvent(socket, ev);
+        this._socket.onclose = ev => this.handleLost(socket);
+        this._socket.onmessage = ev => this.handleMessage(socket, ev);
     }
 
     get urlWithSessionId() {
@@ -72,80 +77,119 @@
         return this._sessionId;
     }
 
-    private handleConnect(ev : Event) {
+    private safelyClose(socket: WebSocket) {
+        try {
+            socket?.close();
+        } catch (e) {
+            console.warn(`[Banta/DurableSocket] While safely closing an old socket: ${e.message} [this is unlikely to be a problem]`);
+        }
+    }
+
+    private async handleConnect(socket: WebSocket, ev : Event) {
+        if (this._socket !== socket) {
+            this.safelyClose(socket);
+            return;
+        }
+        
         let first = !this._open;
         if (first) {
-            this.dispatchEvent(ev);
+            await this.dispatchSocketEvent(socket, ev);
             this._open = true;
         }
 
-        this._ready = true;
-        this._attempt = 0;
-        this._messageQueue.splice(0).forEach(m => this._socket.send(m));
-
         if (!first) {
-            console.log(`[Socket] Connection Restored [${this.url}]`);
-            this.dispatchEvent({
-                type: 'restore', 
-                bubbles: false, 
-                cancelable: false, 
-                cancelBubble: false, 
-                composed: false,
-                currentTarget: this,
-                defaultPrevented: false,
-                eventPhase: 0, // Event.NONE
-                isTrusted: true,
-                returnValue: undefined,
-                srcElement: undefined,
-                target: this,
-                timeStamp: Date.now(),
-                composedPath: () => [],
-                initEvent: undefined,
-                preventDefault() { this.defaultPrevented = true; },
-                stopPropagation() { },
-                stopImmediatePropagation() { },
-                AT_TARGET: 2, // Event.AT_TARGET
-                BUBBLING_PHASE: 3, // Event.BUBBLING_PHASE,
-                CAPTURING_PHASE: 1, // Event.CAPTURING_PHASE,
-                NONE: 0, //Event.NONE
-            });
-        }
-
-        this.lastPong = Date.now();
-        if (this.enablePing) this.pingTimer = setInterval(() => {
-            if (this._closed) {
-                clearInterval(this.pingTimer);
-                return;
-            }
-            
+            console.log(`[Banta/DurableSocket] Connection is restored [${this.url}]. Restoring state...`);
             try {
-                this.send(JSON.stringify({ type: 'ping' }));
+                await this.dispatchSocketEvent(socket, {
+                    type: 'restore', 
+                    bubbles: false, 
+                    cancelable: false, 
+                    cancelBubble: false, 
+                    composed: false,
+                    currentTarget: this,
+                    defaultPrevented: false,
+                    eventPhase: 0, // Event.NONE
+                    isTrusted: true,
+                    returnValue: undefined,
+                    srcElement: undefined,
+                    target: this,
+                    timeStamp: Date.now(),
+                    composedPath: () => [],
+                    initEvent: undefined,
+                    preventDefault() { this.defaultPrevented = true; },
+                    stopPropagation() { },
+                    stopImmediatePropagation() { },
+                    AT_TARGET: 2, // Event.AT_TARGET
+                    BUBBLING_PHASE: 3, // Event.BUBBLING_PHASE,
+                    CAPTURING_PHASE: 1, // Event.CAPTURING_PHASE,
+                    NONE: 0, //Event.NONE
+                });
             } catch (e) {
-                console.error(`[Socket] Failed to send ping message. Assuming connection is broken. [${this.url}]`);
+                console.error(`[Banta/DurableSocket] Error restoring state: ${e.message}. Stack: ${e.stack}`);
+                console.error(`[Banta/DurableSocket] Treating connection as failed due to state restoration error.`);
+                this.setNotReady();
+                this.safelyClose(this._socket);
                 try {
                     this._socket?.close();
                 } catch (e) {
-                    console.error(`[Socket] Failed to close socket after ping failure: ${e.message} [${this.url}]`);
+                    console.error(`[Banta/DurableSocket] Failed to close socket after ping failure: ${e.message} [${this.url}]`);
                 }
                 return;
             }
 
-            if (this.lastPong < Date.now() - this.pingKeepAliveInterval) {
-                console.log(`[Socket] No keep-alive response in ${this.pingKeepAliveInterval}ms. Forcing reconnect... [${this.url}]`);
-                try {
-                    this.handleLost();
-                } catch (e) {
-                    console.error(`[Socket] Failed to close socket after timeout waiting for pong: ${e.message} [${this.url}]`);
+            console.log(`[Banta/DurableSocket] State restored successfully.`);
+        }
+
+        this.setReady(socket);
+        this._attempt = 0;
+        
+        this._messageQueue.splice(0).forEach(m => this._socket.send(m));
+
+        this.lastPong = Date.now();
+        if (this.enablePing) {
+            clearInterval(this.pingTimer);
+            this.pingTimer = setInterval(() => {
+                if (this._closed) {
+                    clearInterval(this.pingTimer);
+                    return;
                 }
-            }
-        }, this.pingInterval);
+                
+                try {
+                    this.sendImmediately(JSON.stringify({ type: 'ping' }));
+                } catch (e) {
+                    console.error(`[Banta/DurableSocket] Failed to send ping message. Connection is broken. [${this.url}]`);
+                    this.setNotReady();
+                    this.safelyClose(this._socket);
+                    try {
+                        this._socket?.close();
+                    } catch (e) {
+                        console.error(`[Banta/DurableSocket] Failed to close socket after ping failure: ${e.message} [${this.url}]`);
+                    }
+                    return;
+                }
+
+                if (this.lastPong < Date.now() - this.pingKeepAliveInterval) {
+                    console.log(`[Banta/DurableSocket] No keep-alive response in ${this.pingKeepAliveInterval}ms. Forcing reconnect... [${this.url}]`);
+                    try {
+                        this.handleLost(socket);
+                    } catch (e) {
+                        console.error(`[Banta/DurableSocket] Failed to close socket after timeout waiting for pong: ${e.message} [${this.url}]`);
+                    }
+                }
+            }, this.pingInterval);
+        }
     }
 
     enablePing = true;
     pingInterval = 10000;
     pingKeepAliveInterval = 25000;
 
-    private handleMessage(ev : MessageEvent) {
+    private handleMessage(socket: WebSocket, ev : MessageEvent) {
+        if (this._socket !== socket) {
+            this.safelyClose(socket);
+            return;
+        }
+        
         let message = JSON.parse(ev.data);
         if (message.type === 'pong') {
             this.lastPong = Date.now();
@@ -153,18 +197,23 @@
         } else if (message.type === 'setSessionId') {
             this._sessionId = message.id;
         }
-        this.dispatchEvent(ev);
+        this.dispatchSocketEvent(socket, ev);
     }
 
     private _closed = false;
-    private handleLost() {
+    private handleLost(socket: WebSocket) {
+        if (this._socket !== socket) {
+            this.safelyClose(socket);
+            return;
+        }
+        
         if (this._closed)
             return;
         
         if (this._ready) {
-            console.log(`[Socket] Connection Lost [${this.url}]`);
+            console.log(`[Banta/DurableSocket] Connection Lost [${this.url}]`);
         }
-        this._ready = false;
+        this.setNotReady();
         this._attempt += 1;
 
         clearInterval(this.pingTimer);
@@ -215,13 +264,71 @@
         );
     }
 
+    private _reconnectTimeout;
     private attemptToReconnect() {
-        console.log(`[Socket] Waiting ${this.actualReconnectTime}ms before reconnect (attempt ${this._attempt}) [${this.url}]`);
-        setTimeout(() => this.connect(), this.actualReconnectTime);
+        if (this._ready)
+            return;
+        
+        console.log(`[Banta/DurableSocket] Waiting ${this.actualReconnectTime}ms before reconnect (attempt ${this._attempt}) [${this.url}]`);
+        if (this._reconnectTimeout) {
+            console.warn(`[Banta/DurableSocket] Warning: Attempt to schedule reconnect when there is already a reconnect timeout outstanding!`);
+            clearTimeout(this._reconnectTimeout);
+        }
+        setTimeout(() => {
+            if (this._ready)
+                return;
+            
+            this.connect();
+            clearTimeout(this._reconnectTimeout);
+            this._reconnectTimeout = undefined;
+        }, this.actualReconnectTime);
     }
 
     reconnect() {
         this._socket?.close();
+        console.log(`[Banta/DurableSocket] Connection is no longer ready.`);
+        this.setNotReady();
+    }
+
+    private setNotReady() {
+        if (this._ready)
+            console.log(`[Banta/DurableSocket] Connection is no longer ready.`);
+        this._ready = false;
+    }
+
+    private setReady(socket: WebSocket) {
+        if (this._ready)
+            console.warn(`[Banta/DurableSocket] Connection marked ready, but it was already marked ready`);
+        else
+            console.log(`[Banta/DurableSocket] Connection is now ready.`);
+
+        if (!this._ready) {
+            this._ready = true;
+            this.dispatchSocketEvent(socket, {
+                type: 'ready', 
+                bubbles: false, 
+                cancelable: false, 
+                cancelBubble: false, 
+                composed: false,
+                currentTarget: this,
+                defaultPrevented: false,
+                eventPhase: 0, // Event.NONE
+                isTrusted: true,
+                returnValue: undefined,
+                srcElement: undefined,
+                target: this,
+                timeStamp: Date.now(),
+                composedPath: () => [],
+                initEvent: undefined,
+                preventDefault() { this.defaultPrevented = true; },
+                stopPropagation() { },
+                stopImmediatePropagation() { },
+                AT_TARGET: 2, // Event.AT_TARGET
+                BUBBLING_PHASE: 3, // Event.BUBBLING_PHASE,
+                CAPTURING_PHASE: 1, // Event.CAPTURING_PHASE,
+                NONE: 0, //Event.NONE
+            });
+        }
     }
 
     private _open = false;
@@ -318,6 +425,10 @@
         });
     }
     
+    get isReady() {
+        return this._ready;
+    }
+    
     send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
         if (!this._ready) {
             this._messageQueue.push(data);
@@ -326,7 +437,34 @@
         }
     }
 
+    /**
+     * Send a request immediately regardless of ready state. This should only be used during a 'restore' event handler.
+     * @param data 
+     */
+    sendImmediately(data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
+        this._socket.send(data);
+    }
+
     addEventListener<K extends keyof WebSocketEventMap>(type: K, listener: (this: WebSocket, ev: WebSocketEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+
+    /**
+     * Be notified when the socket has been reconnected. Can return a Promise to delay the socket being marked as ready.
+     * During this call, the DurableSocket is not marked as ready, so requests to the other side will be queued until all
+     * restore handlers have completed. You can bypass the queue by using sendImmediately(). You should only use that 
+     * variant within a 'restore' handler.
+     * @param type 
+     * @param listener 
+     * @param options 
+     */
+    addEventListener(type: 'restore', listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+
+    /**
+     * Be notified when socket connection has been lost.
+     * @param type 
+     * @param listener 
+     * @param options 
+     */
+    addEventListener(type: 'lost', listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
     addEventListener(type: any, listener: any, options?: any): void {
         this._subscribers.set(type, [ ...(this._subscribers.get(type) ?? []), listener ]);
@@ -338,7 +476,19 @@
         this._subscribers.set(type, [ ...(this._subscribers.get(type) ?? []).filter(x => x !== listener) ]);
     }
     
+    private async dispatchSocketEvent(socket: WebSocket, event: Event) {
+        if (this._socket !== socket) {
+            this.safelyClose(socket);
+            return;
+        }
+
+        let subs = this._subscribers.get(event.type) ?? []
+        await Promise.all(subs.map(f => f(event)));
+        return !event.defaultPrevented;
+    }
+
     dispatchEvent(event: Event): boolean {
+        // This one is for WebSocket compatibility. It should not be used internally.
         let subs = this._subscribers.get(event.type) ?? []
         subs.forEach(f => f(event));
         return !event.defaultPrevented;

@@ -5,6 +5,7 @@ import { ChatBackendBase } from "../../chat-backend-base";
 import { ChatSourceBase } from "../../chat-source-base";
 import { AttachmentFragment } from "../../attachment-scraper";
 import { EMOJIS } from "../../emoji";
+import { SignInState } from "../../chat-source";
 
 export interface AutoCompleteOption {
     label : string;
@@ -50,7 +51,7 @@ export class CommentFieldComponent {
                     this._subs.add(this._source.connectionStateChanged.subscribe(state => {
                         if (state === 'lost') {
                             if (this._source.errorState === 'server-issue')
-                                this.transientMessage = `Error occurred, trying again...`;
+                                this.transientMessage = `Reconnecting..`;
                             else
                                 this.transientMessage = `Reconnecting...`;
                         } else if (state === 'restored') {
@@ -68,8 +69,8 @@ export class CommentFieldComponent {
     @Input() user : User;
 
     @HostBinding('class.can-comment')
-    @Input() 
-    canComment = true;
+    @Input() canComment = true;
+    @Input() signInState: SignInState;
     @Input() allowAttachments = false;
 
     @Output() signInSelected = new Subject<void>();
@@ -89,7 +90,31 @@ export class CommentFieldComponent {
         this._text = value;
     }
 
+    get indicatorState() {
+        if (this.transientMessage) {
+            return 'transient';
+        } else if (this.sending) {
+            return 'sending';
+        } else if (this.sendError) {
+            return 'error';
+        } else {
+            return 'none';
+        }
+    }
+
+    get buttonState() {
+        if (this.sending)
+            return 'sending';
+        else if (this.signInState === 'signing-in')
+            return 'signing-in';
+        else if (!this.canComment)
+            return 'permission-denied';
+        else
+            return 'send';
+    }
+
     @Input() sendLabel = 'Send';
+    @Input() signingInLabel = 'Signing in...';
     @Input() sendingLabel = 'Sending';
     @Input() label = 'Post a comment';
     @Input() permissionDeniedLabel = 'Unavailable';
@@ -188,6 +213,12 @@ export class CommentFieldComponent {
     }
 
     get sendButtonEnabled() {
+        if (this.signInState === 'signing-in')
+            return false;
+        
+        if (!['connected', 'restored'].includes(this.source.state))
+            return false;
+            
         if (!this.canComment) {
             // In this case, we want to enable the button because we want to be able to 
             // send the permissionDenied message up to the host.
@@ -362,6 +393,7 @@ export class CommentFieldComponent {
                 this.text = '';
                 this.chatMessageAttachments = [];
             } catch (e) {
+                console.error(`[Banta/CommentField] sendMessage() failed: ${e.message}`);
                 await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
                 this.indicateError(e.message);
             }

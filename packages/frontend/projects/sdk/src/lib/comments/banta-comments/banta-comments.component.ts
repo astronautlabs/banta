@@ -68,7 +68,22 @@ export class BantaCommentsComponent {
         try {
             this.handleBackendException(e, prefix);
         } catch (e) {
+            console.log(`[Banta/Comments] Showed user error (via alert): '${e.message}'`);
+            console.error(e);
+            
             alert(e.message);
+        }
+    }
+
+    private handleBackendExceptionAsSnack(e: Error, prefix: string = '') {
+        try {
+            this.handleBackendException(e, prefix);
+        } catch (e) {
+            console.log(`[Banta/Comments] Showed user error (via snack): '${e.message}'`);
+            console.error(e);
+            
+            this.matSnackBar.open(e.message, undefined, { duration: 3000 });
+            //alert(e.message);
         }
     }
 
@@ -171,6 +186,8 @@ export class BantaCommentsComponent {
         });
     }
 
+    loadingTitle = 'Loading...';
+
     // Loading Screen
     private _loadingMessage = '';
     loadingMessageVisible = false;
@@ -213,7 +230,10 @@ export class BantaCommentsComponent {
         console.log(`[Banta] Loading is taking a long time! Showing loading screen.`);
         this.showLoadingScreen = true;
         if (typeof window !== 'undefined')
-            this._loadingTimer = setInterval(() => this.updateLoading(), 1000);
+            this._loadingTimer = setInterval(() => {
+                this.updateLoading();
+                this.loadingTitle = `Connecting to Live Comments service...`;
+            }, 1000);
     }
     
     private _loadingTimer;
@@ -222,13 +242,11 @@ export class BantaCommentsComponent {
     @Input() maxCommentLength: number = 1500;
     @Input() loadingMessages: string[] = [
         `Just a second...`,
-        `We're definitely working on it.`,
-        `There's no need to refresh.`,
         `It's definitely worth the wait!`,
         `This has never happened before.`,
         `We'll keep trying, but it's not looking great. 
-            Commenting & chat services may be down. 
-            If you continue to experience issues, please contact support.
+            Commenting & chat services may be down or degraded. Try reloading the page.
+            If you keep experiencing issues or reloading the page works for you, please let us know by contacting support.
         `
     ];
 
@@ -297,6 +315,7 @@ export class BantaCommentsComponent {
             return true;
         }
 
+        console.log(`[Banta/Loader] State=${this.source?.state}`);
         let messageSwitchTime = 5*1000;
         if (this.messageChangedAt + messageSwitchTime < Date.now()) {
             if (this.loadingMessages[this._loadingMessageIndex]) {
@@ -336,11 +355,13 @@ export class BantaCommentsComponent {
     selectedMessage: ChatMessage;
     selectedMessageThread: ChatSourceBase;
     selectedMessageVisible = false;
+    connectionState: string;
 
     // Inputs
 
     @Input() signInLabel = 'Sign In';
     @Input() sendLabel = 'Send';
+    @Input() signingInLabel = 'Signing in...';
     @Input() replyLabel = 'Reply';
     @Input() sendingLabel = 'Sending';
     @Input() permissionDeniedLabel = 'Send';
@@ -380,6 +401,7 @@ export class BantaCommentsComponent {
 
             this._source.messages.forEach(m => this.addParticipant(m));
 
+            this._sourceSubscription.add(this._source.connectionStateChanged.subscribe(state => this.connectionState = state));
             this._sourceSubscription.add(this._source.messageReceived.subscribe(m => this.addParticipant(m)));
             this._sourceSubscription.add(this._source.messageSent.subscribe(m => this.addParticipant(m)));
             this._sourceSubscription.add(this._source.messageObserved.subscribe(m => this.addParticipant(m)));
@@ -584,7 +606,7 @@ export class BantaCommentsComponent {
         try {
             await source.likeMessage(message.id);
         } catch (e) {
-            this.handleBackendExceptionAsAlert(e, 'Could not like this message: ');
+            this.handleBackendExceptionAsSnack(e, 'Could not like this message: ');
         } finally {
             await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
             message.transientState.liking = false;

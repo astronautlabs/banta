@@ -144,3 +144,14 @@ banta-comment-sort {
         margin: 0 auto;
     }
 }
+
+.reconnecting {
+    position: sticky;
+    bottom: 1em;
+    background: #380a39;
+    color: #926893;
+    padding: 1em;
+    z-index: 10;
+    border-radius: 4px;
+    text-align: center;
+}

@@ -1,6 +1,6 @@
 <ng-container *ngIf="loading">
     <div class="loading-screen" [class.visible]="showLoadingScreen">
-        <h1>Loading...</h1>
+        <h1>{{loadingTitle}}</h1>
         <div>
             <mat-spinner [diameter]="300" [strokeWidth]="2"></mat-spinner>
         </div>
@@ -73,6 +73,7 @@
                 <banta-comment-field
                     [sendLabel]="replyLabel"
                     [sendingLabel]="sendingLabel"
+                    [signingInLabel]="signingInLabel"
                     [hashtags]="hashtags"
                     [participants]="participants"
                     (signInSelected)="showSignIn()"
@@ -80,6 +81,7 @@
                     [source]="selectedMessageThread"
                     [maxLength]="maxCommentLength"
                     [canComment]="source?.permissions?.canPost"
+                    [signInState]="source?.signInState"
                     [signInLabel]="signInLabel"
                     [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
                     (permissionDeniedError)="handlePermissionDenied($event)"
@@ -102,7 +104,9 @@
             [user]="user"
             [sendLabel]="sendLabel"
             [sendingLabel]="sendingLabel"
+            [signingInLabel]="signingInLabel"
             [signInLabel]="signInLabel"
+            [signInState]="source?.signInState"
             [canComment]="source?.permissions?.canPost"
             [hashtags]="hashtags"
             [participants]="participants"
@@ -207,12 +211,14 @@
                             <banta-comment-field
                                 [sendLabel]="replyLabel"
                                 [sendingLabel]="sendingLabel"
+                                [signingInLabel]="signingInLabel"
                                 [hashtags]="hashtags"
                                 [participants]="participants"
                                 (signInSelected)="showSignIn()"
                                 [maxLength]="maxCommentLength"
                                 (editAvatarSelected)="showEditAvatar()"
                                 [source]="selectedMessageThread"
+                                [signInState]="source?.signInState"
                                 [canComment]="source?.permissions?.canPost"
                                 [signInLabel]="signInLabel"
                                 [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
@@ -228,8 +234,11 @@
                             </banta-comment-field>
                         </ng-container>
                     </div>
-                </div>            
+                </div>
             </div>
         </banta-comment-view>
+    </div>
+    <div class="reconnecting" *ngIf="connectionState === 'lost'">
+        <strong>Connection to Live Comments lost.</strong> Reconnecting...
     </div>
 </ng-container>
