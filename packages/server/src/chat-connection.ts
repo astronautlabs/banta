@@ -13,6 +13,7 @@ export class ChatConnection extends SocketRPC {
         readonly ipAddress: string,
         readonly userAgent: string
     ) {
+        chat.activeConnections += 1;
         super();
     }
 
@@ -20,6 +21,13 @@ export class ChatConnection extends SocketRPC {
     user: User;
     topicId: string;
     parentMessage: ChatMessage;
+
+    override async bind(socket: WebSocket): Promise<this> {
+        socket.addEventListener('close', () => {
+            this.chat.activeConnections -= 1;
+        });
+        return await super.bind(socket);
+    }
 
     @RpcCallable()
     async authenticate(token: string) {

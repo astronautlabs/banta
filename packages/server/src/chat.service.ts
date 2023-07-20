@@ -177,6 +177,8 @@ export class ChatService {
     readonly db: mongodb.Db;
     readonly pubsubs: PubSubManager;
 
+    activeConnections: number = 0;
+
     /**
      * Handle validation of a token sent by the client, and resolution of that token into a User object.
      * Pluggable so that particular sites can modify.

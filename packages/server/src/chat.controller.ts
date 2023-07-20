@@ -8,6 +8,7 @@ import { ChatConnection } from "./chat-connection";
 import { Logger } from "@alterior/logging";
 import { v4 as uuid } from "uuid";
 import { UrlCard } from "@banta/common";
+import * as os from 'os';
 
 export interface SignInRequest {
     email : string;
@@ -23,9 +24,17 @@ export class ChatController {
     ) {
     }
 
-    @Get()
+    runId = uuid();
+    serverId = os.hostname();
+
+    @Get('/stats')
     async info() {
-        return { service: `@banta/server` };
+        return { 
+            service: `@banta/server`,
+            serverId: this.serverId,
+            runId: this.runId,
+            connections: this.chat.activeConnections
+        };
     }
 
     @Get('/socket')
