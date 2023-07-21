@@ -1,6 +1,6 @@
 {
   "name": "@banta/common",
-  "version": "2.2.21",
+  "version": "2.2.24",
   "description": "",
   "private": false,
   "main": "dist/index.js",
