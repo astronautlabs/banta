@@ -75,6 +75,7 @@ export class CommentFieldComponent {
 
     @Output() signInSelected = new Subject<void>();
     @Output() editAvatarSelected = new Subject<void>();
+    @Output() focusChange = new Subject<boolean>();
 
     sending = false;
     sendError : Error;
@@ -348,7 +349,12 @@ export class CommentFieldComponent {
         this.showAutoComplete(this.completionFunc(this.completionPrefix));
     }
 
+    onFocus() {
+        this.focusChange.next(true);
+    }
+
     onBlur() {
+        this.focusChange.next(false);
         setTimeout(() => this.dismissAutoComplete(), 250);
     }
 

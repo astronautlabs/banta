@@ -1,6 +1,7 @@
-import { ChatMessage, ChatPermissions, CommentsOrder, RpcCallable, SocketRPC, User } from "@banta/common";
+import { ChatMessage, ChatPermissions, CommentsOrder, FilterMode, RpcCallable, SocketRPC, User } from "@banta/common";
 import { AuthorizableAction, ChatService, Like, Topic } from "./chat.service";
 import { PubSub } from "./pubsub";
+import * as mongodb from 'mongodb';
 
 export interface ChatPubSubEvent {
     message?: ChatMessage;
@@ -154,6 +155,7 @@ export class ChatConnection extends SocketRPC {
     }
 
     sortOrder: CommentsOrder;
+    filterMode: FilterMode;
 
     @RpcCallable()
     async deleteMessage(messageId: string) {
@@ -176,8 +178,14 @@ export class ChatConnection extends SocketRPC {
     }
 
     @RpcCallable()
-    async subscribe(topicId: string, parentMessageId: string, order: CommentsOrder) {
+    async subscribe(
+        topicId: string, 
+        parentMessageId: string, 
+        order: CommentsOrder, 
+        filterMode: FilterMode
+    ) {
         this.sortOrder = order ?? CommentsOrder.NEWEST;
+        this.filterMode = filterMode ?? FilterMode.ALL;
 
         let chaosFactor = 0;
 
@@ -271,8 +279,8 @@ export class ChatConnection extends SocketRPC {
         return initialMessages;
     }
 
-    private getFilter(): any {
-        return { 
+    private getFilter(): mongodb.Filter<ChatMessage> {
+        let filter = <mongodb.Filter<ChatMessage>>{ 
             topicId: this.topicId, 
             parentMessageId: this.parentMessage?.id,
             $or: [
@@ -280,7 +288,28 @@ export class ChatConnection extends SocketRPC {
                 { hidden: false }
             ]
         }
+
+        if (this.filterMode === FilterMode.MINE && this.user) {
+            filter['user.id'] = this.user.id;
+        } else if (this.filterMode === FilterMode.THREADS && this.user) {
+            filter = {
+                $and: [
+                    filter,
+                    {
+                        $or: [
+                            { 'user.id': this.user.id },
+                            { 'participants': this.user.id }
+                        ]
+                    }
+                ]
+            }
+        } else if (this.filterMode === FilterMode.MY_LIKES && this.user) {
+            filter.likers = this.user.id;
+        }
+
+        return filter;
     }
+
     private getSortOrder(): any {
         if (this.sortOrder === CommentsOrder.NEWEST) {
             return { sentAt: -1 };
@@ -323,6 +352,8 @@ export class ChatConnection extends SocketRPC {
         message.likes = 0;
         message.edits = [];
         message.submessageCount = 0;
+        message.participants = [];
+        message.likers = [];
         message.attachments.forEach(attachment => delete attachment.transientState);
 
         delete message.user.token;

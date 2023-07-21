@@ -124,8 +124,27 @@
         
         </banta-comment-field>
 
-        <banta-comment-sort
-            [(sort)]="sortOrder"></banta-comment-sort>
+        <mat-menu #filterMenu="matMenu">
+            <button mat-menu-item *ngFor="let filter of filterModes" (click)="filterMode = filter">
+                {{filterModeLabels[filter]}}
+            </button>
+        </mat-menu>
+        <mat-menu #sortMenu="matMenu">
+            <button mat-menu-item *ngFor="let sort of sortOrders" (click)="sortOrder = sort">
+                {{sortOrderLabels[sort]}}
+            </button>
+        </mat-menu>
+
+        <div class="settings">
+            <button mat-button [matMenuTriggerFor]="filterMenu">
+                <mat-icon>filter_list</mat-icon>
+                {{filterModeLabels[filterMode]}}
+            </button>
+            <button mat-button [matMenuTriggerFor]="sortMenu">
+                <mat-icon>sort</mat-icon>
+                {{sortOrderLabels[sortOrder]}}
+            </button>
+        </div>
 
         <div class="loading-comment" *ngIf="loadingSharedComment">
             <h1>Loading the comment you linked to...</h1>
@@ -167,8 +186,10 @@
             [maxVisibleMessages]="maxVisibleMessages"
             [genericAvatarUrl]="genericAvatarUrl"
             [customMenuItems]="customMenuItems"
+            [holdNewMessages]="selectedMessageVisible"
             (userSelected)="selectMessageUser($event)"
             (sortOrderChanged)="sortOrder = $event"
+            (filterModeChanged)="filterMode = $event"
             (selected)="toggleSelectedMessage($event)"
             (liked)="likeMessage(source, $event)"
             (unliked)="unlikeMessage(source, $event)"
@@ -197,6 +218,8 @@
                                 [fixedHeight]="false"
                                 [showEmptyState]="false"
                                 [newestLast]="true"
+                                [enableHoldOnClick]="false"
+                                [holdNewMessages]="replyFieldFocused"
                                 [genericAvatarUrl]="genericAvatarUrl"
                                 (liked)="likeMessage(selectedMessageThread, $event)"
                                 (unliked)="unlikeMessage(selectedMessageThread, $event)"
@@ -216,7 +239,6 @@
                                 [participants]="participants"
                                 (signInSelected)="showSignIn()"
                                 [maxLength]="maxCommentLength"
-                                (editAvatarSelected)="showEditAvatar()"
                                 [source]="selectedMessageThread"
                                 [signInState]="source?.signInState"
                                 [canComment]="source?.permissions?.canPost"
@@ -229,6 +251,9 @@
                                 [submit]="sendReply"
                                 [allowAttachments]="allowAttachments"
                                 [genericAvatarUrl]="genericAvatarUrl"
+
+                                (editAvatarSelected)="showEditAvatar()"
+                                (focusChange)="replyFieldFocused = $event"
                                 >
                                 <ng-container *ngTemplateOutlet="sendReplyOptionsTemplate"></ng-container>
                             </banta-comment-field>

@@ -21,6 +21,7 @@
                         cdkTextareaAutosize
                         [maxlength]="maxLength"
                         (keydown)="onKeyDown($event)"
+                        (focus)="onFocus()"
                         (blur)="onBlur()"
                         [disabled]="sending"
                         [(ngModel)]="text"

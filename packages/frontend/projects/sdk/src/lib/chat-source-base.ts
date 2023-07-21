@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { ChatMessage, CommentsOrder, ChatPermissions } from '@banta/common';
+import { ChatMessage, CommentsOrder, ChatPermissions, FilterMode } from '@banta/common';
 
 export interface ChatSourceBase {
     /**
@@ -16,6 +16,7 @@ export interface ChatSourceBase {
      */
     parentIdentifier?: string;
     sortOrder?: CommentsOrder;
+    filterMode?: FilterMode;
     messageReceived: Observable<ChatMessage>;
     messageObserved: Observable<ChatMessage>;
     messageUpdated: Observable<ChatMessage>;

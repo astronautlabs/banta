@@ -118,6 +118,17 @@ export interface ChatMessage {
      */
     mentionLinks?: ChatMessageMention[];
 
+    /**
+     * The IDs of all users who have replied to this message, for the purpose of filtering
+     * to find the threads a given user has participated in.
+     */
+    participants?: string[];
+
+    /**
+     * The IDs of all users who have liked this message.
+     */
+    likers?: string[];
+
     pagingCursor?: string;
 }
 

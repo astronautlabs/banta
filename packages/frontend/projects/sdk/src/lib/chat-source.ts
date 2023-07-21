@@ -4,6 +4,7 @@ import { RpcEvent, SocketRPC } from "@banta/common";
 import { ChatSourceBase } from "./chat-source-base";
 import { ChatBackend } from "./chat-backend";
 import { v4 as uuid } from "uuid";
+import { ChatSourceOptions } from "./chat-backend-base";
 
 export type SignInState = 'signed-out' | 'signed-in' | 'signing-in';
 
@@ -12,12 +13,14 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         readonly backend: ChatBackend,
         readonly identifier: string,
         readonly parentIdentifier: string,
-        readonly sortOrder: CommentsOrder
+        options: ChatSourceOptions
     ) {
         super();
+        this.options = options ?? {};
         this.ready = new Promise<void>(resolve => this.markReady = resolve);
     }
 
+    private options: ChatSourceOptions;
     private subscription = new Subscription();
     private markReady: () => void;
 
@@ -25,6 +28,14 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     permissions: ChatPermissions;
     private _state: 'connected' | 'connecting' | 'lost' | 'restored' = 'connecting';
+
+    get sortOrder() {
+        return this.options?.sortOrder;
+    }
+
+    get filterMode() {
+        return this.options?.filterMode;
+    }
 
     get state() {
         return this._state;
@@ -121,7 +132,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     async subscribeToTopic() {
         try {
-            await this.immediatePeer.subscribe(this.identifier, this.parentIdentifier, this.sortOrder);
+            await this.immediatePeer.subscribe(this.identifier, this.parentIdentifier, this.options.sortOrder, this.options.filterMode);
             this.subscribeAttempt = 0;
             this._errorState = undefined;
             this.state = this.wasRestored ? 'restored' : 'connected';

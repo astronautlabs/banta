@@ -42,6 +42,15 @@ export class AppComponent {
       token: 'abc123'
     };
 
+    (window as any).becomeBob = () => {
+      this.backend.user = {
+        id: 'abc',
+        username: 'bob',
+        displayName: 'Bob',
+        avatarUrl: `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`,
+        token: 'abc123'
+      };
+    };
     (window as any).becomeAlice = () => {
       this.backend.user = {
         id: 'def',
@@ -51,6 +60,8 @@ export class AppComponent {
         token: 'def321'
       };
     };
+
+    (window as any).becomeBob();
 
     this.router.events.subscribe(ev => {
       if (ev instanceof NavigationEnd) {

@@ -1,13 +1,17 @@
-<div class="message-container">
+<div class="message-container" #messageContainer>
     <ng-content select="[data-before]"></ng-content>
 
-    <a mat-button class="nav" [class.visible]="!newestLast && (isViewingMore || customSortEnabled)" href="javascript:;" (click)="showNew()">
-        <mat-icon>file_upload</mat-icon>
-        New
-        <ng-container *ngIf="newMessages.length >= 1">
-            ({{newMessages.length}})
-        </ng-container>
-    </a>
+    <div class="top-sticky">
+        <a *ngIf="!newestLast" mat-button class="nav" [class.visible]="shouldShowNewMessageIndicator" href="javascript:;" (click)="showNew($event)">
+            <mat-icon>file_upload</mat-icon>
+            <ng-container *ngIf="newMessages.length >= 1">
+                New ({{newMessages.length}})
+            </ng-container>
+            <ng-container *ngIf="newMessages.length == 0">
+                Newest
+            </ng-container>
+        </a>
+    </div>
     <a mat-button class="nav" [class.visible]="newestLast && hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show earlier</a>
 
     <ng-container *ngIf="messages.length === 0">
@@ -27,7 +31,7 @@
             [showReplyAction]="allowReplies"
             [editing]="message.transientState.editing"
             [genericAvatarUrl]="genericAvatarUrl"
-            (click)="isViewingMore = true"
+            (click)="enableHoldOnClick ? (holdNewMessages = true) : undefined"
             (editStarted)="startEditing(message)"
             (deleted)="deleteMessage(message)"
             (editEnded)="message.transientState.editing = false"
@@ -46,13 +50,17 @@
         </div>
     </ng-container>
 
-    <a mat-button class="nav" [class.visible]="newestLast && (isViewingMore || customSortEnabled)" href="javascript:;" (click)="showNew()">
-        <mat-icon>file_download</mat-icon>
-        New
-        <ng-container *ngIf="newMessages.length >= 1">
-            ({{newMessages.length}})
-        </ng-container>
-    </a>
+    <div class="nav-point bottom-sticky">
+        <a *ngIf="newestLast" mat-button class="nav" [class.visible]="shouldShowNewMessageIndicator" href="javascript:;" (click)="showNew($event)">
+            <mat-icon>file_download</mat-icon>
+            <ng-container *ngIf="newMessages.length >= 1">
+                New ({{newMessages.length}})
+            </ng-container>
+            <ng-container *ngIf="newMessages.length == 0">
+                Newest
+            </ng-container>
+        </a>
+    </div>
     <a mat-button class="nav" [class.visible]="!newestLast && hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
 
     <div class="loading-more" *ngIf="isLoadingMore">

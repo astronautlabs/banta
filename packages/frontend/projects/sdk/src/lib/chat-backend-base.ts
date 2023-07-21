@@ -1,10 +1,11 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ChatMessage, Vote, CommentsOrder, Notification, User, UrlCard } from '@banta/common';
+import { ChatMessage, Vote, CommentsOrder, Notification, User, UrlCard, FilterMode } from '@banta/common';
 import { ChatSourceBase } from './chat-source-base';
 import { AttachmentResolver, AttachmentScraper } from './attachment-scraper';
 
 export interface ChatSourceOptions {
-    sortOrder: CommentsOrder;
+    sortOrder?: CommentsOrder;
+    filterMode?: FilterMode;
 }
 
 export abstract class ChatBackendBase {

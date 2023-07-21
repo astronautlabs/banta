@@ -2,10 +2,13 @@
 
 * {
     font-family: 'Montserrat';
+    box-sizing: border-box;
     
     scrollbar-color: #666 black;
     scrollbar-arrow-color: white;
-    
+}
+
+* {
     &::-webkit-scrollbar {
         width: 8px;
         background-color: #aaa;
@@ -21,7 +24,6 @@
     }
     
 }
-
 .mat-dark-theme {
     * {
         &::-webkit-scrollbar {
@@ -39,6 +41,7 @@
         }
     }
 }
+
 body {
     font-family: sans-serif;
     color: black;

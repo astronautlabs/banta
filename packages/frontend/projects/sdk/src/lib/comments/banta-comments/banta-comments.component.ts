@@ -1,7 +1,7 @@
 /// <reference types="@types/resize-observer-browser" />
 
 import { Component, ContentChild, ElementRef, HostBinding, Input, NgZone, Output, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
-import { User, ChatMessage, CommentsOrder } from '@banta/common';
+import { User, ChatMessage, CommentsOrder, FilterMode } from '@banta/common';
 import { HashTag } from '../comment-field/comment-field.component';
 import { Subject, Observable, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -38,9 +38,12 @@ export class BantaCommentsComponent {
                     await this.source.send(message);
                 }
 
-                if (this.source.sortOrder !== CommentsOrder.NEWEST) {
+                if (this.source.sortOrder !== CommentsOrder.NEWEST)
                     this.sortOrder = CommentsOrder.NEWEST;
-                }
+
+                if (this.source.filterMode !== FilterMode.ALL)
+                    this.filterMode = FilterMode.ALL;
+
                 return true;
             } catch (e) {
                 this.handleBackendException(e, 'Could not send: ');
@@ -181,7 +184,7 @@ export class BantaCommentsComponent {
 
         setTimeout(async () => {
             console.log(`[banta-comments] Subscribing to topic source '${topicID}'`);
-            this.source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder });
+            this.source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder, filterMode: this.filterMode });
             this._sourceIsOwned = true;
         });
     }
@@ -348,7 +351,6 @@ export class BantaCommentsComponent {
      */
     private _sourceIsOwned = false;
     private _subs = new Subscription();
-    private _sortOrder: CommentsOrder = CommentsOrder.NEWEST;
     private _topicID: string;
     
     user: User;
@@ -451,13 +453,63 @@ export class BantaCommentsComponent {
     @Output() get avatarSelected() { return this._avatarSelected.asObservable(); }
     @Output() get shared() { return this._shared.asObservable(); }
 
+    private _reloadSourceTimeout;
+    private reloadSource() {
+        clearTimeout(this._reloadSourceTimeout);
+        this._reloadSourceTimeout = setTimeout(() => {
+            this.setSourceFromTopicID(this.topicID);
+        });
+    }
+
+    private _sortOrder: CommentsOrder = CommentsOrder.NEWEST;
     get sortOrder() { return this._sortOrder; }
     set sortOrder(value) {
         if (this._sortOrder !== value) {
             this._sortOrder = value;
-            setTimeout(() => {
-                this.setSourceFromTopicID(this.topicID);
-            });
+            this.reloadSource();
+        }
+    }
+
+    private _filterMode: FilterMode = FilterMode.ALL;
+    get filterMode() { return this._filterMode; }
+    set filterMode(value) { 
+        if (this._filterMode !== value) {
+            this._filterMode = value;
+            this.reloadSource();
+        }
+    }
+
+    get filterModes() { 
+        return [
+            FilterMode.ALL,
+            FilterMode.MINE,
+            FilterMode.MY_LIKES,
+            FilterMode.THREADS
+        ] 
+    }
+
+    get filterModeLabels() {
+        return {
+            [FilterMode.ALL]: 'All',
+            [FilterMode.MINE]: 'Mine',
+            [FilterMode.MY_LIKES]: 'Involving Me',
+            [FilterMode.THREADS]: 'My Likes'
+        }
+    }
+
+    get sortOrders() { 
+        return [
+            CommentsOrder.NEWEST,
+            CommentsOrder.OLDEST,
+            CommentsOrder.LIKES
+        ]
+    }
+
+    get sortOrderLabels() {
+        return {
+            [CommentsOrder.NEWEST]: 'Newest',
+            [CommentsOrder.OLDEST]: 'Oldest',
+            [CommentsOrder.LIKES]: 'Likes'
         }
     }
 

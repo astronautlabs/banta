@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@angular/core";
-import { ChatMessage, CommentsOrder, DurableSocket, Notification, UrlCard, User, Vote } from "@banta/common";
+import { ChatMessage, CommentsOrder, DurableSocket, FilterMode, Notification, UrlCard, User, Vote } from "@banta/common";
 import { Observable } from "rxjs";
 import { ChatBackendBase, ChatSourceOptions } from "./chat-backend-base";
 import { ChatSource } from "./chat-source";
@@ -39,12 +39,12 @@ export class ChatBackend extends ChatBackendBase {
     }
 
     async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSourceBase> {
-        return await new ChatSource(this, topicId, undefined, options?.sortOrder || CommentsOrder.NEWEST)
+        return await new ChatSource(this, topicId, undefined, { sortOrder: CommentsOrder.NEWEST, filterMode: FilterMode.ALL, ...options })
             .bind(await this.connectToService());
     }
 
     async getSourceForThread(topicId: string, messageId: string, options?: ChatSourceOptions): Promise<ChatSource> {
-        return await new ChatSource(this, topicId, messageId, options?.sortOrder || CommentsOrder.NEWEST)
+        return await new ChatSource(this, topicId, messageId, { sortOrder: CommentsOrder.NEWEST, filterMode: FilterMode.ALL, ...options })
             .bind(await this.connectToService());
     }
 

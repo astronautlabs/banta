@@ -186,4 +186,12 @@ export class TryComponent {
         window['bantaCommentsComponent'] = this.comments;
         alert(`Component has been dumped to console and placed into window.bantaCommentsComponent`);
     }
+
+    becomeBob() {
+        (window as any).becomeBob();
+    }
+
+    becomeAlice() {
+        (window as any).becomeAlice();
+    }
 }

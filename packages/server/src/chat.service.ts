@@ -359,6 +359,17 @@ export class ChatService {
                     await this.modifySubmessageCount(parentMessage, +1);
                 await this.modifyTopicMessageCount(message.topicId, +1);
             }
+
+            // Update the parent's participant list, if needed
+            if (parentMessage) {
+                await this.updateOne(this.messages, { id: parentMessage.id }, {
+                    $addToSet: {
+                        participants: message.user.id
+                    }
+                });
+                let updatedParentMessage = await this.getMessage(parentMessage.id, true);
+                this.notifyMessageChange(updatedParentMessage);
+            }
         });
 
         this.notifyMessageChange(message);
@@ -582,6 +593,14 @@ export class ChatService {
         await this.modifyMessageLikesCount(message, +1);
         await this.pubsubs.publish(message.topicId, { like });
         this._events.next(<LikeEvent>{ type: 'like', message, user });
+
+        setTimeout(() => {
+            this.updateOne(this.messages, { id: message.id }, {
+                $addToSet: {
+                    likers: user.id
+                }
+            });
+        });
     }
 
     private async findOne<T>(collection: mongodb.Collection<T>, criteria: mongodb.Filter<T>) {
@@ -644,6 +663,13 @@ export class ChatService {
             }
         });
         this._events.next(<UnlikeEvent>{ type: 'unlike', message, user });
+        setTimeout(() => {
+            this.updateOne(this.messages, { id: message.id }, {
+                $pull: {
+                    likers: user.id
+                }
+            });
+        });
     }
 
     /**

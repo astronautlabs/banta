@@ -11,6 +11,7 @@ export * from './vote';
 export * from './injectable';
 export * from './filter-object';
 export * from './comments-order';
+export * from './filter-mode';
 export * from './rpc';
 export * from './durable-socket';
 export * from './permissions';

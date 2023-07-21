@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild, ElementRef, Output, HostBinding, ViewChildren, QueryList } from "@angular/core";
-import { User, ChatMessage, CommentsOrder } from '@banta/common';
+import { User, ChatMessage, CommentsOrder, FilterMode } from '@banta/common';
 import { Subject, Subscription } from 'rxjs';
 import { ChatBackendBase } from "../../chat-backend-base";
 import { ChatSourceBase } from "../../chat-source-base";
@@ -18,7 +18,8 @@ export interface EditEvent {
 })
 export class CommentViewComponent {
     constructor(
-        private backend: ChatBackendBase
+        private backend: ChatBackendBase,
+        private elementRef: ElementRef<HTMLElement>
     ) {
 
     }
@@ -42,6 +43,12 @@ export class CommentViewComponent {
     @Input()
     allowReplies = true;
 
+    @Input()
+    enableHoldOnClick = false;
+
+    @Input()
+    enableHoldOnScroll = true;
+    
     @Input() customMenuItems: MessageMenuItem[] = [];
 
     @ViewChildren(CommentComponent)
@@ -89,6 +96,58 @@ export class CommentViewComponent {
         this.messages = items.splice(0, pageSize);
         this.olderMessages = items;
         this.isViewingMore = true;
+    }
+
+    get shouldShowNewMessageIndicator() {
+        return this.isViewingMore 
+            || this.customSortEnabled 
+            || this.source.filterMode !== FilterMode.ALL
+            || this.newMessages.length > 0;
+    }
+
+    get shouldHoldNewMessages() {
+        if (this.holdNewMessages || this.isViewingMore) {
+            console.log(`holding due to settings`);
+            return true;
+        }
+
+        if (this.enableHoldOnScroll) {
+            let keyMessage: ChatMessage;
+
+            if (this.newestLast)
+                keyMessage = this.messages[this.messages.length - 1];
+            else
+                keyMessage = this.messages[0];
+            
+            if (keyMessage) {
+                const messageElement = this.getElementForComment(keyMessage.id);
+                if (messageElement) {
+                    if (!this.isElementVisible(messageElement)) {
+                        console.log(`key element is not visible`);
+                        return true;
+                    } else {
+                        console.log(`key element is visible`);
+                    }
+                } else {
+                    console.log(`could not find key element`);
+                }
+            } else {
+                console.log(`could not find key message`);
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    private isElementVisible(element: Element) {
+        const elementRect = element.getBoundingClientRect();
+        return !!elementRect 
+            && elementRect.bottom >= 0
+            && elementRect.right >= 0
+            && elementRect.left <= document.documentElement.clientWidth
+            && elementRect.top <= document.documentElement.clientHeight;
     }
 
     /**
@@ -244,6 +303,9 @@ export class CommentViewComponent {
     @Input()
     newestLast = false;
 
+    @Input()
+    holdNewMessages = false;
+
     isViewingMore = false;
     isLoadingMore = false;
     hasMore = false;
@@ -258,10 +320,16 @@ export class CommentViewComponent {
     @Output()
     sortOrderChanged = new Subject<CommentsOrder>();
 
-    async showNew() {
+    @Output()
+    filterModeChanged = new Subject<FilterMode>();
+
+    async showNew(event: MouseEvent) {
         let naturalOrder = CommentsOrder.NEWEST;
-        if (this.source && this.source.sortOrder !== naturalOrder) {
-            this.sortOrderChanged.next(naturalOrder);
+        if (this.source && (this.source.sortOrder !== naturalOrder || this.source.filterMode !== FilterMode.ALL)) {
+            if (this.source.sortOrder !== naturalOrder)
+                this.sortOrderChanged.next(naturalOrder);
+            if (this.source.filterMode !== FilterMode.ALL)
+                this.filterModeChanged.next(FilterMode.ALL);
             return;
         }
 
@@ -275,6 +343,14 @@ export class CommentViewComponent {
         this.olderMessages = overflow.concat(this.olderMessages);
         this.olderMessages.splice(this.maxMessages - this.maxVisibleMessages, this.olderMessages.length);
         this.hasMore = this.olderMessages.length > 0;
+
+        if (this.messages.length > 0) {
+            if (this.newestLast) {
+                this.scrollToComment(this.messages[this.messages.length - 1].id);
+            } else {
+                this.scrollToComment(this.messages[0].id);
+            }
+        }
     }
 
     async showMore() {
@@ -328,7 +404,7 @@ export class CommentViewComponent {
         let bucket = this.olderMessages;
         let newestLast = this.newestLast;
 
-        if (this.isViewingMore) {
+        if (this.shouldHoldNewMessages) {
             destination = this.newMessages;
             bucket = null;
         }
@@ -400,9 +476,6 @@ export class CommentViewComponent {
 
     private messageReceived(message: ChatMessage) {
         this.addMessage(message);
-
-        if (this.isScrolledToLatest())
-            setTimeout(() => this.scrollToLatest());
     }
 
     isScrolledToLatest() {
@@ -426,11 +499,37 @@ export class CommentViewComponent {
     }
 
     scrollToLatest() {
-        if (!this.messageContainer)
+        if (!this.messageContainer) {
             return;
+        }
 
         const el = this.messageContainer.nativeElement;
-        el.scrollTop = el.scrollHeight;
+
+        el.scrollIntoView({ block: 'start' });
+        //el.scrollTop = el.scrollHeight;
+    }
+
+    get element() {
+        return this.elementRef.nativeElement;
+    }
+
+    async scrollToComment(commentId: ChatMessage['id']) {
+        if (typeof window === 'undefined')
+            return;
+        
+        await this.waitForAllCommentsToLoad();
+
+        const comment = this.getElementForComment(commentId);
+        if (comment) {
+            comment.scrollIntoView({
+                inline: 'center',
+                block: 'center'
+            });
+        }
+    }
+
+    getElementForComment(commentId: string) {
+        return this.element.querySelector(`[data-comment-id="${commentId}"]`);
     }
 
     mentionsMe(message: ChatMessage) {

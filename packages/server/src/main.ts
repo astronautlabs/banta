@@ -42,13 +42,30 @@ class BantaService {
                 }
             }
             if (process.env.IS_DEMO) {
-                console.log(`[!!] Demo authentication for token '${token}'`);
-                return {
-                    id: 'abc',
-                    displayName: 'Bob',
-                    username: 'bob',
-                    tag: 'El Heffe'
+                const usersByToken = {
+                    abc123: {
+                        id: 'abc',
+                        displayName: 'Bob',
+                        username: 'bob',
+                        tag: 'El Heffe'
+                    },
+                    def321: {
+                        id: 'def',
+                        username: 'alice',
+                        displayName: 'Alice',
+                        avatarUrl: `https://gravatar.com/avatar/${Date.now().toString(16)}?s=512&d=robohash`,
+                        token: 'def321'
+                      }
                 }
+
+                const user = usersByToken[token];
+
+                if (!user) {
+                    throw new Error(`Not a valid token`);
+                }
+
+                console.log(`[!!] Demo authentication for token '${token}', user '${user.username}'`);
+                return user;
             }
             throw new Error(`The Banta integration must specify validateToken()`);
         };
