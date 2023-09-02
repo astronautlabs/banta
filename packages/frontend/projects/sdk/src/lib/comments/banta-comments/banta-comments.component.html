@@ -71,6 +71,7 @@
                     ></banta-comment-view>
 
                 <banta-comment-field
+                    [url]="url"
                     [sendLabel]="replyLabel"
                     [sendingLabel]="sendingLabel"
                     [signingInLabel]="signingInLabel"
@@ -100,6 +101,7 @@
 
     <div class="main" [class.hidden]="selectedMessage && !useInlineReplies">
         <banta-comment-field
+            [url]="url"
             [source]="source"
             [user]="user"
             [sendLabel]="sendLabel"
@@ -232,6 +234,7 @@
                                 ></banta-comment-view>
             
                             <banta-comment-field
+                                [url]="url"
                                 [sendLabel]="replyLabel"
                                 [sendingLabel]="sendingLabel"
                                 [signingInLabel]="signingInLabel"

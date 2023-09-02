@@ -242,6 +242,11 @@ export class BantaCommentsComponent {
     private _loadingTimer;
     private _loadingMessageIndex = 0;
 
+    /**
+     * The canonical URL where this comment section can be found. If not specified, uses the current URL.
+     */
+    @Input() url: string;
+
     @Input() maxCommentLength: number = 1500;
     @Input() loadingMessages: string[] = [
         `Just a second...`,

@@ -25,7 +25,7 @@ export class BantaChatComponent {
     user : User = null;
 
     @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
-
+    @Input() url: string;
 
     ngOnInit() {
         this._subs.add(this.backend.userChanged.subscribe(user => this.user = user));
@@ -170,7 +170,7 @@ export class BantaChatComponent {
             user: null,
             sentAt: Date.now(),
             likes: 0,
-            url: typeof window !== 'undefined' ? location.href : undefined,
+            url: this.url ?? (typeof window !== 'undefined' ? location.href : undefined),
             message: text
         };
 

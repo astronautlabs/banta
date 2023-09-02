@@ -132,6 +132,7 @@ export class CommentFieldComponent {
     @Input() hashtags : HashTag[];
     @Input() participants : User[] = [];
     @Input() genericAvatarUrl: string;
+    @Input() url: string;
 
     get userAvatarUrl() {
         return this.user?.avatarUrl || this.genericAvatarUrl;
@@ -388,7 +389,7 @@ export class CommentFieldComponent {
             let message : ChatMessage = {
                 user: this.user,
                 sentAt: Date.now(),
-                url: typeof window !== 'undefined' ? location.href : undefined,
+                url: this.url ?? (typeof window !== 'undefined' ? location.href : undefined),
                 likes: 0,
                 message: text,
                 attachments: this.chatMessageAttachments.filter(x => x.url)
