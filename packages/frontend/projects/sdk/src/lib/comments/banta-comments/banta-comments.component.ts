@@ -462,7 +462,7 @@ export class BantaCommentsComponent {
     }
 
     private _sortOrder: CommentsOrder = CommentsOrder.NEWEST;
-    get sortOrder() { return this._sortOrder; }
+    @Input() get sortOrder() { return this._sortOrder; }
     set sortOrder(value) {
         if (this._sortOrder !== value) {
             this._sortOrder = value;
@@ -471,7 +471,7 @@ export class BantaCommentsComponent {
     }
 
     private _filterMode: FilterMode = FilterMode.ALL;
-    get filterMode() { return this._filterMode; }
+    @Input() get filterMode() { return this._filterMode; }
     set filterMode(value) { 
         if (this._filterMode !== value) {
             this._filterMode = value;
@@ -492,8 +492,8 @@ export class BantaCommentsComponent {
         return {
             [FilterMode.ALL]: 'All',
             [FilterMode.MINE]: 'Mine',
-            [FilterMode.MY_LIKES]: 'Involving Me',
-            [FilterMode.THREADS]: 'My Likes'
+            [FilterMode.THREADS]: 'Involving Me',
+            [FilterMode.MY_LIKES]: 'My Likes'
         }
     }
 
