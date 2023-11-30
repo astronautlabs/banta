@@ -21,11 +21,49 @@ export class CommentViewComponent {
         private backend: ChatBackendBase,
         private elementRef: ElementRef<HTMLElement>
     ) {
-
     }
 
-    private _sourceSubs = new Subscription();
+    //#region Source
+
     private _source: ChatSourceBase;
+    @Input() get source() { return this._source; }
+    set source(value) { this.setSource(value); }
+
+    //#endregion
+    //#region Fields
+
+    private _sourceSubs = new Subscription();
+    menuMessage: ChatMessage = null;
+    messages: ChatMessage[] = [];
+    currentUser: User;
+    customSortEnabled = false;
+    markSourceLoaded: () => void;
+    sourceLoaded = new Promise<void>(r => this.markSourceLoaded = r);
+    isViewingMore = false;
+    isLoadingMore = false;
+    hasMore = false;
+    newMessages: ChatMessage[] = [];
+    olderMessages: ChatMessage[] = [];
+
+    //#endregion
+    //#region Inputs
+
+    @Input() maxMessages = 2000;
+    @Input() maxVisibleMessages: number = 200;
+    @Input() newestLast = false;
+    @Input() holdNewMessages = false;
+    @Input() showEmptyState = true;
+    @Input() allowReplies = true;
+    @Input() enableHoldOnClick = false;
+    @Input() enableHoldOnScroll = true;
+    @Input() customMenuItems: MessageMenuItem[] = [];
+    @Input() @HostBinding('class.fixed-height') fixedHeight: boolean;
+    @Input() selectedMessage: ChatMessage;
+    @Input() genericAvatarUrl: string;
+    
+    //#endregion
+    //#region Outputs
+
     private _selected = new Subject<ChatMessage>();
     private _liked = new Subject<ChatMessage>();
     private _unliked = new Subject<ChatMessage>();
@@ -36,27 +74,30 @@ export class CommentViewComponent {
     private _shared = new Subject<ChatMessage>();
     private _deleted = new Subject<ChatMessage>();
     private _messageEdited = new Subject<EditEvent>();
+    private _sortOrderChanged = new Subject<CommentsOrder>();
+    private _filterModeChanged = new Subject<FilterMode>();
 
-    @Input()
-    showEmptyState = true;
+    @Output() readonly userSelected = this._userSelected.asObservable();
+    @Output() readonly reported = this._reported.asObservable();
+    @Output() readonly liked = this._liked.asObservable();
+    @Output() readonly unliked = this._unliked.asObservable();
+    @Output() readonly usernameSelected = this._usernameSelected.asObservable();
+    @Output() readonly avatarSelected = this._avatarSelected.asObservable();
+    @Output() readonly shared = this._shared.asObservable();
+    @Output() readonly deleted = this._deleted.asObservable();
+    @Output() readonly selected = this._selected.asObservable();
+    @Output() readonly messageEdited = this._messageEdited.asObservable();
+    @Output() readonly sortOrderChanged = this._sortOrderChanged.asObservable();
+    @Output() readonly filterModeChanged = this._filterModeChanged.asObservable();
 
-    @Input()
-    allowReplies = true;
+    //#endregion 
+    //#region UI Bindings
 
-    @Input()
-    enableHoldOnClick = false;
+    @ViewChildren(CommentComponent) commentsQuery: QueryList<CommentComponent>;
+    @ViewChild('messageContainer') messageContainer: ElementRef<HTMLElement>;
+    get comments() { return Array.from(this.commentsQuery); }
 
-    @Input()
-    enableHoldOnScroll = true;
-    
-    @Input() customMenuItems: MessageMenuItem[] = [];
-
-    @ViewChildren(CommentComponent)
-    commentsQuery: QueryList<CommentComponent>;
-
-    get comments() {
-        return Array.from(this.commentsQuery);
-    }
+    //#endregion
 
     /**
      * Returns true if this message can be found within one of the message buffers (older, current, newer)
@@ -163,43 +204,8 @@ export class CommentViewComponent {
         return this.comments.find(x => x.message?.id === message.id);
     }
 
-    @Input()
-    @HostBinding('class.fixed-height')
-    fixedHeight: boolean;
-
-    @Input()
-    selectedMessage: ChatMessage;
-    
-    @Output()
-    get selected() {
-        return this._selected;
-    }
-
-    @Output() 
-    get messageEdited() {
-        return this._messageEdited.asObservable();
-    }
-
     saveEdit(message: ChatMessage, newMessage: string) {
         this._messageEdited.next({ message, newMessage });
-    }
-
-    @Output() get userSelected() { return this._userSelected; }
-    @Output() get reported() { return this._reported; }
-    @Output() get liked() { return this._liked; }
-    @Output() get unliked() { return this._unliked; }
-    @Output() get usernameSelected() { return this._usernameSelected; }
-    @Output() get avatarSelected() { return this._avatarSelected; }
-    @Output() get shared() { return this._shared; }
-    @Output() get deleted() { return this._deleted; }
-
-    menuMessage: ChatMessage = null;
-    messages: ChatMessage[] = [];
-    currentUser: User;
-
-    @Input()
-    get source() {
-        return this._source;
     }
 
     likeMessage(message: ChatMessage) {
@@ -243,12 +249,7 @@ export class CommentViewComponent {
         this._deleted.next(message);
     }
 
-    customSortEnabled = false;
-
-    markSourceLoaded: () => void;
-    sourceLoaded = new Promise<void>(r => this.markSourceLoaded = r);
-
-    set source(value) {
+    private setSource(value: ChatSourceBase) {
         this.customSortEnabled = value?.sortOrder !== CommentsOrder.NEWEST;
         this.newMessages = [];
         this.olderMessages = [];
@@ -288,48 +289,17 @@ export class CommentViewComponent {
             this.markSourceLoaded();
     }
 
-    @Input()
-    genericAvatarUrl: string;
-
-    @ViewChild('messageContainer')
-    messageContainer: ElementRef<HTMLElement>;
-
-    @Input()
-    maxMessages = 2000;
-
-    @Input()
-    maxVisibleMessages: number = 200;
-
-    @Input()
-    newestLast = false;
-
-    @Input()
-    holdNewMessages = false;
-
-    isViewingMore = false;
-    isLoadingMore = false;
-    hasMore = false;
-
-    newMessages: ChatMessage[] = [];
-    olderMessages: ChatMessage[] = [];
-
     messageIdentity(index: number, chatMessage: ChatMessage) {
         return chatMessage.id;
     }
-
-    @Output()
-    sortOrderChanged = new Subject<CommentsOrder>();
-
-    @Output()
-    filterModeChanged = new Subject<FilterMode>();
 
     async showNew(event: MouseEvent) {
         let naturalOrder = CommentsOrder.NEWEST;
         if (this.source && (this.source.sortOrder !== naturalOrder || this.source.filterMode !== FilterMode.ALL)) {
             if (this.source.sortOrder !== naturalOrder)
-                this.sortOrderChanged.next(naturalOrder);
+                this._sortOrderChanged.next(naturalOrder);
             if (this.source.filterMode !== FilterMode.ALL)
-                this.filterModeChanged.next(FilterMode.ALL);
+                this._filterModeChanged.next(FilterMode.ALL);
             return;
         }
 
