@@ -28,16 +28,126 @@ interface AttachmentFragmentState {
     styleUrls: ['./comment-field.component.scss']
 })
 export class CommentFieldComponent {
-    constructor(private chatBackend: ChatBackendBase) {
+    ngAfterViewInit() {
+        if (typeof window !== 'undefined') {
+            let root = document.body.querySelector('[ng-version]') || document.body;
+            root.appendChild(this.autocompleteEl.nativeElement);
+        }
     }
+
+    //#region Source
 
     private _source : ChatSourceBase;
-    @Input() 
-    get source() : ChatSourceBase {
-        return this._source;
+    @Input() get source() : ChatSourceBase { return this._source; }
+    set source(value) { this.setSource(value); }
+
+    //#endregion
+    //#region Properties
+
+    private _permissionDeniedError = new Subject<string>();
+    private errorTimeout;
+    private _subs = new Subscription();
+
+    sending = false;
+    sendError : Error;
+    expandError = false;
+    autocompleteVisible = false;
+    autocompleteOptions : AutoCompleteOption[] = [];
+    completionFunc : (str : string) => AutoCompleteOption[];
+    completionPrefix : string;
+    autoCompleteSelected : number = 0;
+    text: string = '';
+    chatMessageAttachments: ChatMessageAttachment[] = [];
+
+    //#endregion
+    //#region Inputs
+
+    @Input() user : User;
+    @Input() @HostBinding('class.can-comment') canComment = true;
+    @Input() signInState: SignInState;
+    @Input() allowAttachments = false;
+    @Input() transientMessage: string;
+    @Input() sendLabel = 'Send';
+    @Input() signingInLabel = 'Signing in...';
+    @Input() sendingLabel = 'Sending';
+    @Input() label = 'Post a comment';
+    @Input() permissionDeniedLabel = 'Unavailable';
+    @Input() signInLabel = 'Sign In';
+    @Input() maxLength = 1500;
+    @Input() placeholder = '';
+    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
+    @Input() hashtags : HashTag[];
+    @Input() participants : User[] = [];
+    @Input() genericAvatarUrl: string;
+    @Input() url: string;
+    @Input() submit: (message: ChatMessage) => boolean;
+
+    //#endregion
+    //#region Outputs
+
+    @Output() signInSelected = new Subject<void>();
+    @Output() editAvatarSelected = new Subject<void>();
+    @Output() focusChange = new Subject<boolean>();
+    @Output() textChanged = new Subject<void>();
+    @Output() get permissionDeniedError() { return this._permissionDeniedError; }
+    
+    //#endregion
+    //#region UI Bindings
+
+    @ViewChild('autocomplete') autocompleteEl : ElementRef<HTMLElement>;
+    @ViewChild('autocompleteContainer') autocompleteContainerEl : ElementRef<HTMLElement>;
+    @ViewChild('textarea') textareaEl : ElementRef<HTMLTextAreaElement>;
+
+    get indicatorState() {
+        if (this.transientMessage) {
+            return 'transient';
+        } else if (this.sending) {
+            return 'sending';
+        } else if (this.sendError) {
+            return 'error';
+        } else {
+            return 'none';
+        }
     }
 
-    set source(value) {
+    get buttonState() {
+        if (this.sending)
+            return 'sending';
+        else if (this.signInState === 'signing-in')
+            return 'signing-in';
+        else if (!this.canComment)
+            return 'permission-denied';
+        else
+            return 'send';
+    }
+
+    get sendButtonEnabled() {
+        if (this.signInState === 'signing-in')
+            return false;
+        
+        if (!['connected', 'restored'].includes(this.source.state))
+            return false;
+            
+        if (!this.canComment) {
+            // In this case, we want to enable the button because we want to be able to 
+            // send the permissionDenied message up to the host.
+            return true;
+        }
+
+        return this.isValidMessage
+            && !this.hasPendingAttachments
+            && !this.sending
+        ;
+    }
+
+    get userAvatarUrl() { return this.user?.avatarUrl || this.genericAvatarUrl; }
+    get isValidMessage() { return (this.text || this.chatMessageAttachments.length > 0); }
+    get hasPendingAttachments() { return this.chatMessageAttachments.some(x => x.transientState); }
+
+    //#endregion
+    //#region Private Component API
+
+    private setSource(value: ChatSourceBase) {
         if (this._source) {
             this._subs?.unsubscribe();
             this._source = null;
@@ -65,95 +175,16 @@ export class CommentFieldComponent {
         }
     }
 
-    private _subs = new Subscription();
-    @Input() user : User;
+    //#endregion
+    //#region Actions
 
-    @HostBinding('class.can-comment')
-    @Input() canComment = true;
-    @Input() signInState: SignInState;
-    @Input() allowAttachments = false;
-
-    @Output() signInSelected = new Subject<void>();
-    @Output() editAvatarSelected = new Subject<void>();
-    @Output() focusChange = new Subject<boolean>();
-
-    sending = false;
-    sendError : Error;
-    expandError = false;
-    @Input() transientMessage: string;
-
-    private _text : string = '';
-    get text() {
-        return this._text;
-    }
-
-    set text(value) {
-        this._text = value;
-    }
-
-    get indicatorState() {
-        if (this.transientMessage) {
-            return 'transient';
-        } else if (this.sending) {
-            return 'sending';
-        } else if (this.sendError) {
-            return 'error';
-        } else {
-            return 'none';
-        }
-    }
-
-    get buttonState() {
-        if (this.sending)
-            return 'sending';
-        else if (this.signInState === 'signing-in')
-            return 'signing-in';
-        else if (!this.canComment)
-            return 'permission-denied';
-        else
-            return 'send';
-    }
-
-    @Input() sendLabel = 'Send';
-    @Input() signingInLabel = 'Signing in...';
-    @Input() sendingLabel = 'Sending';
-    @Input() label = 'Post a comment';
-    @Input() permissionDeniedLabel = 'Unavailable';
-    @Input() signInLabel = 'Sign In';
-    @Input() maxLength = 1500;
-    @Input() placeholder = '';
-    @Output() textChanged = new Subject<void>();
-    @Input() shouldInterceptMessageSend?: (message: ChatMessage, source: ChatSourceBase) => boolean | Promise<boolean>;
-
-    @ViewChild('autocomplete') autocompleteEl : ElementRef<HTMLElement>;
-    @ViewChild('autocompleteContainer') autocompleteContainerEl : ElementRef<HTMLElement>;
-    @ViewChild('textarea') textareaEl : ElementRef<HTMLTextAreaElement>;
-
-    @Input() hashtags : HashTag[];
-    @Input() participants : User[] = [];
-    @Input() genericAvatarUrl: string;
-    @Input() url: string;
-
-    get userAvatarUrl() {
-        return this.user?.avatarUrl || this.genericAvatarUrl;
-    }
-    private _permissionDeniedError = new Subject<string>();
-
-    @Output()
-    get permissionDeniedError(): Observable<string> {
-        return this._permissionDeniedError;
-    }
-
-    ngAfterViewInit() {
-        if (typeof window !== 'undefined') {
-            let root = document.body.querySelector('[ng-version]') || document.body;
-            root.appendChild(this.autocompleteEl.nativeElement);
-        }
-    }
-
-    sendPermissionDenied(message: string) {
-        this._permissionDeniedError.next(message);
-    }
+    sendPermissionDenied(message: string) { this._permissionDeniedError.next(message); }
+    activateAutoComplete(option : AutoCompleteOption) { option.action(); this.dismissAutoComplete(); }
+    onFocus() { this.focusChange.next(true); }
+    onBlur() { this.focusChange.next(false); setTimeout(() => this.dismissAutoComplete(), 250); }
+    showSignIn() { this.signInSelected.next(); }
+    showEditAvatar() { this.editAvatarSelected.next(); }
+    insertEmoji(text : string) { this.text += text; }
 
     showAutoComplete(options : AutoCompleteOption[]) {
         if (typeof window === 'undefined')
@@ -170,21 +201,12 @@ export class CommentFieldComponent {
         this.autocompleteVisible = true;
     }
 
-    autocompleteVisible = false;
-    autocompleteOptions : AutoCompleteOption[] = [];
-
-    activateAutoComplete(option : AutoCompleteOption) {
-        option.action();
-        this.dismissAutoComplete();
-    }
-
     dismissAutoComplete() {
         this.autocompleteVisible = false;
         this.completionFunc = null;
         this.completionPrefix = '';
     }
 
-    private errorTimeout;
     indicateError(message : string) {
         this.sendError = new Error(message);
         this.expandError = false;
@@ -201,37 +223,6 @@ export class CommentFieldComponent {
             alert(message);
     }
 
-    completionFunc : (str : string) => AutoCompleteOption[];
-
-    completionPrefix : string;
-    autoCompleteSelected : number = 0;
-
-    get isValidMessage() {
-        return (this.text || this.chatMessageAttachments.length > 0);
-    }
-
-    get hasPendingAttachments() {
-        return this.chatMessageAttachments.some(x => x.transientState);
-    }
-
-    get sendButtonEnabled() {
-        if (this.signInState === 'signing-in')
-            return false;
-        
-        if (!['connected', 'restored'].includes(this.source.state))
-            return false;
-            
-        if (!this.canComment) {
-            // In this case, we want to enable the button because we want to be able to 
-            // send the permissionDenied message up to the host.
-            return true;
-        }
-
-        return this.isValidMessage
-            && !this.hasPendingAttachments
-            && !this.sending
-        ;
-    }
     async autocomplete(replacement : string) {
         let el = this.textareaEl.nativeElement;
         this.text = this.text.slice(0, el.selectionStart - this.completionPrefix.length) + replacement + this.text.slice(el.selectionStart);
@@ -350,30 +341,6 @@ export class CommentFieldComponent {
         this.showAutoComplete(this.completionFunc(this.completionPrefix));
     }
 
-    onFocus() {
-        this.focusChange.next(true);
-    }
-
-    onBlur() {
-        this.focusChange.next(false);
-        setTimeout(() => this.dismissAutoComplete(), 250);
-    }
-
-    insertEmoji(text : string) {
-        this.text += text;
-    }
-
-    showSignIn() {
-        this.signInSelected.next();
-    }
-
-    showEditAvatar() {
-        this.editAvatarSelected.next();
-    }
-
-    @Input()
-    submit: (message: ChatMessage) => boolean;
-
     async sendMessage() {
         if (!this.source)
             return;
@@ -413,11 +380,7 @@ export class CommentFieldComponent {
         }
     }
 
-    chatMessageAttachments: ChatMessageAttachment[] = [];
-
-    addedAttachment(attachment: ChatMessageAttachment) {
-        this.chatMessageAttachments.push(attachment);
-    }
+    addedAttachment(attachment: ChatMessageAttachment) { this.chatMessageAttachments.push(attachment); }
 
     attachmentError(attachment: ChatMessageAttachment) {
         setTimeout(() => {
