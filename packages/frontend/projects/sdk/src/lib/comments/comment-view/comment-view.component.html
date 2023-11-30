@@ -31,6 +31,7 @@
             [showReplyAction]="allowReplies"
             [editing]="message.transientState.editing"
             [genericAvatarUrl]="genericAvatarUrl"
+            [readonly]="source?.readonly"
             (click)="enableHoldOnClick ? (holdNewMessages = true) : undefined"
             (editStarted)="startEditing(message)"
             (deleted)="deleteMessage(message)"

@@ -6,6 +6,11 @@ import { AttachmentResolver, AttachmentScraper } from './attachment-scraper';
 export interface ChatSourceOptions {
     sortOrder?: CommentsOrder;
     filterMode?: FilterMode;
+
+    /**
+     * How many messages should be loaded initially?
+     */
+    initialMessageCount?: number;
 }
 
 export abstract class ChatBackendBase {

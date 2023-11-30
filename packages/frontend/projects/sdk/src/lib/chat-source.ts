@@ -24,6 +24,9 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     private subscription = new Subscription();
     private markReady: () => void;
 
+    readonly = false;
+    canLoadMore = true;
+
     ready: Promise<void>;
 
     permissions: ChatPermissions;
@@ -98,7 +101,7 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     async getExistingMessages(): Promise<ChatMessage[]> {
         try {
-            let messages = await this.idempotentPeer.getExistingMessages();
+            let messages = await this.idempotentPeer.getExistingMessages(this.options.initialMessageCount ?? 20);
             messages = this.mapOrUpdateMessages(messages);
             return messages;
         } catch (e) {

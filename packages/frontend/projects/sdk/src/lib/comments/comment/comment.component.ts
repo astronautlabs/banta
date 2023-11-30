@@ -49,6 +49,7 @@ export class CommentComponent {
     @Input() mine = false;
     @Input() editing = false;
     @Input() genericAvatarUrl: string;
+    @Input() readonly = false;
 
     //#endregion
     //#region Outputs

@@ -1,5 +1,5 @@
-import { ChatMessage, ChatPermissions, CommentsOrder, FilterMode, RpcCallable, SocketRPC, User } from "@banta/common";
-import { AuthorizableAction, ChatService, Like, Topic } from "./chat.service";
+import { ChatMessage, ChatPermissions, CommentsOrder, FilterMode, RpcCallable, SocketRPC, Topic, User } from "@banta/common";
+import { AuthorizableAction, ChatService, Like } from "./chat.service";
 import { PubSub } from "./pubsub";
 import * as mongodb from 'mongodb';
 
@@ -162,7 +162,7 @@ export class ChatConnection extends SocketRPC {
         if (!this.user)
             throw new Error(`You must be signed in to delete your messages.`);
 
-        let message = await this.chat.getMessage(messageId);
+        let message = await this.chat.getUnpreparedMessage(messageId);
 
         if (message.user?.id !== this.user.id)
             throw new Error(`You can only delete your own messages.`);
@@ -170,7 +170,7 @@ export class ChatConnection extends SocketRPC {
         await this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'deleteMessage',
             message,
-            parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId, false) : null,
+            parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId, false) : null,
             topic: await this.chat.getTopic(message.topicId, false)
         });
 
@@ -202,7 +202,7 @@ export class ChatConnection extends SocketRPC {
         }
 
         if (parentMessageId) {
-            let parentMessage = await this.chat.getMessage(parentMessageId);
+            let parentMessage = await this.chat.getUnpreparedMessage(parentMessageId);
             if (!parentMessage) {
                 throw new Error(`No such parent message '${parentMessageId}'`);
             }
@@ -237,7 +237,7 @@ export class ChatConnection extends SocketRPC {
                     // This like is for _us_
                     // Send an updated message down to the client so it knows that it has liked a message.
 
-                    let message = await this.chat.getMessage(like.messageId);
+                    let message = await this.chat.getUnpreparedMessage(like.messageId);
                     
                     if (message && this.ownsMessage(message))
                         this.sendChatMessage(message);
@@ -265,61 +265,28 @@ export class ChatConnection extends SocketRPC {
     }
 
     @RpcCallable()
-    async getExistingMessages() {
-        let sort = this.getSortOrder();
-        let initialMessages = <ChatMessage[]>await this.chat.messages.find(
-            this.getFilter(), { limit: 20, sort }).toArray();
+    async getExistingMessages(limit?: number) {
+        limit ??= 20;
 
-        initialMessages = await Promise.all(initialMessages.map(async (m, i) => {
-            let message = await this.prepareMessage(m);
-            message.pagingCursor = String(i);
-            return <ChatMessage>message;
-        }));
+        if (limit > 1000)
+            throw new Error(`Invalid request: Maximum limit is 1000.`);
 
-        return initialMessages;
+        return this.chat.getMessages({
+            topicId: this.topicId,
+            parentMessageId: this.parentMessage?.id,
+            filter: this.filterMode,
+            sort: this.sortOrder,
+            userId: this.user?.id,
+            limit
+        });
     }
 
     private getFilter(): mongodb.Filter<ChatMessage> {
-        let filter = <mongodb.Filter<ChatMessage>>{ 
-            topicId: this.topicId, 
-            parentMessageId: this.parentMessage?.id,
-            $or: [
-                { hidden: undefined },
-                { hidden: false }
-            ]
-        }
-
-        if (this.filterMode === FilterMode.MINE && this.user) {
-            filter['user.id'] = this.user.id;
-        } else if (this.filterMode === FilterMode.THREADS && this.user) {
-            filter = {
-                $and: [
-                    filter,
-                    {
-                        $or: [
-                            { 'user.id': this.user.id },
-                            { 'participants': this.user.id }
-                        ]
-                    }
-                ]
-            }
-        } else if (this.filterMode === FilterMode.MY_LIKES && this.user) {
-            filter.likers = this.user.id;
-        }
-
-        return filter;
+        return this.chat.createMongoMessagesFilter(this.topicId, this.parentMessage?.id, this.filterMode, this.user?.id);
     }
 
     private getSortOrder(): any {
-        if (this.sortOrder === CommentsOrder.NEWEST) {
-            return { sentAt: -1 };
-        } else if (this.sortOrder === CommentsOrder.LIKES) {
-            return { likes: -1 }
-        } else if (this.sortOrder === CommentsOrder.OLDEST) {
-            return { sentAt: 1 }
-        }
-
-        return { sentAt: 1 };
+        return this.chat.createMongoSortFromOrder(this.sortOrder);
     }
 
     pubsub: PubSub<ChatPubSubEvent>;
@@ -341,7 +308,7 @@ export class ChatConnection extends SocketRPC {
         message.sentAt = Date.now();
 
         if (message.id) {
-            let existingMessage = await this.chat.getMessage(message.id);
+            let existingMessage = await this.chat.getUnpreparedMessage(message.id);
             if (existingMessage && existingMessage.user?.id === this.user.id) {
                 return existingMessage;
             }
@@ -372,7 +339,7 @@ export class ChatConnection extends SocketRPC {
         await this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'postMessage',
             message,
-            parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId) : null,
+            parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null,
             topic: await this.chat.getTopic(message.topicId)
         });
     
@@ -384,7 +351,7 @@ export class ChatConnection extends SocketRPC {
 
     @RpcCallable()
     async getMessage(id: string): Promise<ChatMessage> {
-        let message = await this.chat.getMessage(id);
+        let message = await this.chat.getUnpreparedMessage(id);
         let notFound = new Error(`Not found`);
 
         if (!message)
@@ -400,7 +367,7 @@ export class ChatConnection extends SocketRPC {
             action: 'viewTopic', 
             topic: await this.chat.getTopic(message.topicId),
             message,
-            parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId) : null
+            parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null
         });
 
         message = await this.prepareMessage(message);
@@ -412,14 +379,14 @@ export class ChatConnection extends SocketRPC {
         if (!this.user)
             throw new Error(`You must be signed in to like a message`);
         
-        let message = await this.chat.getMessage(id);
+        let message = await this.chat.getUnpreparedMessage(id);
 
         if (!message) 
             throw new Error(`No such message with ID '${id}'`);
         await this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'likeMessage',
             message,
-            parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId) : null,
+            parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null,
             topic: await this.chat.getTopic(message.topicId)
         });
 
@@ -431,14 +398,14 @@ export class ChatConnection extends SocketRPC {
         if (!this.user)
             throw new Error(`You must be signed in to like a message`);
 
-        let message = await this.chat.getMessage(id);
+        let message = await this.chat.getUnpreparedMessage(id);
 
         if (!message) 
             throw new Error(`No such message with ID '${id}'`);
         await this.chat.doAuthorizeAction(this.user, this.userToken, {
             action: 'likeMessage',
             message,
-            parentMessage: message.parentMessageId ? await this.chat.getMessage(message.parentMessageId) : null,
+            parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null,
             topic: await this.chat.getTopic(message.topicId)
         });
 

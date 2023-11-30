@@ -23,7 +23,7 @@
                         (keydown)="onKeyDown($event)"
                         (focus)="onFocus()"
                         (blur)="onBlur()"
-                        [disabled]="sending"
+                        [disabled]="sending || readonly"
                         [(ngModel)]="text"
                         autocomplete="off"
                         ></textarea>
@@ -55,10 +55,11 @@
                     </div>
                     <banta-attachment-button 
                         *ngIf="allowAttachments"
+                        [disabled]="readonly"
                         (addedAttachment)="addedAttachment($event)"
                         (attachmentError)="attachmentError($event)"
                         ></banta-attachment-button>
-                    <emoji-selector-button (selected)="insertEmoji($event)"></emoji-selector-button>
+                    <emoji-selector-button [disabled]="readonly" (selected)="insertEmoji($event)"></emoji-selector-button>
                 </div>
                 
             </div>

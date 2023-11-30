@@ -36,5 +36,15 @@ export interface ChatSourceBase {
     connectionStateChanged?: Observable<'connected' | 'connecting' | 'lost' | 'restored'>;
     state?: 'connecting' | 'connected' | 'lost' | 'restored';
 
+    /**
+     * When true, this source is readonly, so messages cannot be sent/edited/deleted, nor liked/unliked.
+     */
+    readonly?: boolean;
+
+    /**
+     * When true/undefined, the source supports loading more messages. When false, it does not.
+     */
+    canLoadMore?: boolean;
+
     get errorState();
 }

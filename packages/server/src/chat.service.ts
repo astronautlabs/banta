@@ -1,5 +1,5 @@
 import { Injectable } from "@alterior/di";
-import { ChatMessage, UrlCard, User } from "@banta/common";
+import { ChatMessage, CommentsOrder, FilterMode, UrlCard, User, Topic } from "@banta/common";
 import { Subject } from "rxjs";
 import * as mongodb from 'mongodb';
 import * as ioredis from 'ioredis';
@@ -24,6 +24,16 @@ export interface PostMessageEvent extends ChatEvent {
 export interface EditMessageEvent extends ChatEvent {
     type : 'edit';
     message : ChatMessage;
+}
+
+export interface MessageQuery {
+    topicId: string;
+    parentMessageId?: string;
+    sort?: CommentsOrder;
+    filter?: FilterMode;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 const DEFAULT_COOLOFF_PERIOD = 10*1000;
@@ -58,18 +68,6 @@ export interface PersistedUrlCard {
     statusCode: number;
     requestDuration: number;
     card: UrlCard;
-}
-
-/**
- * Information about a chat topic. These are made automatically during the operation of Banta.
- */
-export interface Topic {
-    // CAUTION: This object is sent directly to the client in the REST API.
-    id: string;
-    createdAt: number;
-    description?: string;
-    url?: string;
-    messageCount: number;
 }
 
 export interface AuthorizableAction {
@@ -325,7 +323,7 @@ export class ChatService {
         let parentMessage: ChatMessage;
         
         if (message.parentMessageId) {
-            parentMessage = await this.getMessage(message.parentMessageId, false);
+            parentMessage = await this.getUnpreparedMessage(message.parentMessageId, false);
             if (!parentMessage)
                 throw new Error(`No such parent message with ID '${message.parentMessageId}'`);
         }
@@ -367,7 +365,7 @@ export class ChatService {
                         participants: message.user.id
                     }
                 });
-                let updatedParentMessage = await this.getMessage(parentMessage.id, true);
+                let updatedParentMessage = await this.getUnpreparedMessage(parentMessage.id, true);
                 this.notifyMessageChange(updatedParentMessage);
             }
         });
@@ -399,7 +397,7 @@ export class ChatService {
      * @returns 
      */
     async modifySubmessageCount(messageOrId: ChatMessage | string, delta: number) {
-        let message = await this.getMessage(messageOrId, true);
+        let message = await this.getUnpreparedMessage(messageOrId, true);
         message.submessageCount = (message.submessageCount || 0) + delta;
         this.updateOne(this.messages, { id: message.id }, { $inc: { submessageCount: delta } });
         this.notifyMessageChange(message);
@@ -413,7 +411,7 @@ export class ChatService {
      * @returns 
      */
     async modifyMessageLikesCount(messageOrId: string | ChatMessage, delta: number) {
-        let message = await this.getMessage(messageOrId, true);
+        let message = await this.getUnpreparedMessage(messageOrId, true);
         message.likes += delta;
         await this.updateOne(this.messages, { id: message.id }, { $inc: { likes: delta } });
         this.notifyMessageChange(message);
@@ -435,7 +433,7 @@ export class ChatService {
      * @returns 
      */
     async setMessageHiddenStatus(messageOrId: ChatMessage | string, hidden: boolean) {
-        let message = await this.getMessage(messageOrId, true);
+        let message = await this.getUnpreparedMessage(messageOrId, true);
         if (message.hidden === hidden || message.deleted)
             return;
         
@@ -456,7 +454,7 @@ export class ChatService {
 
             // We also need to check if the parent message is already hidden, if so then this operation 
             // does not affect the topic's message counter at all.
-            let parentMessage = await this.getMessage(message.parentMessageId, false);
+            let parentMessage = await this.getUnpreparedMessage(message.parentMessageId, false);
             let parentHidden: boolean = parentMessage ? parentMessage?.hidden : true;
             if (parentHidden)
                 affectedMessages = 0;
@@ -501,7 +499,7 @@ export class ChatService {
      * @param newText 
      */
     async editMessage(messageOrId: string | ChatMessage, newText: string) {
-        let message = await this.getMessage(messageOrId, true);
+        let message = await this.getUnpreparedMessage(messageOrId, true);
         let previousText = message.message;
         message.message = newText;
 
@@ -545,7 +543,7 @@ export class ChatService {
      * @param messageOrId 
      */
     async deleteMessage(messageOrId: ChatMessage | string) {
-        let message = await this.getMessage(messageOrId, true);
+        let message = await this.getUnpreparedMessage(messageOrId, true);
         await this.setMessageHiddenStatus(message.id, true);
 
         message.deleted = true;
@@ -673,13 +671,13 @@ export class ChatService {
     }
 
     /**
-     * Get a specific message by ID.
+     * Get a specific message by ID without preparing it for delivery to the client.
      * @param messageOrId The ID of the message. Can also be a ChatMessage itself, for convenient calling (it will be
      *                    immediately returned)
      * @param throwIfMissing If true, throw an error if the message could not be found. Otherwise returns null.
      * @returns 
      */
-    async getMessage(messageOrId: ChatMessage | string, throwIfMissing = false) {
+    async getUnpreparedMessage(messageOrId: ChatMessage | string, throwIfMissing = false) {
         if (typeof messageOrId !== 'string')
             return messageOrId;
 
@@ -689,6 +687,157 @@ export class ChatService {
         if (throwIfMissing && !message)
             throw new Error(`No such message with ID '${id}'`);
         
+        return message;
+    }
+
+    /**
+     * Get a specific message by ID and prepare it for delivery to the client. If you do not want the message to be 
+     * prepared, instead use getUnpreparedMessage().
+     * 
+     * @param messageOrId The ID of the message. Can also be a ChatMessage itself, for convenient calling (it will be
+     *                    immediately returned)
+     * @param throwIfMissing If true, throw an error if the message could not be found. Otherwise returns null.
+     * @returns 
+     */
+    async getMessage(messageOrId: ChatMessage | string, throwIfMissing = false) {
+        return await this.prepareMessage(await this.getUnpreparedMessage(messageOrId, throwIfMissing));
+    }
+    
+    /**
+     * Creates a MongoDB filter object for the given MessageQuery.
+     * @param query 
+     * @returns 
+     */
+    createMongoMessagesFilterForQuery(query: MessageQuery) {
+        return this.createMongoMessagesFilter(query.topicId, query.parentMessageId, query.filter, query.userId);
+    }
+
+    /**
+     * Creates a MongoDB filter object for the given set of parameters. This is necessary when querying the `messages`
+     * collection directly. 
+     * @param topicId The topic to filter for.
+     * @param parentMessageId The parent message when searching for threaded replies. Can be undefined to only fetch top level messages.
+     * @param filterMode The filter to apply to the results. If using MINE or MY_LIKES you must specify a userId for the results to make sense.
+     * @param userId The viewing user. Can be undefined.
+     * @returns 
+     */
+    createMongoMessagesFilter(topicId: string, parentMessageId: string, filterMode: FilterMode, userId: string): mongodb.Filter<ChatMessage> {
+        let filter = <mongodb.Filter<ChatMessage>>{ 
+            topicId: topicId, 
+            parentMessageId: parentMessageId,
+            $or: [
+                { hidden: undefined },
+                { hidden: false }
+            ]
+        }
+
+        if (filterMode === FilterMode.MINE && userId) {
+            filter['user.id'] = userId;
+        } else if (filterMode === FilterMode.THREADS && userId) {
+            filter = {
+                $and: [
+                    filter,
+                    {
+                        $or: [
+                            { 'user.id': userId },
+                            { 'participants': userId }
+                        ]
+                    }
+                ]
+            }
+        } else if (filterMode === FilterMode.MY_LIKES && userId) {
+            filter.likers = userId;
+        }
+
+        return filter;
+    }
+
+    /**
+     * Create a MongoDB sort (ie { field: 1 }) from the given sort enumeration.
+     * @param order 
+     * @returns 
+     */
+    createMongoSortFromOrder(order: CommentsOrder): any {
+        if (order === CommentsOrder.NEWEST) {
+            return { sentAt: -1 };
+        } else if (order === CommentsOrder.LIKES) {
+            return { likes: -1 }
+        } else if (order === CommentsOrder.OLDEST) {
+            return { sentAt: 1 }
+        }
+
+        return { sentAt: 1 };
+    }
+    /**
+     * Retrieve a set of messages from the database based on the parameters of the supplied MessageQuery
+     * without preparing them for delivery to the client (by removing private information and applying user-specific
+     * information).
+     * @param query 
+     * @returns 
+     */
+    async getUnpreparedMessages(query: MessageQuery): Promise<ChatMessage[]> {
+        query = { 
+            sort: CommentsOrder.NEWEST,
+            filter: FilterMode.ALL,
+            ...query 
+        };
+        
+        let messages = <ChatMessage[]>await this.messages
+            .find(
+                this.createMongoMessagesFilterForQuery(query), 
+                { 
+                    limit: query.limit ?? 20, 
+                    skip: query.offset ?? 0, 
+                    sort: this.createMongoSortFromOrder(query.sort)
+                }
+            )
+            .toArray()
+        ;
+
+        messages = await Promise.all(messages.map(async (message, i) => {
+            message.pagingCursor = String(i);
+            return <ChatMessage>message;
+        }));
+
+        return messages;
+    }
+
+    /**
+     * Retrieve a set of messages from the database based on the parameters of the supplied MessageQuery.
+     * @param query 
+     * @returns 
+     */
+    async getMessages(query: MessageQuery): Promise<ChatMessage[]> {
+        let messages = await this.getUnpreparedMessages(query);
+        return await Promise.all(messages.map(async message => this.prepareMessage(message, query.userId)));
+    }
+
+    /**
+     * Remove private information from the given message object and add user-specific state (such as whether 
+     * the message was "liked") if userId is provided.
+     * @param message 
+     * @param userId 
+     * @returns 
+     */
+    async prepareMessage(message: ChatMessage, userId?: string) {
+        message = { 
+            ...message,
+            userState: {
+                liked: false
+            }
+        };
+
+        // Remove any private information from the user object
+        // before sending to the chat participants.
+        delete message.user?.token;
+        delete message.user?.ipAddress;
+        delete message.user?.userAgent;
+
+        if (userId) {
+            let like = await this.getLike(userId, message.id);
+            message.userState.liked = !!like;
+        }
+
         return message;
     }
 

@@ -1,7 +1,6 @@
 import { Component, ElementRef, HostBinding, Input, Output, ViewChild } from "@angular/core";
 import { ChatMessage, ChatMessageAttachment, User } from "@banta/common";
-import { Observable, Subject, Subscription } from "rxjs";
-import { ChatBackendBase } from "../../chat-backend-base";
+import { Subject, Subscription } from "rxjs";
 import { ChatSourceBase } from "../../chat-source-base";
 import { AttachmentFragment } from "../../attachment-scraper";
 import { EMOJIS } from "../../emoji";
@@ -81,6 +80,7 @@ export class CommentFieldComponent {
     @Input() genericAvatarUrl: string;
     @Input() url: string;
     @Input() submit: (message: ChatMessage) => boolean;
+    @Input() readonly = false;
 
     //#endregion
     //#region Outputs
@@ -122,6 +122,9 @@ export class CommentFieldComponent {
     }
 
     get sendButtonEnabled() {
+        if (this.readonly)
+            return false;
+        
         if (this.signInState === 'signing-in')
             return false;
         

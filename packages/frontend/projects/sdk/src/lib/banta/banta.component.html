@@ -216,11 +216,12 @@
                 class="focused-comment"
                 data-before
                 *ngIf="pointOpen"
+                [showReplyAction]="false"
+                [message]="pointOpen"
+                [readonly]="pointSubChat?.readonly"
                 (upvoted)="upvoteMessage(pointOpen)"
                 (userSelected)="showProfile(pointOpen.user)"
                 (reported)="reportMessage(pointOpen)"
-                [showReplyAction]="false"
-                [message]="pointOpen"
                 ></banta-comment>
         
             <div class="message reply">

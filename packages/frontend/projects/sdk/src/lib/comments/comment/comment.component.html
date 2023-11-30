@@ -8,11 +8,11 @@
         <mat-icon>warning</mat-icon>
         Report
     </button>
-    <button *ngIf="mine" [disabled]="!permissions?.canEdit" mat-menu-item (click)="startEdit()">
+    <button *ngIf="mine" [disabled]="!permissions?.canEdit || readonly" mat-menu-item (click)="startEdit()">
         <mat-icon>edit</mat-icon>
         Edit
     </button>
-    <button *ngIf="mine" [disabled]="!permissions?.canDelete" mat-menu-item (click)="delete()">
+    <button *ngIf="mine" [disabled]="!permissions?.canDelete || readonly" mat-menu-item (click)="delete()">
         <mat-icon>delete</mat-icon>
         Delete
     </button>
@@ -89,6 +89,7 @@
             <button 
                 *ngIf="!message.transientState?.liking"
                 mat-button 
+                [disabled]="readonly"
                 [matTooltip]="permissions?.canLike ? upvoting ? 'Please wait...' : 'Like' : permissions?.canLikeErrorMessage" 
                 matTooltipPosition="below" 
                 (click)="message.userState?.liked ? unlike() : like()" 

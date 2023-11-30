@@ -16,3 +16,5 @@ export * from './rpc';
 export * from './durable-socket';
 export * from './permissions';
 export * from './url-card';
+export * from './topic';
+export * from './url-utils';

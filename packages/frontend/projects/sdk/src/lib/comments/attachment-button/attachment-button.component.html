@@ -1,4 +1,4 @@
-<button matTooltip="Add an image or gif" #button type="button" mat-icon-button (click)="show()">
+<button matTooltip="Add an image or gif" #button type="button" mat-icon-button (click)="show()" [disabled]="disabled">
 	<mat-icon>image</mat-icon>
 </button>
 <input style="display: none;" #fileUpload [multiple]="false"  (change)="fileChange($event)" type="file" >

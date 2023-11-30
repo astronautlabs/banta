@@ -9,7 +9,7 @@ import { EmojiSelectorPanelComponent } from './emoji-selector-panel/emoji-select
 @Component({
     selector: 'emoji-selector-button',
     template: `
-        <button #button type="button" mat-icon-button (click)="show()">
+        <button #button type="button" mat-icon-button (click)="show()" [disabled]="disabled">
             <mat-icon>emoji_emotions</mat-icon>
         </button>
         <ng-template cdkPortal #selectorPanelTemplate="cdkPortal">
@@ -69,6 +69,7 @@ export class EmojiSelectorButtonComponent {
         }
     }
 
+    @Input() disabled = false;
     @Input() overlayX: 'start' | 'center' | 'end' = 'end';
     @Input() overlayY: 'top' | 'center' | 'bottom' = 'top';
     @Input() originX: 'start' | 'center' | 'end' = 'end';
