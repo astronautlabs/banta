@@ -183,7 +183,7 @@ export class BantaCommentsComponent {
             return;
 
         setTimeout(async () => {
-            console.log(`[banta-comments] Subscribing to topic source '${topicID}'`);
+            console.log(`[Banta/Comments] Subscribing to topic source '${topicID}'`);
             this.source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder, filterMode: this.filterMode });
             this._sourceIsOwned = true;
         });
@@ -323,7 +323,7 @@ export class BantaCommentsComponent {
             return true;
         }
 
-        console.log(`[Banta/Loader] State=${this.source?.state}`);
+        console.log(`[Banta/Loader] State=${this.source ? this.source.state : 'no-source'}`);
         let messageSwitchTime = 5*1000;
         if (this.messageChangedAt + messageSwitchTime < Date.now()) {
             if (this.loadingMessages[this._loadingMessageIndex]) {

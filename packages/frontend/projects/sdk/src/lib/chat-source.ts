@@ -64,6 +64,10 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
             console.log(`[Banta/${this.identifier}] Socket is open`);
         });
 
+        socket.addEventListener('error', async () => {
+            console.log(`[Banta/${this.identifier}] Socket error`);
+        });
+
         socket.addEventListener('lost', async () => {
             this.state = 'lost';
         });

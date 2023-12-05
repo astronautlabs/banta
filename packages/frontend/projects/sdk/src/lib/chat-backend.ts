@@ -48,11 +48,27 @@ export class ChatBackend extends ChatBackendBase {
 
         return isPlatformServer(this.platformId);
     }
-    async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSourceBase> {
-        // When running on the server platform, we're just going to do a single REST request to fetch the messages 
-        // and not use Banta's socket RPC.
 
-        if (this.isServer()) {
+    /**
+     * Check if we are currently running inside a Googlebot user agent or via the Google inspection tool in Search Console.
+     * We'll use this to avoid WebSockets so that comments can be indexable.
+     * @returns 
+     */
+    private isGooglebot() {
+        return typeof navigator !== 'undefined' && (
+            navigator.userAgent.includes('Googlebot')
+            || navigator.userAgent.includes('Google-InspectionTool')
+        );
+    }
+
+    async getSourceForTopic(topicId: string, options?: ChatSourceOptions): Promise<ChatSourceBase> {
+        // In some cases we need to do a single REST request to fetch the messages 
+        // and not use Banta's socket RPC since the open ended lifetime of a WebSocket connection 
+        // does not match the use case.
+        // - When running in SSR
+        // - When running in Googlebot (Googlebot also doesn't support WebSockets anyway)
+
+        if (this.isServer() || this.isGooglebot()) {
             return new StaticChatSource(this, topicId, undefined, options);
         } else {
             return await new ChatSource(this, topicId, undefined, { sortOrder: CommentsOrder.NEWEST, filterMode: FilterMode.ALL, ...options })

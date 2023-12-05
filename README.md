@@ -4,7 +4,9 @@
 Banta is an effort to create an open, extensible system for chatting/comments on the web.
 
 - Real-time: Live-updating comments & chat widgets
-    * Both the Banta Comments and Banta Chat widgets are fully live updated.
+    * Both the Banta Comments and Banta Chat widgets are fully live updated via WebSockets.
+    * When running in an environment where WebSockets are not appropriate, a REST call is used to fetch messages 
+      instead (ie in SSR or Search Engine index bots such as Googlebot)
 - Easy to use: Easy to add to an existing Angular application, easy to manage server-side component.
 - Flexible: Built with customizability and extension in mind
 
