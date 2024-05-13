@@ -1,0 +1,13 @@
+
+mat-spinner.icon {
+    display: inline-block;
+    vertical-align: text-bottom;
+}
+
+.mat-button-base mat-spinner.icon {
+    margin-right: 8px;
+}
+
+.cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+    opacity: 1;
+}

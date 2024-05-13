@@ -98,26 +98,40 @@
         </ng-container>
         <ng-container *ngIf="user">
             <button
+                *ngIf="buttonState === 'send'"
                 mat-raised-button
                 class="send"
                 color="primary"
                 [disabled]="!sendButtonEnabled"
                 >
-                <ng-container *ngIf="buttonState === 'send'">
-                    <mat-icon>chevron_right</mat-icon>
-                    <span class="label">{{sendLabel}}</span>
-                </ng-container>
-                <ng-container *ngIf="buttonState === 'sending'">
-                    <mat-spinner class="icon" diameter="18" strokeWidth="2"></mat-spinner>
-                    <span class="label">{{sendingLabel}}</span>
-                </ng-container>
-                <ng-container *ngIf="buttonState === 'signing-in'">
-                    <mat-spinner class="icon" diameter="18" strokeWidth="2"></mat-spinner>
-                    {{signingInLabel}}
-                </ng-container>
-                <ng-container *ngIf="buttonState === 'permission-denied'">
-                    {{permissionDeniedLabel}}
-                </ng-container>
+                <mat-icon>chevron_right</mat-icon>
+                <span class="label">{{sendLabel}}</span>
+            </button>
+            <button
+                *ngIf="buttonState === 'sending' || buttonState === 'signing-in'"
+                mat-raised-button
+                class="send"
+                color="primary"
+                [disabled]="!sendButtonEnabled"
+                >
+                <mat-spinner class="icon" diameter="18" strokeWidth="2"></mat-spinner>
+                <span class="label">
+                    <ng-container *ngIf="buttonState === 'sending'">
+                        {{sendingLabel}}
+                    </ng-container>
+                    <ng-container *ngIf="buttonState === 'signing-in'">
+                        {{signingInLabel}}
+                    </ng-container>
+                </span>
+            </button>
+            <button
+                *ngIf="buttonState === 'permission-denied'"
+                mat-raised-button
+                class="send"
+                color="primary"
+                [disabled]="!sendButtonEnabled"
+                >
+                {{permissionDeniedLabel}}
             </button>
         </ng-container>
     </div>

@@ -69,7 +69,7 @@
         <div class="spacer"></div>
         <div class="counted-action" *ngIf="showReplyAction">
             <button mat-button [matTooltip]="replyCount > 0 ? 'Replies' : 'Reply'" matTooltipPosition="below" (click)="select()">
-                <mat-icon [inline]="true">comment</mat-icon>
+                <mat-icon>comment</mat-icon>
                 <span class="count-indicator">
                     {{replyCount > 0 ? 'Replies' : 'Reply'}}
                     {{replyCount > 0 ? '(' + replyCount + ')' : ''}}
@@ -94,7 +94,7 @@
                 matTooltipPosition="below" 
                 (click)="message.userState?.liked ? unlike() : like()" 
                 >
-                <mat-icon [inline]="true">thumb_up</mat-icon>
+                <mat-icon>thumb_up</mat-icon>
                 <span class="count-indicator" *ngIf="message.likes > 0">
                     {{message.likes}}
                 </span>
@@ -102,7 +102,7 @@
         </div>
 
         <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
-            <mat-icon [inline]="true">more_vert</mat-icon>
+            <mat-icon>more_vert</mat-icon>
         </button>
     </div>
 </div>

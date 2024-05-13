@@ -24,23 +24,8 @@
     }
     
 }
-.mat-dark-theme {
-    * {
-        &::-webkit-scrollbar {
-            width: 8px;
-            background-color: #222;
-        }
 
-        &::-webkit-scrollbar-button {
-            background-color: #111;
-            color: white;
-        }
-        &::-webkit-scrollbar-thumb {
-            background-color: #333;
-            color: white;
-        }
-    }
-}
+@import "./material-overrides.scss";
 
 body {
     font-family: sans-serif;
@@ -77,17 +62,25 @@ a {
 }
 
 .mat-dark-theme {
+    * {
+        &::-webkit-scrollbar {
+            width: 8px;
+            background-color: #222;
+        }
+
+        &::-webkit-scrollbar-button {
+            background-color: #111;
+            color: white;
+        }
+        &::-webkit-scrollbar-thumb {
+            background-color: #333;
+            color: white;
+        }
+    }
+    
     a {
         color: #51cdb5;
     }
-}
-
-mat-spinner.icon {
-    display: inline-block;
-}
-
-.mat-button-base mat-spinner.icon {
-    margin-right: 8px;
 }
 
 div.property {
