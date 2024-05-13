@@ -73,19 +73,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "banta:build",
-            "port": 4202
+            "port": 4202,
+            "buildTarget": "banta:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "banta:build:production"
+              "buildTarget": "banta:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "banta:build"
+            "buildTarget": "banta:build"
           }
         },
         "test": {

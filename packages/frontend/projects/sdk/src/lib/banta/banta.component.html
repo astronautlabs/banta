@@ -1,7 +1,7 @@
 
 <mat-menu #userMenu="matMenu">
     <ng-container *ngIf="currentUser">
-        <button [disabled]="true" mat-menu-item>{{currentUser.displayName}} (@{{currentUser.username}})</button>
+        <button [disabled]="true" mat-menu-item>{{currentUser.displayName}} (&#64;{{currentUser.username}})</button>
         <button mat-menu-item (click)="signOut()">Sign Out</button>
     </ng-container>
     <ng-container *ngIf="!currentUser">
@@ -19,7 +19,7 @@
     <div>
         <ng-container *ngIf="currentUser">
             <button mat-button [matMenuTriggerFor]="userMenu">
-                @{{currentUser.username}}
+                &#64;{{currentUser.username}}
             </button>
             <button mat-icon-button (click)="showNotifications()">
                 <mat-icon>notification_important</mat-icon>
@@ -40,7 +40,7 @@
 
             <ng-container *ngIf="currentUser">
                 <button mat-button [matMenuTriggerFor]="userMenu">
-                    @{{currentUser.username}}
+                    &#64;{{currentUser.username}}
                 </button>
                 <button mat-icon-button (click)="showNotifications()">
                     <mat-icon>notification_important</mat-icon>
@@ -80,7 +80,7 @@
                     <strong style="font-size: 125%;">
                         {{profileUser.displayName}}
                     </strong>
-                    @{{profileUser.username}}
+                    &#64;{{profileUser.username}}
                 </div>
 
                 <br/>
@@ -122,7 +122,7 @@
                 <div class="notification" *ngFor="let notif of notifications">
                     <div>
                         <ng-container *ngIf="notif.type === 'upvote'">
-                            @{{notif.message?.user?.username}} upvoted your post
+                            &#64;{{notif.message?.user?.username}} upvoted your post
                             
                             <banta-live-message
                                 [message]="notif.message"
@@ -141,7 +141,7 @@
                             </a>
                         </ng-container>
                         <ng-container *ngIf="notif.type === 'mention'">
-                            You were mentioned by @{{notif.message?.user?.username}}
+                            You were mentioned by &#64;{{notif.message?.user?.username}}
 
                             <banta-live-message
                                 [message]="notif.message"
@@ -152,7 +152,7 @@
 
                         </ng-container>
                         <ng-container *ngIf="notif.type === 'reply'">
-                            @{{notif.replyMessage?.user?.username}} replied to your post
+                            &#64;{{notif.replyMessage?.user?.username}} replied to your post
                             
                             <banta-live-message
                                 [message]="notif.replyMessage"
