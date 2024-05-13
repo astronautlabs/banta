@@ -28,6 +28,7 @@
     "@types/serve-static": "^1.13.10",
     "@types/uuid": "^3.4.6",
     "aws-sdk": "^2.579.0",
+    "body-parser": "^1.20.2",
     "dompurify": "^2.3.10",
     "ioredis": "^4.28.5",
     "jsdom": "^20.0.0",
