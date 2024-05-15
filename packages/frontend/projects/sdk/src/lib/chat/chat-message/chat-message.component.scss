@@ -115,6 +115,9 @@
 
 .count-indicator {
     white-space: nowrap;
+    mat-icon {
+        vertical-align: bottom;
+    }
 }
 
 :host-context(.mat-dark-theme) {
