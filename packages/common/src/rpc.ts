@@ -48,14 +48,21 @@ export interface RpcCallableOptions {
 
 export function RpcCallable(options?: RpcCallableOptions) {
     return (target, propertyKey) => {
-        Reflect.defineMetadata('rpc:type', 'call', target, propertyKey);
-        Reflect.defineMetadata('rpc:callableOptions', options ?? {}, target, propertyKey);
+        if (Reflect.defineMetadata) {
+            Reflect.defineMetadata('rpc:type', 'call', target, propertyKey);
+            Reflect.defineMetadata('rpc:callableOptions', options ?? {}, target, propertyKey);
+        } else {
+            console.warn(`[Banta] Warning: reflect-metadata must be loaded for Banta to work properly`);
+        }
     }
 }
 
 export function RpcEvent() {
     return (target, propertyKey) => {
-        Reflect.defineMetadata('rpc:type', 'event', target, propertyKey);
+        if (Reflect.defineMetadata)
+            Reflect.defineMetadata('rpc:type', 'event', target, propertyKey);
+        else
+            console.warn(`[Banta] Warning: reflect-metadata must be loaded for Banta to work properly`);
     }
 }
 
