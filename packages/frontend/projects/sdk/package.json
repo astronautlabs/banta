@@ -1,6 +1,6 @@
 {
   "name": "@banta/sdk",
-  "version": "5.0.3",
+  "version": "5.0.4",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -17,7 +17,7 @@
     "@angular/router": "^16 || ^17",
     "@astronautlabs/datastore": "^3.1.2",
     "@astronautlabs/datastore-firestore": "^3.1.2",
-    "@banta/common": "^2.3.1",
+    "@banta/common": "^2.3.2",
     "@types/marked": "^4.0.3",
     "@types/dompurify": "^2.3.3",
     "dompurify": "^2.3.10",
