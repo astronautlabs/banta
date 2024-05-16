@@ -466,7 +466,7 @@ export class BantaCommentsComponent {
         });
     }
 
-    private _sortOrder: CommentsOrder = CommentsOrder.NEWEST;
+    private _sortOrder: CommentsOrder = 'newest';
     @Input() get sortOrder() { return this._sortOrder; }
     set sortOrder(value) {
         if (this._sortOrder !== value) {
@@ -485,12 +485,7 @@ export class BantaCommentsComponent {
     }
 
     get filterModes() { 
-        return [
-            FilterMode.ALL,
-            FilterMode.MINE,
-            FilterMode.MY_LIKES,
-            FilterMode.THREADS
-        ] 
+        return FilterMode.options;
     }
 
     get filterModeLabels() {
@@ -503,11 +498,7 @@ export class BantaCommentsComponent {
     }
 
     get sortOrders() { 
-        return [
-            CommentsOrder.NEWEST,
-            CommentsOrder.OLDEST,
-            CommentsOrder.LIKES
-        ]
+        return CommentsOrder.options;
     }
 
     get sortOrderLabels() {
