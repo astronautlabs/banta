@@ -96,7 +96,7 @@ export class ChatBackend extends ChatBackendBase {
     async getSourceCountForTopic(topicId: string): Promise<number> {
         try {
             let topic = await this.getTopic(topicId);
-            return topic.messageCount || 0;
+            return topic?.messageCount ?? 0;
         } catch (e) {
             console.error(`[Banta/${topicId}] Failed to get message count for topic:`);
             console.error(e);
@@ -105,16 +105,50 @@ export class ChatBackend extends ChatBackendBase {
     }
 
     /**
-     * Get the count of the given topic
-     * @param topicId 
+     * Get the count of the given topics. 
+     * @param topicId Topics to count messages on. Maximum of 1000.
      * @returns 
      */
-    async getTopic(topicId: string): Promise<Topic> {
+    async getSourceCountForTopics(topicIds: string[]): Promise<Record<string, number>> {
+        try {
+            let topics = await this.getTopicsById(topicIds);
+            return Object.fromEntries(topics.map(topic => [ topic.id, topic.messageCount ?? 0 ]));
+        } catch (e) {
+            console.error(`[Banta/Topics] Failed to get message count for topics '${topicIds.join(',')}]':`);
+            console.error(e);
+            return undefined;
+        }
+    }
+
+    /**
+     * Get information about the given topic. 
+     * @param topicId 
+     * @returns The topic object, or undefined if no such topic was found.
+     */
+    async getTopic(topicId: string): Promise<Topic | undefined> {
         let response = await fetch(`${this.serviceUrl}/topics/${topicId}`)
+        if (response.status === 404)
+            return undefined;
         if (response.status >= 400)
             throw new Error(`Failed to fetch topic: ${response.status}`)
 
         return <Topic> await response.json();
+    }
+
+    /**
+     * Get information about the given topics
+     * @param topicIds The topic IDs to look up. Maximum of 1000.
+     * @returns An array of matching topic objects.
+     */
+    async getTopicsById(topicIds: string[]): Promise<Topic[]> {
+        if (topicIds.length > 1000)
+            throw new Error(`Cannot look up more than 1000 topics at a time.`);
+
+        let response = await fetch(`${this.serviceUrl}/topics?ids=${encodeURIComponent(topicIds.join(','))}`)
+        if (response.status >= 400)
+            throw new Error(`Failed to fetch topic: ${response.status}`)
+
+        return <Topic[]> await response.json();
     }
 
     /**
