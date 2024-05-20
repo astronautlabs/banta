@@ -1,4 +1,4 @@
-import { ChatMessage, User, Notification, Vote, CommentsOrder, ChatPermissions, UrlCard } from "@banta/common";
+import { ChatMessage, User, Notification, Vote, CommentsOrder, ChatPermissions, UrlCard, Topic, FilterMode } from "@banta/common";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Injectable } from "@angular/core";
@@ -52,6 +52,67 @@ export class MockBackend extends ChatBackendBase {
 
     async getSourceCountForTopic(topicId: string): Promise<number> {
       return Math.floor(Math.random() * 21);
+    }
+
+    /**
+     * Get the count of the given topics. 
+     * @param topicId Topics to count messages on. Maximum of 1000.
+     * @returns 
+     */
+    async getSourceCountForTopics(topicIds: string[]): Promise<Record<string, number>> {
+        return Object.fromEntries(await Promise.all(topicIds.map(x => [x, this.getSourceCountForTopic(x)])));
+    }
+
+    /**
+     * Get information about the given topic. 
+     * @param topicId 
+     * @returns The topic object, or undefined if no such topic was found.
+     */
+    async getTopic(topicId: string): Promise<Topic | undefined> {
+        return {
+            id: topicId,
+            createdAt: Date.now(),
+            messageCount: Math.random() * 21 | 0
+        };
+    }
+
+    /**
+     * Get information about the given topics
+     * @param topicIds The topic IDs to look up. Maximum of 1000.
+     * @returns An array of matching topic objects.
+     */
+    async getTopicsById(topicIds: string[]): Promise<Topic[]> {
+        return await Promise.all(topicIds.map(id => this.getTopic(id)));
+    }
+
+    /**
+     * Get a set of messages from the given topic.
+     * @param topicId 
+     * @returns 
+     */
+    async getMessages(
+        topicId: string, 
+        sort?: CommentsOrder, 
+        filter?: FilterMode, 
+        offset?: number, 
+        limit?: number
+    ): Promise<ChatMessage[]> {
+        return [];
+    }
+
+    /**
+     * Get a set of messages from the given topic.
+     * @param topicId 
+     * @returns 
+     */
+    async getReplies(
+        parentMessageId: string,
+        sort?: CommentsOrder, 
+        filter?: FilterMode, 
+        offset?: number, 
+        limit?: number
+    ): Promise<ChatMessage[]> {
+        return [];
     }
 
     async refreshMessage(message: ChatMessage): Promise<ChatMessage> {

@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ChatMessage, Vote, CommentsOrder, Notification, User, UrlCard, FilterMode } from '@banta/common';
+import { ChatMessage, Vote, CommentsOrder, Notification, User, UrlCard, FilterMode, Topic } from '@banta/common';
 import { ChatSourceBase } from './chat-source-base';
 import { AttachmentResolver, AttachmentScraper } from './attachment-scraper';
 
@@ -19,7 +19,61 @@ export abstract class ChatBackendBase {
     
     abstract getSourceForTopic(topicId : string, options?: ChatSourceOptions) : Promise<ChatSourceBase>;
     abstract getSourceForThread(topicId : string, messageId : string, options?: ChatSourceOptions) : Promise<ChatSourceBase>;
-    abstract getSourceCountForTopic(topicId: string): Promise<number>
+
+    /**
+     * Get the count of the given topic
+     * @param topicId 
+     * @returns 
+     */
+    abstract getSourceCountForTopic(topicId: string): Promise<number>;
+
+    /**
+     * Get the count of the given topics. 
+     * @param topicId Topics to count messages on. Maximum of 1000.
+     * @returns 
+     */
+    abstract getSourceCountForTopics(topicIds: string[]): Promise<Record<string, number>>;
+
+    /**
+     * Get information about the given topic. 
+     * @param topicId 
+     * @returns The topic object, or undefined if no such topic was found.
+     */
+    abstract getTopic(topicId: string): Promise<Topic | undefined>;
+
+    /**
+     * Get information about the given topics
+     * @param topicIds The topic IDs to look up. Maximum of 1000.
+     * @returns An array of matching topic objects.
+     */
+    abstract getTopicsById(topicIds: string[]): Promise<Topic[]>;
+
+    /**
+     * Get a set of messages from the given topic.
+     * @param topicId 
+     * @returns 
+     */
+    abstract getMessages(
+        topicId: string, 
+        sort?: CommentsOrder, 
+        filter?: FilterMode, 
+        offset?: number, 
+        limit?: number
+    ): Promise<ChatMessage[]>;
+
+    /**
+     * Get a set of messages from the given topic.
+     * @param topicId 
+     * @returns 
+     */
+    abstract getReplies(
+        parentMessageId: string,
+        sort?: CommentsOrder, 
+        filter?: FilterMode, 
+        offset?: number, 
+        limit?: number
+    ): Promise<ChatMessage[]>;
+
     abstract refreshMessage(message : ChatMessage): Promise<ChatMessage>;
     abstract getMessage(topicId : string, messageId : string): Promise<ChatMessage>;
     abstract getSubMessage(topicId : string, parentMessageId : string, messageId : string): Promise<ChatMessage>;
