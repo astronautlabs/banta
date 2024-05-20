@@ -68,8 +68,13 @@ export class ChatController {
             throw new HttpError(500, { message: 'An internal error occurred', errorId })
         }
 
-        if (!topic)
-            throw new HttpError(404, { error: `not-found` });
+        if (!topic) {
+            return {
+                id,
+                createdAt: 0,
+                messageCount: 0
+            };
+        }
 
         return topic;
     }
