@@ -56,6 +56,39 @@ export class ChatController {
 
     private topicsCache = new Cache<Topic>(1000 * 60 * 15, 5000);
 
+    @Get('/topics')
+    async getTopics(@QueryParam('ids') idsString: string): Promise<Topic[]> {
+        if (!idsString)
+            throw new HttpError(403, { message: `Listing all topics is not allowed. You must specify at least one topic using the comma-separated 'ids' parameter` });
+
+        let topic: Topic;
+        let ids = idsString.split(',');
+
+        if (ids.length > 1000) {
+            throw new HttpError(400, { message: `No more than 1000 topics can be fetched in batch.` });
+        }
+
+        return Promise.all(
+            ids.map(async id => {
+                try {
+                    topic = await this.topicsCache.fetch(id, () => this.chat.getTopic(id, false));
+                } catch (e) {
+                    let errorId = uuid();
+                    Logger.current.error(`Error occurred while getting topic information: ${e.message}. Stack: ${e.stack}. Error ID: ${errorId}`);
+                    throw new HttpError(500, { message: 'An internal error occurred', errorId })
+                }
+        
+                if (!topic) {
+                    return {
+                        id,
+                        createdAt: 0,
+                        messageCount: 0
+                    };
+                }
+            })
+        );
+    }
+
     @Get('/topics/:id')
     async getTopic(id: string): Promise<Topic> {
         let topic: Topic;
