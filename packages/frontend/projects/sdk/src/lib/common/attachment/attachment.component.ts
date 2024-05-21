@@ -45,6 +45,9 @@ export class BantaAttachmentComponent {
     }
 
     private loadPlatformSpecific() {
+        if (typeof window === 'undefined')
+            return;
+        
         if (this._attachment?.type === 'tweet') {
             if (!TWITTER_LOADED && document.querySelector('script[src="https://platform.twitter.com/widgets.js"]'))
                 TWITTER_LOADED = true;
@@ -61,7 +64,7 @@ export class BantaAttachmentComponent {
             }
         }
     }
-    
+
     private checkLoad() {
         if (!this._attachment || !this._viewLoaded || !this.elementRef?.nativeElement)
             return;
