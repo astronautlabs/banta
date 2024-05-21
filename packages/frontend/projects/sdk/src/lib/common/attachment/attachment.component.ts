@@ -2,6 +2,8 @@ import { Component, ElementRef, HostBinding, Input, Output } from "@angular/core
 import { ChatMessageAttachment } from "@banta/common";
 import { Subject } from "rxjs";
 
+let TWITTER_LOADED = false;
+
 @Component({
     selector: 'banta-attachment',
     templateUrl: './attachment.component.html',
@@ -19,7 +21,9 @@ export class BantaAttachmentComponent {
     set attachment(value) {
         this._attachment = value;
         this.checkLoad();
+        this.loadPlatformSpecific();
     }
+    
     @Input() loading = false;
     @Input() editing = false;
     @Input() loadingMessage: string = 'Please wait...';
@@ -29,22 +33,35 @@ export class BantaAttachmentComponent {
     @Output() activated = new Subject<void>();
     @Output() loaded = new Subject<void>();
 
-    ngOnInit() {
-        if (typeof window !== 'undefined') {
-            setTimeout(() => {
-                if (!window['twttr'])
-                    return;
-                window['twttr'].widgets.load();
-            }, 100);
-        }
-    }
-
     private _viewLoaded = false;
     ngAfterViewInit() {
         this._viewLoaded = true;
         this.checkLoad();
     }
 
+    private loadTwitterWidgets() {
+        if (typeof window !== 'undefined')
+            window['twttr']?.widgets.load();
+    }
+
+    private loadPlatformSpecific() {
+        if (this._attachment?.type === 'tweet') {
+            if (!TWITTER_LOADED && document.querySelector('script[src="https://platform.twitter.com/widgets.js"]'))
+                TWITTER_LOADED = true;
+
+            if (typeof window !== 'undefined' && !TWITTER_LOADED) {
+                TWITTER_LOADED = true;
+                let script = document.createElement('script');
+                script.src = 'https://platform.twitter.com/widgets.js';
+                script.async = true;
+                script.addEventListener('load', () => setTimeout(() => this.loadTwitterWidgets()));
+                document.body.appendChild(script);
+            } else {
+                setTimeout(() => this.loadTwitterWidgets());
+            }
+        }
+    }
+    
     private checkLoad() {
         if (!this._attachment || !this._viewLoaded || !this.elementRef?.nativeElement)
             return;

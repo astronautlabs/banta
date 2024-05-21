@@ -68,15 +68,6 @@ export class BantaSdkModule {
     constructor(
         chatBackend: ChatBackendBase
     ) {
-        if (typeof window !== 'undefined') {
-            if (!document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')) {
-                let script = document.createElement('script');
-                script.src = 'https://platform.twitter.com/widgets.js';
-                script.async = true;
-                document.body.appendChild(script);
-            }
-        }
-
         chatBackend.registerAttachmentScraper(new UrlAttachmentScraper());
         chatBackend.registerAttachmentResolver(new GiphyAttachmentResolver());
         chatBackend.registerAttachmentResolver(new YouTubeAttachmentResolver());
