@@ -39,12 +39,10 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
         @Inject(BANTA_SDK_OPTIONS) @Optional()
         private sdkOptions: SdkOptions
     ) {
-        this.renderer = new marked.Renderer({
-            headerPrefix: ''
-        });
+        this.renderer = new marked.Renderer();
         const linkRenderer = this.renderer.link;
-        this.renderer.link = (href, title, text) => {
-            const html = linkRenderer.call(this.renderer, href, title, text);
+        this.renderer.link = token => {
+            const html = linkRenderer.call(this.renderer, token);
             return html.replace(/^<a /, '<a target="_blank" rel="noopener noreferrer nofollow" ');
         };
     }
@@ -79,7 +77,7 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
 
         value = marked.marked.parse(value, {
             renderer: this.renderer
-        });
+        }) as string;
 
         value = twemoji.parse(value, { base: this.emojiUrl });
 
