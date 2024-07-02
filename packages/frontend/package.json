@@ -30,7 +30,7 @@
     "dompurify": "^2.3.10",
     "marked": "^4.0.18",
     "popular-movie-quotes": "^1.2.4",
-    "rxjs": "^6.6.7",
+    "rxjs": "^7.8.1",
     "tslib": "^2.0.0",
     "twemoji": "^14.0.2",
     "uuid": "^3.4.0",

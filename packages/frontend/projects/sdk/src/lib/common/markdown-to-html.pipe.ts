@@ -86,7 +86,8 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
         return this.sanitizer.bypassSecurityTrustHtml(
             purifier.sanitize(value,
                 {
-                    FORBID_TAGS: ['h1', 'h2', 'h3', 'h4'],
+                    FORBID_TAGS: ['h1', 'h2', 'h3', 'h4', 'style', 'link', 'script'],
+                    FORBID_ATTR: ['style'],
                     KEEP_CONTENT: true
                 }
             )

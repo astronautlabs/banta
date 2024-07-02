@@ -17,7 +17,7 @@
   "repository": "https://github.com/astronautlabs/banta",
   "peerDependencies": {
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^6.6.7"
+    "rxjs": "^7.8.1"
   },
   "gitHead": "0cb1cd13e2196f54d2fd67e17f447cc2b70df1bf",
   "devDependencies": {

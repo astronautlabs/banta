@@ -58,7 +58,7 @@ export class ChatMessageComponent {
     }
     
     selectUser() {
-        this._userSelected.next();
+        this._userSelected.next(this.message.user);
     }
 
 }
