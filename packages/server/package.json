@@ -1,6 +1,6 @@
 {
   "name": "@banta/server",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -18,9 +18,9 @@
   "author": "Astronaut Labs, LLC",
   "license": "MIT",
   "peerDependencies": {
+    "@alterior/logging": "^3.9.0",
     "@alterior/runtime": "^3.9.0",
-    "@alterior/web-server": "^3.9.0",
-    "@alterior/logging": "^3.9.0"
+    "@alterior/web-server": "^3.9.0"
   },
   "dependencies": {
     "@banta/common": "^2.5.0",
@@ -43,11 +43,11 @@
     "zone.js": "^0.11.4"
   },
   "devDependencies": {
+    "@alterior/express": "^3.9.0",
+    "@alterior/logging": "^3.9.0",
+    "@alterior/platform-nodejs": "^3.6.4",
     "@alterior/runtime": "^3.9.0",
     "@alterior/web-server": "^3.9.0",
-    "@alterior/logging": "^3.9.0",
-    "@alterior/express": "^3.9.0",
-    "@alterior/platform-nodejs": "^3.6.4",
     "@astronautlabs/jwt": "^1.1.0",
     "@types/dompurify": "^2.3.3",
     "@types/express": "^4.17.13",
