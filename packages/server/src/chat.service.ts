@@ -167,6 +167,11 @@ export class ChatService {
         this.redis = new IORedis(Number(process.env.REDIS_PORT ?? 6379), process.env.REDIS_HOST ?? 'localhost', {
             password: process.env.REDIS_PASSWORD,
         });
+
+        this.redis.addListener('error', err => {
+            Logger.current.error(`[Banta/ChatService] Redis error: ${err.stack || err.message || err}`);
+        });
+        
         this.pubsubs = new PubSubManager(this.redis);
     }
 

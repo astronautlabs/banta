@@ -1,7 +1,10 @@
 
-import * as ioredis from 'ioredis';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { lazyConnection } from './lazy-connection';
+import { Logger } from '@alterior/logging';
+
+import * as ioredis from 'ioredis';
+
 export interface AppEvent<T = any> {
     name: string;
     data: T;
@@ -10,7 +13,10 @@ export interface AppEvent<T = any> {
 export class PubSubManager {
     constructor(private redis : ioredis.Redis | ioredis.Cluster) {
         this.subscriber = redis.duplicate();
-        this.subscriber.on('message', this._listener);
+        this.subscriber.addListener('message', this._listener);
+        this.subscriber.addListener('error', err => {
+            Logger.current.error(`[Banta/PubSubManager] Redis error: ${err.stack || err.message || err}`);
+        });
     }
 
     subscriber : ioredis.Redis | ioredis.Cluster;
