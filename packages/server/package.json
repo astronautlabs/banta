@@ -17,10 +17,12 @@
   },
   "author": "Astronaut Labs, LLC",
   "license": "MIT",
+  "peerDependencies": {
+    "@alterior/runtime": "^3.9.0",
+    "@alterior/web-server": "^3.9.0",
+    "@alterior/logging": "^3.9.0"
+  },
   "dependencies": {
-    "@alterior/runtime": "^3.0.0-beta.98",
-    "@alterior/tasks": "^3.0.0-beta.98",
-    "@alterior/web-server": "^3.0.0-rc.8",
     "@banta/common": "^2.5.0",
     "@types/express-serve-static-core": "^4.17.24",
     "@types/ioredis": "^4.28.10",
@@ -41,8 +43,11 @@
     "zone.js": "^0.11.4"
   },
   "devDependencies": {
-    "@alterior/express": "^3.0.0-rc.8",
-    "@alterior/platform-nodejs": "^3.0.0-rc.7",
+    "@alterior/runtime": "^3.9.0",
+    "@alterior/web-server": "^3.9.0",
+    "@alterior/logging": "^3.9.0",
+    "@alterior/express": "^3.9.0",
+    "@alterior/platform-nodejs": "^3.6.4",
     "@astronautlabs/jwt": "^1.1.0",
     "@types/dompurify": "^2.3.3",
     "@types/express": "^4.17.13",
