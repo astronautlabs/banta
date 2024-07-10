@@ -11,6 +11,7 @@ export interface ChatSourceOptions {
      * How many messages should be loaded initially?
      */
     initialMessageCount?: number;
+    metadata?: Record<string, any>;
 }
 
 export abstract class ChatBackendBase {

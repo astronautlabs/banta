@@ -139,7 +139,11 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     async subscribeToTopic() {
         try {
-            await this.immediatePeer.subscribe(this.identifier, this.parentIdentifier, this.options.sortOrder, this.options.filterMode);
+            await this.immediatePeer.subscribe(
+                this.identifier, this.parentIdentifier, this.options.sortOrder, 
+                this.options.filterMode,
+                this.options.metadata ?? {}
+            );
             this.subscribeAttempt = 0;
             this._errorState = undefined;
             this.state = this.wasRestored ? 'restored' : 'connected';

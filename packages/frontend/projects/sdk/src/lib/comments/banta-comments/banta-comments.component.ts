@@ -184,7 +184,11 @@ export class BantaCommentsComponent {
 
         setTimeout(async () => {
             console.log(`[Banta/Comments] Subscribing to topic source '${topicID}'`);
-            this.source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder, filterMode: this.filterMode });
+            this.source = await this.backend.getSourceForTopic(topicID, { 
+                sortOrder: this.sortOrder, 
+                filterMode: this.filterMode,
+                metadata: this.metadata
+            });
             this._sourceIsOwned = true;
         });
     }
@@ -480,6 +484,20 @@ export class BantaCommentsComponent {
     set filterMode(value) { 
         if (this._filterMode !== value) {
             this._filterMode = value;
+            this.reloadSource();
+        }
+    }
+
+    private _metadata: Record<string, any> = {};
+
+    /**
+     * Arbitrary metadata to send to the chat server. This can be used to provide context about the client to the server
+     * for things like validating authorization and other uses.
+     */
+    @Input() get metadata() { return this._metadata; }
+    set metadata(value) {
+        if (JSON.stringify(this._metadata) !== JSON.stringify(value)) {
+            this._metadata = value;
             this.reloadSource();
         }
     }

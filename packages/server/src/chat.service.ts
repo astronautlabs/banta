@@ -82,6 +82,13 @@ export interface AuthorizableAction {
     topic?: Topic;
     parentMessage?: ChatMessage;
     message?: ChatMessage;
+
+    /**
+     * Information provided by the client via the subscribeToTopic() call. This is ignored by Banta.
+     * It can be used to pass arbitrary context information about the client into a pluggable authorizdation
+     * handler provided by the end application.
+     */
+    connectionMetadata?: Record<string, any>;
 }
 
 export type ValidateToken = (token: string) => Promise<User>;

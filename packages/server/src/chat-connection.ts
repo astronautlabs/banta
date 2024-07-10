@@ -47,6 +47,7 @@ export class ChatConnection extends SocketRPC {
             await this.chat.authorizeAction(this.user, this.userToken, {
                 ...action,
                 precheck: true,
+                connectionMetadata: this.metadata
             });
         } catch (e) {
             return e.message;
@@ -148,7 +149,8 @@ export class ChatConnection extends SocketRPC {
             action: 'editMessage',
             topic: this.topic,
             parentMessage: this.parentMessage,
-            message: message
+            message: message,
+            connectionMetadata: this.metadata
         });
 
         await this.chat.editMessage(message, newText);
@@ -156,6 +158,11 @@ export class ChatConnection extends SocketRPC {
 
     sortOrder: CommentsOrder;
     filterMode: FilterMode;
+
+    /**
+     * Arbitrary metadata provided by the client. This is ignored by Banta.
+     */
+    metadata: Record<string, any> = {};
 
     @RpcCallable()
     async deleteMessage(messageId: string) {
@@ -171,21 +178,34 @@ export class ChatConnection extends SocketRPC {
             action: 'deleteMessage',
             message,
             parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId, false) : null,
-            topic: await this.chat.getTopic(message.topicId, false)
+            topic: await this.chat.getTopic(message.topicId, false),
+            connectionMetadata: this.metadata
         });
 
         await this.chat.deleteMessage(message);
     }
 
+    /**
+     * Subscribe to a topic. A Banta connection may only connect to a single source at a time. After subscribing, the 
+     * messageReceived event will be fired with the backlog of messages as well as for all new messages received.
+     * 
+     * @param topicId The topic to subscribe to
+     * @param parentMessageId The message within the topic to subscribe to (for replies), or undefined for top level messages
+     * @param order The desired order to receive messages
+     * @param filterMode Filter to use when receiving messages
+     * @param metadata Arbitrary metadata which can be passed from the frontend to the application-specific backend. Banta ignores this.
+     */
     @RpcCallable()
     async subscribe(
         topicId: string, 
-        parentMessageId: string, 
+        parentMessageId: string | undefined, 
         order: CommentsOrder, 
-        filterMode: FilterMode
+        filterMode: FilterMode,
+        metadata?: Record<string, any>
     ) {
         this.sortOrder = order ?? CommentsOrder.NEWEST;
         this.filterMode = filterMode ?? FilterMode.ALL;
+        this.metadata = metadata;
 
         let chaosFactor = 0;
 
@@ -340,7 +360,8 @@ export class ChatConnection extends SocketRPC {
             action: 'postMessage',
             message,
             parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null,
-            topic: await this.chat.getTopic(message.topicId)
+            topic: await this.chat.getTopic(message.topicId),
+            connectionMetadata: this.metadata
         });
     
         if (!message.message && !(message.attachments?.length > 0))
@@ -367,7 +388,8 @@ export class ChatConnection extends SocketRPC {
             action: 'viewTopic', 
             topic: await this.chat.getTopic(message.topicId),
             message,
-            parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null
+            parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null,
+            connectionMetadata: this.metadata
         });
 
         message = await this.prepareMessage(message);
@@ -387,7 +409,8 @@ export class ChatConnection extends SocketRPC {
             action: 'likeMessage',
             message,
             parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null,
-            topic: await this.chat.getTopic(message.topicId)
+            topic: await this.chat.getTopic(message.topicId),
+            connectionMetadata: this.metadata
         });
 
         await this.chat.like(message, this.user);
@@ -406,7 +429,8 @@ export class ChatConnection extends SocketRPC {
             action: 'likeMessage',
             message,
             parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null,
-            topic: await this.chat.getTopic(message.topicId)
+            topic: await this.chat.getTopic(message.topicId),
+            connectionMetadata: this.metadata
         });
 
         await this.chat.unlike(message, this.user);
