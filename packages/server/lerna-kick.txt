@@ -1,4 +1,4 @@
 # This file is used after a failed publish to kick Lerna into realizing the package has changed (because Lerna is 
 # far too buggy)
 
-kick: 1
+kick: 2
