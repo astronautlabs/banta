@@ -30,14 +30,14 @@ export class PubSubManager {
     get messages() { return this._messageSubject.asObservable(); }
     subscribe(id: string) {
         let count = this._subscriptions.get(id) || 0;
-        this.subscriber.subscribe([id]);
+        this.subscriber.subscribe(id);
         this._subscriptions.set(id, count + 1);
     }
 
     unsubscribe(id: string) {
         let count = Math.max(0, this._subscriptions.get(id) || 0);
         if (count === 0)
-            this.subscriber.unsubscribe([id]);
+            this.subscriber.unsubscribe(id);
         
         if (count === 0)
             this._subscriptions.delete(id);
