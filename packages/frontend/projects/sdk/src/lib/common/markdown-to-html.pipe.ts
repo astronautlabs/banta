@@ -30,7 +30,7 @@ marked.marked.use({
 });
 
 @Pipe({
-    name: 'markdownToHtml'
+    name: 'bantaMarkdownToHtml'
 })
 export class BantaMarkdownToHtmlPipe implements PipeTransform {
     constructor(
