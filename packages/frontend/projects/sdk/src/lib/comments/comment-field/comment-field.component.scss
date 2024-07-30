@@ -21,13 +21,13 @@
     z-index: 20;
 }
 
-.avatar-container {
+.banta-avatar-container {
     width: calc(48px + 1.75em);
     display: flex;
     justify-content: flex-end;
     flex-shrink: 0;
 
-    .avatar {
+    .banta-avatar {
         width: 48px;
         height: 48px;
         background: black;
@@ -46,7 +46,7 @@ form {
     padding: 0.5em;
     align-items: center;
 
-    .text-container {
+    .banta-text-container {
         position: relative;
         display: flex;
         flex-grow: 1;
@@ -67,7 +67,7 @@ form {
             bottom: 0.5em;
         }
 
-        .options-line {
+        .banta-options-line {
             display: flex;
             align-items: center;
 
@@ -75,14 +75,14 @@ form {
                 flex-shrink: 0;
             }
 
-            .transient-message {
+            .banta-transient-message {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
                 gap: 0.5em;
             }
 
-            .error-message {
+            .banta-error-message {
                 left: 0.5em;
                 bottom: 0.5em;
                 color: #683333;
@@ -116,7 +116,7 @@ form {
 
 
 
-    .actions {
+    .banta-actions {
         margin-left: 1em;
         flex-shrink: 0;
     }
@@ -132,7 +132,7 @@ form.new-message {
     align-items: flex-start;
     min-width: 0;
 
-    .field-container {
+    .banta-field-container {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
@@ -237,7 +237,7 @@ textarea {
     }
 }
 
-.field-row {
+.banta-field-row {
     position: relative;
 }
 
@@ -280,7 +280,7 @@ textarea {
         margin: 0;
     }
 
-    .avatar-container {
+    .banta-avatar-container {
         display: none;
         width: auto;
         flex-shrink: 0;
@@ -296,7 +296,7 @@ textarea {
             display: none;
         }
 
-        .text-container {
+        .banta-text-container {
             display: none;
         }
     }

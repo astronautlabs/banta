@@ -1,14 +1,14 @@
 <form class="new-message" (submit)="sendMessage()">
-    <div class="avatar-container">
+    <div class="banta-avatar-container">
         <a  href="javascript:;"
-            class="avatar"
+            class="banta-avatar"
             (click)="showEditAvatar()"
             [style.background-image]="'url(' + userAvatarUrl + ')'"
             ></a>
     </div>
-    <div class="text-container">
-        <div class="field-container">
-            <div class="field-row">
+    <div class="banta-text-container">
+        <div class="banta-field-container">
+            <div class="banta-field-row">
                 <mat-form-field class="message-field" appearance="outline" floatLabel="always">
                     <mat-label>{{label}}</mat-label>
                     <textarea
@@ -28,7 +28,7 @@
                         autocomplete="off"
                         ></textarea>
                 </mat-form-field>
-                <div class="options-line">
+                <div class="banta-options-line">
                     <ng-container *ngIf="indicatorState === 'transient'">
                         <div class="transient-message" [class.expanded]="true" [matTooltip]="transientMessage" (click)="alertError()">
                             <mat-spinner [inline]="true" [diameter]="15"></mat-spinner>
@@ -36,13 +36,13 @@
                         </div>
                     </ng-container>
                     <ng-container *ngIf="indicatorState === 'sending'">
-                        <div class="transient-message" [class.expanded]="true" (click)="alertError()">
+                        <div class="banta-transient-message" [class.expanded]="true" (click)="alertError()">
                             <mat-spinner [inline]="true" [diameter]="15"></mat-spinner>
                             {{sendingLabel}}...
                         </div>
                     </ng-container>
                     <ng-container *ngIf="indicatorState === 'error'">
-                        <div class="error-message" [class.expanded]="expandError" [matTooltip]="sendError.message" (click)="alertError()">
+                        <div class="banta-error-message" [class.expanded]="expandError" [matTooltip]="sendError.message" (click)="alertError()">
                             <mat-icon *ngIf="sendError">error</mat-icon>
                             {{sendError.message}}
                         </div>
@@ -87,7 +87,7 @@
                 ></banta-attachments>
         </div>
     </div>
-    <div class="actions">
+    <div class="banta-actions">
         <ng-container *ngIf="!user">
             <button
                 mat-raised-button

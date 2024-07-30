@@ -46,9 +46,8 @@ Banta is an effort to create an open, extensible system for chatting/comments on
 First, make sure to install MongoDB and Redis and have them running on your machine. Then:
 
 ```shell
-lerna bootstrap                    # installs all dependencies
-lerna link                         # links dependent packages together without using the published NPM packages
-lerna run build                    # build all packages from source
+npm install
+lerna run build
 
 cd packages/frontend && npm run build:lib && npm start  # start the Angular application & SDK cradle
 cd packages/server && npm start    # start the server application

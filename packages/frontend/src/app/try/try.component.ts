@@ -6,21 +6,21 @@ import { BantaCommentsComponent, ChatBackendBase } from '@banta/sdk';
 import { MessageMenuItem } from 'projects/sdk/src/lib';
 
 const DEFAULT_CUSTOM_THEME = `
-.use-custom-theme banta-comment-view .message-container {
+.use-custom-theme banta-comment-view .banta-message-container {
     display: flex;
     flex-direction: column;
     gap: 1em;
 }
 
-.use-custom-theme banta-comment .actions .spacer {
+.use-custom-theme banta-comment .banta-actions .spacer {
     order: 99;
 }
 
-.use-custom-theme banta-comment .actions.actions {
+.use-custom-theme banta-comment .banta-actions.banta-actions {
     margin-left: 0;
 }
 
-.use-custom-theme banta-comment .message-content.message-content .content.content {
+.use-custom-theme banta-comment .banta-message-content.banta-message-content .banta-content.banta-content {
     border: 1px solid #666;
     padding: 1em;
     margin: 0.5em 0;

@@ -35,8 +35,8 @@
         background: #eee;
     }
 
-    .message-content {
-        .content {
+    .banta-message-content-container {
+        .banta-content {
             margin-left: 60px;
             margin-right: 0.5em;
         }
@@ -58,15 +58,15 @@
     }
 
     &.abbreviated {
-        .message-content {
-            .content {
+        .banta-message-content-container {
+            .banta-content {
                 // max-height: 8.5em;
                 text-overflow: ellipsis;
                 overflow-y: hidden;
             }
         }
     }
-    .actions {
+    .banta-actions {
         display: flex;
         padding-right: 10px;
         margin-left: 60px;
@@ -88,30 +88,30 @@ banta-timestamp {
     text-align: right;
 }
 
-.user {
+.banta-user {
     position: relative;
     margin: 1em 0 0 0;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
 
-    .user-1, .user-2 {
+    .banta-user-1, .banta-user-2 {
         display: flex;
         flex-wrap: nowrap;
         align-items: center;
         min-width: 0;
     }
 
-    .user-2 {
+    .banta-user-2 {
         margin: 1em 0;
     }
-    .user-identity {
+    .banta-user-identity {
         display: flex;
         flex-direction: column;
         min-width: 0;
     }
 
-    .display-name, .username {
+    .banta-display-name, .banta-username {
         z-index: 1;
         position: relative;
         padding: 0 0 0 1em;
@@ -129,13 +129,13 @@ banta-timestamp {
         flex-grow: 0;
         min-width: 0;
 
-        &.username.username.username {  // overcoming default dark theme styles
+        &.banta-username.banta-username.banta-username {  // overcoming default dark theme styles
             color: #666;
         }
     }
 }
 
-.avatar {
+.banta-avatar {
     height: 48px;
     width: 48px;
     background-position: center;
@@ -146,29 +146,29 @@ banta-timestamp {
     flex-grow: 0;
 }
 
-.counted-action {
+.banta-counted-action {
     display: flex;
     align-items: center;
 
     &.active {
-        button, .count-indicator {
+        button, .banta-count-indicator {
             color: #00a5ff;
         }
     }
 
-    button .count-indicator {
+    button .banta-count-indicator {
         margin-left: 0.5em;
     }
 }
 
-.count-indicator {
+.banta-count-indicator {
     font-size: 9pt;
     padding: 0 0 0 3px;
     color: #666;
 }
 
 :host-context(.mat-dark-theme) {
-    .count-indicator {
+    .banta-count-indicator {
         border-color: #333;
     }
 
@@ -177,13 +177,13 @@ banta-timestamp {
     }
 
     .user {
-        .display-name, .username {
+        .banta-display-name, .banta-username {
             color: white;
         }
     }
 }
 
-.user-tag {
+.banta-user-tag {
     text-transform: uppercase;
     font-size: 12px;
     border: 1px solid #b27373;
@@ -225,18 +225,18 @@ ul.message-facts {
 }
 
 @mixin banta-comment-mobile-styles {
-    .avatar {
+    .banta-avatar {
         height: 32px;
         width: 32px;
     }
 
     :host {
-        .actions {
+        .banta-actions {
             margin-left: 0;
             margin-top: 0.5em;
         }
-        .message-content {
-            .content {
+        .banta-message-content-container {
+            .banta-content {
                 margin-left: 44px;
                 margin-right: 0.5em;
             }

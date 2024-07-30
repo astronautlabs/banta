@@ -1,7 +1,7 @@
-<div class="message-container" #messageContainer>
+<div class="banta-message-container" #messageContainer>
     <ng-content select="[data-before]"></ng-content>
 
-    <div class="top-sticky">
+    <div class="banta-top-sticky">
         <a *ngIf="!newestLast" mat-button class="nav" [class.visible]="shouldShowNewMessageIndicator" href="javascript:;" (click)="showNew($event)">
             <mat-icon>file_upload</mat-icon>
             <ng-container *ngIf="newMessages.length >= 1">
@@ -15,7 +15,7 @@
     <a mat-button class="nav" [class.visible]="newestLast && hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show earlier</a>
 
     <ng-container *ngIf="messages.length === 0">
-        <div class="empty-state" *ngIf="showEmptyState">
+        <div class="banta-empty-state" *ngIf="showEmptyState">
             Be the first to comment!
         </div>
     </ng-container>
@@ -46,12 +46,12 @@
             (selected)="selectMessage(message)"
             (shared)="sharedMessage($event)"
             ></banta-comment>
-        <div class="inline-replies-container" *ngIf="selectedMessage === message">
+        <div class="banta-inline-replies-container" *ngIf="selectedMessage === message">
             <ng-content select=".inline-replies"></ng-content>
         </div>
     </ng-container>
 
-    <div class="nav-point bottom-sticky">
+    <div class="banta-nav-point banta-bottom-sticky">
         <a *ngIf="newestLast" mat-button class="nav" [class.visible]="shouldShowNewMessageIndicator" href="javascript:;" (click)="showNew($event)">
             <mat-icon>file_download</mat-icon>
             <ng-container *ngIf="newMessages.length >= 1">
@@ -62,9 +62,9 @@
             </ng-container>
         </a>
     </div>
-    <a mat-button class="nav" [class.visible]="!newestLast && hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
+    <a mat-button class="banta-nav" [class.visible]="!newestLast && hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
 
-    <div class="loading-more" *ngIf="isLoadingMore">
+    <div class="banta-loading-more" *ngIf="isLoadingMore">
         <mat-spinner></mat-spinner>
     </div>
 

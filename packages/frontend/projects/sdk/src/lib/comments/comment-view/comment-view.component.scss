@@ -6,7 +6,7 @@
     transition: 200ms opacity ease-in;
 }
 
-.message-container {
+.banta-message-container {
     flex-grow: 1;
     //overflow-x: hidden;
     color: #111111;
@@ -41,19 +41,19 @@
 }
 
 :host.fixed-height {
-    .message-container {
+    .banta-message-container {
         overflow-y: auto;
     }
 }
 
 :host-context(.mat-dark-theme) {
-    .message-container {   
+    .banta-message-container {   
         color: white;
         background: #111111;
     }
 }
 
-.empty-state {
+.banta-empty-state {
     text-align: center;
     margin: 3em;
     color: #666;
@@ -65,7 +65,7 @@
     }
 }
 
-a.nav {
+a.banta-nav {
     position: absolute;
     right: 0.5em;
     z-index: 10;
@@ -82,19 +82,19 @@ a.nav {
     }
 }
 
-.top-sticky {
+.banta-top-sticky {
     position: sticky;
     top: 0.5em;
     z-index: 10;
 }
 
-.bottom-sticky {
+.banta-bottom-sticky {
     position: sticky;
     bottom: 3em;
     z-index: 10;
 }
 
-.loading-more {
+.banta-loading-more {
     padding: 2em;
     text-align: center;
     margin: 0 auto;
@@ -102,7 +102,7 @@ a.nav {
 }
 
 @media (max-width: 400px) {
-    .message-container {
+    .banta-message-container {
         padding: 0 0 3em 0;
     }
 }
