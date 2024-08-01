@@ -31,6 +31,7 @@ export class TimestampComponent {
     ngOnDestroy() {
         this._destroyed = true;
         this.timerUnsubscribe?.();
+        this.timerUnsubscribe = undefined;
     }
 
     @Input()

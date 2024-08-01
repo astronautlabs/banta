@@ -71,6 +71,9 @@ export class TimerPool {
 
         return () => {
             let state = this.subscriptions.get(interval);
+            if (!state)
+                return;
+
             let index = state.subscribers.indexOf(callback);
             if (index >= 0)
                 state.subscribers.splice(index, 1);
