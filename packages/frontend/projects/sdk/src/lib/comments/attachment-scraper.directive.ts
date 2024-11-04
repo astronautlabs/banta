@@ -63,8 +63,6 @@ export class AttachmentScraperDirective {
             for (let fragment of fragments) {
                 foundFragments.push(fragment.text);
                 if (!this.fragments.has(fragment.text)) {
-                    console.log(`Scraped new fragment:`);
-                    console.dir(fragment);
                     this.fragments.set(fragment.text, {
                         fragment,
                         resolution: undefined
@@ -80,7 +78,6 @@ export class AttachmentScraperDirective {
                 removedFragments.push(key);
         }
         for (let removedFragment of removedFragments) {
-            console.log(`Removed fragment: ${removedFragment}`);
             this.fragments.delete(removedFragment);
         }
 
@@ -92,13 +89,10 @@ export class AttachmentScraperDirective {
                 continue;
 
             state.resolution = new Promise(async (resolve, reject) => {
-                console.log(`Resolving fragment ${key}`);
                 for (let resolver of this.chatBackend.attachmentResolvers) {
-                    console.log(`- Trying resolver ${resolver.constructor.name}...`);
                     try {
                         let attachment = await resolver.resolveFragment(message, state.fragment);
                         if (attachment) {
-                            console.log(`Resolved fragment ${key} into attachment:`);
                             console.dir(attachment);
                             this.attachments.push(attachment);
                             this.attachmentsChange.next(this.attachments.slice());
