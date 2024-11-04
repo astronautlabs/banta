@@ -5,4 +5,4 @@ export interface SdkOptions {
     emojiUrl?: string;
 }
 
-export const BANTA_SDK_OPTIONS = 'BANTA_SDK_OPTIONS';
+export const BANTA_SDK_OPTIONS = new InjectionToken<SdkOptions>('BANTA_SDK_OPTIONS');
