@@ -13,17 +13,17 @@ import { Logger } from '@alterior/logging';
 import * as fs from 'fs';
 
 export interface ChatEvent {
-    type : 'post' | 'edit' | 'like' | 'unlike' | 'delete';
+    type: 'post' | 'edit' | 'like' | 'unlike' | 'delete';
 }
 
 export interface PostMessageEvent extends ChatEvent {
-    type : 'post';
-    message : ChatMessage;
+    type: 'post';
+    message: ChatMessage;
 }
 
 export interface EditMessageEvent extends ChatEvent {
-    type : 'edit';
-    message : ChatMessage;
+    type: 'edit';
+    message: ChatMessage;
 }
 
 export interface MessageQuery {
@@ -36,22 +36,22 @@ export interface MessageQuery {
     userId?: string;
 }
 
-const DEFAULT_COOLOFF_PERIOD = 10*1000;
+const DEFAULT_COOLOFF_PERIOD = 10 * 1000;
 
 export interface DeleteMessageEvent extends ChatEvent {
-    type : 'delete';
-    message : ChatMessage;
+    type: 'delete';
+    message: ChatMessage;
 }
 
 export interface LikeEvent extends ChatEvent {
     type: 'like';
-    message : ChatMessage;
+    message: ChatMessage;
     user: User;
 }
 
 export interface UnlikeEvent extends ChatEvent {
     type: 'unlike';
-    message : ChatMessage;
+    message: ChatMessage;
     user: User;
 }
 
@@ -205,7 +205,7 @@ export class ChatService {
      * Should be provided by the site integrating Banta. If the user is not allowed,
      * then an error should be thrown.
      */
-    authorizeAction: AuthorizeAction = () => {};
+    authorizeAction: AuthorizeAction = () => { };
 
     /**
      * @internal
@@ -314,7 +314,7 @@ export class ChatService {
      * @param message 
      * @returns 
      */
-    async postMessage(message : ChatMessage) {
+    async postMessage(message: ChatMessage) {
         if (!message.id) {
             message.id = uuid();
         } else {
@@ -398,7 +398,7 @@ export class ChatService {
     async modifyTopicMessageCount(topicOrId: Topic | string, delta: number) {
         let topic = await this.getOrCreateTopic(topicOrId);
         topic.messageCount += delta;
-        await this.updateOne(this.topics, { id: topic.id }, { $inc: { messageCount: delta }});
+        await this.updateOne(this.topics, { id: topic.id }, { $inc: { messageCount: delta } });
     }
 
     /**
@@ -450,7 +450,7 @@ export class ChatService {
             return;
         
         // Update the message itself to reflect the new status.
-        this.updateOne(this.messages, { id: message.id }, { $set: { hidden }});
+        this.updateOne(this.messages, { id: message.id }, { $set: { hidden } });
         message.hidden = hidden;
 
         // Address the effect this operation will have on cached message counters.
@@ -559,7 +559,7 @@ export class ChatService {
         await this.setMessageHiddenStatus(message.id, true);
 
         message.deleted = true;
-        await this.updateOne(this.messages, { id: message.id }, { $set: { deleted: true }});
+        await this.updateOne(this.messages, { id: message.id }, { $set: { deleted: true } });
         
         this._events.next(<DeleteMessageEvent>{
             type: 'delete',
@@ -577,7 +577,7 @@ export class ChatService {
      * @param user 
      * @returns 
      */
-    async like(message : ChatMessage, user : User) {
+    async like(message: ChatMessage, user: User) {
         if (!message)
             throw new Error(`Message cannot be null`);
 
@@ -655,7 +655,7 @@ export class ChatService {
      * @param user 
      * @returns 
      */
-    async unlike(message : ChatMessage, user : User) {
+    async unlike(message: ChatMessage, user: User) {
         if (!message)
             throw new Error(`Message cannot be null`);
 
@@ -881,14 +881,14 @@ export class ChatService {
     }
 
     async getUrlCard(url: string): Promise<UrlCard> {
-        let urlCard = <PersistedUrlCard> await this.findOne(this.urlCards, { url });
+        let urlCard = <PersistedUrlCard>await this.findOne(this.urlCards, { url });
         const URL_CARD_TIMEOUT = 1000 * 60 * 15;
         if (urlCard && urlCard.retrievedAt + URL_CARD_TIMEOUT > Date.now())
             return urlCard.card || null;
 
         let details = new URL(url);
         let originName = details.origin;
-        let origin = <UrlOrigin> await this.getOrigin(originName);
+        let origin = <UrlOrigin>await this.getOrigin(originName);
 
         if (origin) {
             let lastFetchedAt = new Date(origin.lastFetchedAt).getTime();
@@ -900,7 +900,7 @@ export class ChatService {
             }
 
             // If we haven't seen the origin in a long time (30 days), go ahead and reset its cooloff period.
-            if (timeSinceLastFetch > 1000*60*60*24*30) {
+            if (timeSinceLastFetch > 1000 * 60 * 60 * 24 * 30) {
                 Logger.current.info(`Link Fetcher: Origin was last seen more than 30 days ago. Resetting cool-off period to default.`);
                 origin.cooloffPeriodMS = DEFAULT_COOLOFF_PERIOD;
             }
@@ -932,7 +932,7 @@ export class ChatService {
         } catch (e) {
             Logger.current.error(`Failed to connect to ${originName} while fetching URL card for '${url}': ${e.message}`);
             Logger.current.error(`Origin cooldown period will be extended by 5 minutes.`);
-            origin.cooloffPeriodMS += 1000*60*5;
+            origin.cooloffPeriodMS += 1000 * 60 * 5;
         }
 
         try {
@@ -941,27 +941,27 @@ export class ChatService {
 
             // Cool-off period should approach the request duration if its not already larger.
             if (origin.cooloffPeriodMS < requestDuration) {
-                origin.cooloffPeriodMS = (origin.cooloffPeriodMS*7 + (requestDuration + 1000)*3) / 10;
+                origin.cooloffPeriodMS = (origin.cooloffPeriodMS * 7 + (requestDuration + 1000) * 3) / 10;
             }
             origin.lastFetchedAt = new Date().toISOString();
             origin.lastFetchedStatusCode = response.status;
             
             if (response.status >= 500) {
-                origin.cooloffPeriodMS += 1000*60*15;
+                origin.cooloffPeriodMS += 1000 * 60 * 15;
                 Logger.current.error(
                     `Received server error ${response.status} while fetching URL card for '${url}'. `
                     + `Origin cooldown period will be extended by 15 minutes. New cooldown: ${origin.cooloffPeriodMS}ms`
                 );
                 throw new Error(`Received error ${response.status} while fetching URL card`);
             } else if (response.status == 420) {
-                origin.cooloffPeriodMS += 1000*60*5;
+                origin.cooloffPeriodMS += 1000 * 60 * 5;
                 Logger.current.error(
                     `Received rate limit (${response.status}) while fetching URL card for '${url}'. `
                     + `Origin cooldown period will be extended by 5 minutes. New cooldown: ${origin.cooloffPeriodMS}`
                 );
                 throw new Error(`Received error ${response.status} while fetching URL card`);
             } else if (response.status === 401 || response.status === 403) {
-                origin.cooloffPeriodMS += 1000*60*10;
+                origin.cooloffPeriodMS += 1000 * 60 * 10;
                 Logger.current.error(
                     `Received unauthorized response (${response.status}) while fetching URL card for '${url}'. `
                     + `Origin cooldown period will be extended by 10 minutes. New cooldown: ${origin.cooloffPeriodMS}`
