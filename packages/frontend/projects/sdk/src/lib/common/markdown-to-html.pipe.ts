@@ -1,9 +1,11 @@
-import { Pipe, PipeTransform, Inject, Optional } from '@angular/core';
-import * as marked from 'marked';
-import createDOMPurify from 'dompurify';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+import { BANTA_SDK_OPTIONS } from '../sdk-options';
+
+import createDOMPurify from 'dompurify';
 import twemoji from 'twemoji';
-import { BANTA_SDK_OPTIONS, SdkOptions } from '../sdk-options';
+
+import * as marked from 'marked';
 
 const underline = {
     name: 'underline',
@@ -33,12 +35,10 @@ marked.marked.use({
     name: 'bantaMarkdownToHtml'
 })
 export class BantaMarkdownToHtmlPipe implements PipeTransform {
-    constructor(
-        private sanitizer: DomSanitizer,
+    private sanitizer = inject(DomSanitizer);
+    private sdkOptions = inject(BANTA_SDK_OPTIONS, { optional: true });
 
-        @Inject(BANTA_SDK_OPTIONS) @Optional()
-        private sdkOptions: SdkOptions
-    ) {
+    constructor() {
         this.renderer = new marked.Renderer();
         const linkRenderer = this.renderer.link;
         this.renderer.link = token => {
