@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@angular/core";
+import { inject, Inject, Injectable } from "@angular/core";
 import { ChatMessage, CommentsOrder, DurableSocket, FilterMode, Notification, Topic, UrlCard, User, Vote, buildQuery } from "@banta/common";
 import { Observable } from "rxjs";
 import { ChatBackendBase, ChatSourceOptions } from "./chat-backend-base";
@@ -11,12 +11,8 @@ import { StaticChatSource } from "./static-chat-source";
 
 @Injectable()
 export class ChatBackend extends ChatBackendBase {
-    constructor(
-        @Inject(BANTA_SDK_OPTIONS) private options: SdkOptions,
-        @Inject(PLATFORM_ID) private platformId
-    ) {
-        super();
-    }
+    private options = inject(BANTA_SDK_OPTIONS);
+    private platformId = inject(PLATFORM_ID);
 
     get serviceUrl() {
         return `${this.options?.serviceUrl ?? 'http://localhost:3422'}`;
