@@ -217,7 +217,7 @@ export class ChatConnection extends SocketRPC {
             this.parentMessage = null;
         }
 
-        this.topic = topicId != '-' ? await this.chat.getOrCreateTopic(topicId) : null;
+        this.topic = topicId != '-' ? await this.chat.getOrCreateTopicCached(topicId) : null;
         this.topicId = topicId;
 
         await this.sendPermissions();
