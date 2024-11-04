@@ -207,20 +207,6 @@ export class ChatConnection extends SocketRPC {
         this.filterMode = filterMode ?? FilterMode.ALL;
         this.metadata = metadata;
 
-        let chaosFactor = 0;
-
-        if (process.argv.includes(`--full-chaos`))
-            chaosFactor = 1;
-        else if (process.argv.includes(`--half-chaos`))
-            chaosFactor = 0.5;
-        else if (process.argv.includes(`--quarter-chaos`))
-            chaosFactor = 0.25;
-
-        if (Math.random() < chaosFactor) {
-            console.log(`[Banta Chaos] Randomly simulating crash on topic subscribe [CRASH]`);
-            throw new Error(`Oh no! Topology!`);
-        }
-
         if (parentMessageId) {
             let parentMessage = await this.chat.getUnpreparedMessage(parentMessageId);
             if (!parentMessage) {
