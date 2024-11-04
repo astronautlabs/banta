@@ -186,9 +186,6 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         this.setSignInState('signing-in');
         if (this.backend.user) {
             try {
-                // console.log(`Artificial delay...`);
-                // await new Promise(r => setTimeout(r, 30_000));
-                // console.log(`Artificial delay complete...`);
                 await this.immediatePeer.authenticate(this.backend.user?.token);
                 this.setSignInState('signed-in');
             } catch (e) {
