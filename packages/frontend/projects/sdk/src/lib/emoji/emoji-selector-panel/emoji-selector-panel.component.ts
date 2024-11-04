@@ -2,10 +2,10 @@ declare var twemoji: {
     parse(str: string, options?: { folder?: string, ext?: string, base?: string }): string;
 }
 
-import { Component, Inject, Input, OnInit, Optional, Output } from '@angular/core';
+import { Component, inject, OnInit, Output } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { BANTA_SDK_OPTIONS, SdkOptions } from '../../sdk-options';
 import { Subject } from 'rxjs';
+import { BANTA_SDK_OPTIONS } from '../../sdk-options';
 
 interface Emoji {
 	keywords : string[];
@@ -23,11 +23,8 @@ import { EMOJIS } from '../emojis';
 })
 export class EmojiSelectorPanelComponent implements OnInit {
 
-	constructor(
-		private sanitizer : DomSanitizer,
-		@Inject(BANTA_SDK_OPTIONS) @Optional()
-		private sdkOptions: SdkOptions
-	) { }
+	private sanitizer = inject(DomSanitizer);
+	private sdkOptions = inject(BANTA_SDK_OPTIONS, { optional: true });
 
 	categories : any[];
 	activeCategory : string = 'people';
