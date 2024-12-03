@@ -187,7 +187,8 @@ export class BantaCommentsComponent {
             this.source = await this.backend.getSourceForTopic(topicID, { 
                 sortOrder: this.sortOrder, 
                 filterMode: this.filterMode,
-                metadata: this.metadata
+                metadata: this.metadata,
+                initialMessageCount: this.initialMessageCount
             });
             this._sourceIsOwned = true;
         });
@@ -487,6 +488,8 @@ export class BantaCommentsComponent {
             this.reloadSource();
         }
     }
+
+    @Input() initialMessageCount: number = 100;
 
     private _metadata: Record<string, any> = {};
 
