@@ -37,7 +37,9 @@ import { ChatBackendBase } from 'projects/sdk/src/lib';
     MaterialModule,
     BrowserAnimationsModule,
     SaasModule,
-    BantaSdkModule.configure()
+    BantaSdkModule.configure({
+      //backendClass: MockBackend
+    })
   ],
   providers: [
     {

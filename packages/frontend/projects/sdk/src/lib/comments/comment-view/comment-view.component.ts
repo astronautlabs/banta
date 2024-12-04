@@ -42,7 +42,32 @@ export class CommentViewComponent {
     isViewingMore = false;
     isLoadingMore = false;
     hasMore = false;
+
+    get previousMessages() { return this.newestLast ? this.olderMessages : this.newMessages; }
+    get nextMessages() { return this.newestLast ? this.newMessages : this.olderMessages; }
+
+    /**
+     * While this is called "new" messages, it really represents the messages that would be visible *at the beginning 
+     * of the sort order*, which can be flipped by the newestLast feature (used for replies mode). 
+     * 
+     * So, when newestLast is false, regardless of the current sortOrder, newMessages are conceptually 
+     * *above* the visible set of messages.
+     * 
+     * When newestLast is true (as in replies mode), regardless of the current sortOrder, newMessages are conceptually 
+     * *below* the visible set of messages.
+     */
     newMessages: ChatMessage[] = [];
+
+    /**
+     * While this is called "older" messages, it really represents the messages that would be visible *at the end of the 
+     * sort order*, which can be flipped by the newestLast feature (useds for replies mode).
+     * 
+     * So, when newestLast is false, regardless of the current sortOrder, olderMessages are conceptually *below*
+     * the visible set of messages.
+     * 
+     * When newestLast is true (as in replies mode), regardless of the current sortOrder, olderMessages are conceptually
+     * *above* the visible set of messages.
+     */
     olderMessages: ChatMessage[] = [];
 
     //#endregion
@@ -142,11 +167,14 @@ export class CommentViewComponent {
     get shouldShowNewMessageIndicator() {
         return this.isViewingMore 
             || this.customSortEnabled 
-            || this.source.filterMode !== FilterMode.ALL
-            || this.newMessages.length > 0;
+            || this.sourceFilterMode !== FilterMode.ALL
+            || this.heldMessages.length > 0;
     }
 
     get shouldHoldNewMessages() {
+        if (this.customSortEnabled)
+            return true;
+        
         if (this.holdNewMessages || this.isViewingMore) {
             console.log(`holding due to settings`);
             return true;
@@ -250,7 +278,7 @@ export class CommentViewComponent {
     }
 
     private setSource(value: ChatSourceBase) {
-        this.customSortEnabled = value?.sortOrder !== CommentsOrder.NEWEST;
+        this.customSortEnabled = (value?.sortOrder ?? CommentsOrder.NEWEST) !== CommentsOrder.NEWEST;
         this.newMessages = [];
         this.olderMessages = [];
 
@@ -284,36 +312,109 @@ export class CommentViewComponent {
         let messages = (await this._source.getExistingMessages());
         messages.forEach(m => m.transientState ??= {});
         this.messages = this.newestLast ? messages.slice().reverse() : messages;
+
+        if (this.messages.length > this.maxVisibleMessages) {
+            if (this.newestLast) {
+                this.previousMessages.push(...this.messages.splice(0, this.messages.length - this.maxVisibleMessages));
+            } else {
+                this.nextMessages.unshift(...this.messages.splice(this.maxVisibleMessages, this.messages.length));
+            }
+        }
+
+        this.debugMessages();
         this.sortMessages();
         if (this.markSourceLoaded)
             this.markSourceLoaded();
     }
 
+    debugMessages() {
+        console.log([ 
+            ...this.previousMessages.map(x => x.message), 
+            '[[',
+            ...this.messages.map(x => x.message),
+            ']]',
+            ...this.nextMessages.map(x => x.message) 
+        ].map(x => /\d+/.test(x) ? this.zeroPad(x, 2) : x).join(" "));
+    }
+
+    zeroPad(number: number | string, count: number = 2) {
+        let str: string;
+    
+        if (typeof number === 'number')
+            str = String(number);
+        else
+            str = number;
+    
+        while (str.length < count)
+            str = '0' + str;
+    
+        return str;
+    }
+    leftPad(str: string, count: number = 2) {
+        while (str.length < count)
+            str = ' ' + str;
+    
+        return str;
+    }
+    
     messageIdentity(index: number, chatMessage: ChatMessage) {
         return chatMessage.id;
     }
 
-    async showNew(event: MouseEvent) {
+    get sourceSortOrder() {
+        return this.source?.sortOrder ?? CommentsOrder.NEWEST;
+    }
+
+    get sourceFilterMode() {
+        return this.source?.filterMode ?? FilterMode.ALL;
+    }
+
+    /**
+     * Show the newest content.
+     * - If an unnatural sort order is active (ie Oldest or Likes), it will be changed to Newest.
+     * - The new content will be placed where new content goes based on newestLast (replies mode), so if it is true, the content is 
+     *   placed at the end, otherwise it is placed at the beginning.
+     * 
+     * @param event 
+     * @returns 
+     */
+    async showNewest(event: MouseEvent) {
+
+        // Regardless of how we handle this, clear out our held messages
+
+        this.heldMessages = [];
+
+        // If the sort order is not already Newest, switch to Newest and stop.
+        // The act of changing the sort order will cause the newest content to be loaded.
+
         let naturalOrder = CommentsOrder.NEWEST;
-        if (this.source && (this.source.sortOrder !== naturalOrder || this.source.filterMode !== FilterMode.ALL)) {
-            if (this.source.sortOrder !== naturalOrder)
+        if (this.sourceSortOrder !== naturalOrder || this.sourceFilterMode !== FilterMode.ALL) {
+            if (this.sourceSortOrder !== naturalOrder)
                 this._sortOrderChanged.next(naturalOrder);
-            if (this.source.filterMode !== FilterMode.ALL)
+            if (this.sourceFilterMode !== FilterMode.ALL)
                 this._filterModeChanged.next(FilterMode.ALL);
             return;
         }
 
+        // On this path, we are already on Newest, but there is newer content available (such as when new content is 
+        // being buffered due to user engagement on a comment)
+
         this.isViewingMore = false;
+
+        // Move all newerMessages into messages, respecting the newestLast direction (normal or replies mode)
 
         if (this.newestLast)
             this.messages = this.messages.concat(this.newMessages.splice(0, this.newMessages.length));
         else
             this.messages = this.newMessages.splice(0, this.newMessages.length).concat(this.messages);
+
         let overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
         this.olderMessages = overflow.concat(this.olderMessages);
         this.olderMessages.splice(this.maxMessages - this.maxVisibleMessages, this.olderMessages.length);
         this.hasMore = this.olderMessages.length > 0;
 
+        // Scroll to the newest comment.
+        
         if (this.messages.length > 0) {
             if (this.newestLast) {
                 this.scrollToComment(this.messages[this.messages.length - 1].id);
@@ -323,47 +424,256 @@ export class CommentViewComponent {
         }
     }
 
+    get showDebug() {
+        if (typeof window === 'undefined')
+            return false;
+
+        return localStorage['banta:debug'] === '1';
+    }
+
+    get shouldShowNext() {
+        if (!this.newestLast) {
+            return this.hasMore || this.nextMessages.length > 0;
+        }
+
+        return this.nextMessages.length > 0;
+    }
+
+    get shouldShowPrevious() {
+        if (this.newestLast) {
+            return this.hasMore || this.previousMessages.length > 0;
+        }
+
+        return this.previousMessages.length > 0;
+    }
+
+    get pageSize() {
+        return Math.min(20, this.maxVisibleMessages);
+    }
+
+    async showPrevious() {
+        this.isViewingMore = true;
+        let nextPageSize = this.pageSize;
+        this.isLoadingMore = false;
+
+        if (this.previousMessages.length > 0) {
+            const storedMessages = this.previousMessages.splice(Math.max(0, this.previousMessages.length - nextPageSize), nextPageSize);
+            this.messages = [...storedMessages, ...this.messages];
+            nextPageSize -= storedMessages.length;
+        }
+
+
+        // Load more from backend if needed
+        // Note: Backend only supports fetching more content in one direction.
+
+        let lastMessage = this.previousMessages[0] ?? this.messages[0];
+        if (!lastMessage)
+            this.hasMore = false;
+
+        if (nextPageSize > 0 && this.newestLast && lastMessage) {
+            this.isLoadingMore = true;
+
+            let messages = await this.source.loadAfter(lastMessage, nextPageSize);
+
+            messages = messages.slice().reverse(); // because newestLast === true
+            messages.forEach(m => m.transientState ??= {});
+
+            // In replies mode (newestLast), we want to put these new messages onto the *top* of the set of visible messages.
+            // Otherwise we want to put them on the *bottom*.
+
+            this.messages = [...messages, ...this.messages];
+
+            // If we didn't receive any messages at all, there's no more to fetch.
+
+            if (messages.length === 0)
+                this.hasMore = false;
+
+            this.isLoadingMore = false;
+        }
+        
+        // Extract the messages that do not fit in the maxVisibleMessages buffer.
+
+        if (this.messages.length > this.maxVisibleMessages) {
+            let overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
+            this.nextMessages.unshift(...overflow);
+            if (this.nextMessages.length > this.maxMessages)
+                this.nextMessages.splice(this.maxMessages, this.nextMessages.length);
+        }
+
+        this.debugMessages();
+    }
+
+    get sortNextLabel() {
+        if (this.sourceSortOrder === 'newest') {
+            return 'Older';
+        } else if (this.sourceSortOrder === 'oldest') {
+            return 'Newer';
+        } else if (this.sourceSortOrder === 'likes') {
+            return 'Less Likes';
+        }
+
+        return 'More';
+    }
+
+    get sortPreviousLabel() {
+        if (this.sourceSortOrder === 'newest') {
+            return 'Newer';
+        } else if (this.sourceSortOrder === 'oldest') {
+            return 'Older';
+        } else if (this.sourceSortOrder === 'likes') {
+            return 'More Likes';
+        }
+
+        return 'More';
+    }
+
+    get nextLabel() { return this.newestLast ? this.sortPreviousLabel : this.sortNextLabel; }
+    get previousLabel() { return this.newestLast ? this.sortNextLabel : this.sortPreviousLabel; }
+
+    /**
+     * Show more content
+     * - When in replies mode (newestLast), the content is added at the top
+     * - When in normal mode, the content is added at the bottom
+     * - The current sort order does *not* factor in here, which is why it is showMore() not showEarlier().
+     * 
+     * @returns 
+     */
+    async showNext() {
+        this.isViewingMore = true;
+
+        let nextPageSize = this.pageSize;
+
+        this.isLoadingMore = false;
+
+        if (this.nextMessages.length > 0) {
+            const storedMessages = this.nextMessages.splice(0, nextPageSize);
+            this.messages = [ ...this.messages, ...storedMessages ];
+            nextPageSize -= storedMessages.length;
+            this.hasMore = this.nextMessages.length > 0;
+        }
+
+        const lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
+        if (!lastMessage)
+            this.hasMore = false;
+
+        if (nextPageSize > 0 && !this.newestLast && lastMessage) {
+            // Load more from backend
+
+            this.isLoadingMore = true;
+
+            let messages = await this.source.loadAfter(lastMessage, nextPageSize);
+            messages.forEach(m => m.transientState ??= {});
+            this.messages = [ ...this.messages, ...messages ];
+
+            // If we didn't receive any messages at all, there's no more to fetch.
+
+            if (messages.length === 0)
+                this.hasMore = false;
+
+            this.isLoadingMore = false;
+        }
+
+        // Extract the messages that do not fit in the maxVisibleMessages buffer.
+
+        
+        if (this.messages.length > this.maxVisibleMessages) {
+            let overflow = this.messages.splice(0, this.messages.length - this.maxVisibleMessages);
+
+            // Regardless of the order (newestLast), newMessages represents the direction that is being pushed, since it's definition
+            // depends on that order. Move overflowing messages into newMessages.
+            
+            this.previousMessages.push(...overflow);
+            if (this.previousMessages.length > this.maxMessages)
+                this.previousMessages.splice(0, this.previousMessages.length - this.maxMessages);
+        }
+
+        this.debugMessages();
+    }
+
+    /**
+     * Show more content
+     * - When in replies mode (newestLast), the content is added at the top
+     * - When in normal mode, the content is added at the bottom
+     * - The current sort order does *not* factor in here, which is why it is showMore() not showEarlier().
+     * 
+     * @returns 
+     */
     async showMore() {
         this.isViewingMore = true;
 
-        if (this.olderMessages.length > 0) {
-            this.isLoadingMore = false;
-            this.messages = this.messages.concat(this.olderMessages.splice(0, 50));
-        }
-        this.isLoadingMore = true;
+        let nextPageSize = this.pageSize;
 
-        let nextPageSize = 20;
-        let lastMessage: ChatMessage;
-
-        if (this.newestLast) {
-            lastMessage = this.olderMessages[0] ?? this.messages[0];
-        } else {
-            lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
-        }
-
-        if (!lastMessage) {
-            this.isLoadingMore = false;
-            this.hasMore = false;
-            return;
-        }
-
-        let messages = await this.source.loadAfter(lastMessage, nextPageSize);
-
-        if (this.newestLast)
-            messages = messages.slice().reverse();
-        
-        messages.forEach(m => m.transientState ??= {});
-
-        if (this.newestLast)
-            this.messages = messages.concat(this.messages);
-        else
-            this.messages = this.messages.concat(messages);
         this.isLoadingMore = false;
-        if (messages.length === 0) {
-            console.log(`Reached the end of the list.`);
-            this.hasMore = false;
+
+        if (this.olderMessages.length > 0) {
+            const storedMessages = this.olderMessages.splice(0, nextPageSize);
+            this.messages = this.messages.concat(storedMessages);
+            nextPageSize -= storedMessages.length;
+            this.hasMore = this.olderMessages.length > 0;
         }
+
+        if (nextPageSize > 0) {
+            // Load more from backend
+
+            this.isLoadingMore = true;
+
+            let lastMessage: ChatMessage;
+
+            if (this.newestLast) {
+                lastMessage = this.olderMessages[0] ?? this.messages[0];
+            } else {
+                lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
+            }
+
+            if (!lastMessage) {
+                this.isLoadingMore = false;
+                this.hasMore = false;
+                return;
+            }
+
+            let messages = await this.source.loadAfter(lastMessage, nextPageSize);
+
+            if (this.newestLast)
+                messages = messages.slice().reverse();
+            
+            messages.forEach(m => m.transientState ??= {});
+
+            // In replies mode (newestLast), we want to put these new messages onto the *top* of the set of visible messages.
+            // Otherwise we want to put them on the *bottom*.
+
+            if (this.newestLast) {
+                this.messages = messages.concat(this.messages);
+            } else {
+                this.messages = this.messages.concat(messages);
+            }
+
+            // If we didn't receive any messages at all, there's no more to fetch.
+
+            if (messages.length === 0) {
+                this.hasMore = false;
+            }
+
+            this.isLoadingMore = false;
+        }
+
+        // Extract the messages that do not fit in the maxVisibleMessages buffer.
+
+        let overflow: ChatMessage[];
+        
+        if (this.newestLast)
+            overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
+        else
+            overflow = this.messages.splice(0, this.maxVisibleMessages);
+
+        // Regardless of the order (newestLast), newMessages represents the direction that is being pushed, since it's definition
+        // depends on that order. Move overflowing messages into newMessages.
+        
+        this.newMessages = overflow.concat(this.newMessages);
+        this.newMessages.splice(this.maxMessages - this.maxVisibleMessages, this.newMessages.length);
+
     }
+
+    private heldMessages: ChatMessage[] = [];
 
     private addMessage(message: ChatMessage) {
 
@@ -375,9 +685,14 @@ export class CommentViewComponent {
         let newestLast = this.newestLast;
 
         if (this.shouldHoldNewMessages) {
+            this.heldMessages.push(message);
             destination = this.newMessages;
             bucket = null;
         }
+
+        // If we aren't on the newest sort order, new messages shouldn't be added at all
+        if (this.sourceSortOrder !== CommentsOrder.NEWEST)
+            return;
 
         
         if (newestLast) {

@@ -1,4 +1,4 @@
-import { ModuleWithProviders, NgModule } from '@angular/core';
+import { inject, ModuleWithProviders, NgModule } from '@angular/core';
 import { CommentsModule } from './comments';
 import { ChatModule } from './chat';
 import { EmojiModule } from './emoji';
@@ -65,14 +65,14 @@ import { TweetAttachmentResolver } from './tweet-attachments';
     ]
 })
 export class BantaSdkModule {
-    constructor(
-        chatBackend: ChatBackendBase
-    ) {
-        chatBackend.registerAttachmentScraper(new UrlAttachmentScraper());
-        chatBackend.registerAttachmentResolver(new GiphyAttachmentResolver());
-        chatBackend.registerAttachmentResolver(new YouTubeAttachmentResolver());
-        chatBackend.registerAttachmentResolver(new TweetAttachmentResolver());
-        chatBackend.registerAttachmentResolver(new UrlAttachmentResolver(chatBackend));
+    chatBackend = inject(ChatBackendBase);
+
+    constructor() {
+        this.chatBackend.registerAttachmentScraper(new UrlAttachmentScraper());
+        this.chatBackend.registerAttachmentResolver(new GiphyAttachmentResolver());
+        this.chatBackend.registerAttachmentResolver(new YouTubeAttachmentResolver());
+        this.chatBackend.registerAttachmentResolver(new TweetAttachmentResolver());
+        this.chatBackend.registerAttachmentResolver(new UrlAttachmentResolver(this.chatBackend));
     }
     
     static configure(options?: SdkOptions): ModuleWithProviders<BantaSdkModule> {
@@ -83,7 +83,7 @@ export class BantaSdkModule {
                     provide: BANTA_SDK_OPTIONS, 
                     useValue: options || {}
                 },
-                { provide: ChatBackendBase, useClass: ChatBackend }
+                { provide: ChatBackendBase, useClass: options?.backendClass ?? ChatBackend }
             ]
         }
     }

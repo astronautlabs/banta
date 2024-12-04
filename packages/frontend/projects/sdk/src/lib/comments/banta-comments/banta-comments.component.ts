@@ -317,8 +317,15 @@ export class BantaCommentsComponent {
     markLoaded: () => void;
     loaded = new Promise<void>(r => this.markLoaded = r);
 
+    get sourceState() {
+        if (!this.source)
+            return 'no-source';
+
+        return this.source.state ?? 'connected';
+    }
+
     private updateLoading(): boolean {
-        if (this.source?.state && !['connecting', 'lost'].includes(this.source?.state)) {
+        if (this.sourceState && !['connecting', 'lost'].includes(this.sourceState)) {
             clearInterval(this._loadingTimer);
             this.loadingMessage = `Here we go!`;
             setTimeout(() => {
@@ -328,7 +335,7 @@ export class BantaCommentsComponent {
             return true;
         }
 
-        console.log(`[Banta/Loader] State=${this.source ? this.source.state : 'no-source'}`);
+        console.log(`[Banta/Loader] State=${this.sourceState}`);
         let messageSwitchTime = 5*1000;
         if (this.messageChangedAt + messageSwitchTime < Date.now()) {
             if (this.loadingMessages[this._loadingMessageIndex]) {
@@ -413,7 +420,11 @@ export class BantaCommentsComponent {
 
             this._source.messages.forEach(m => this.addParticipant(m));
 
-            this._sourceSubscription.add(this._source.connectionStateChanged.subscribe(state => this.connectionState = state));
+            if (this._source.connectionStateChanged)
+                this._sourceSubscription.add(this._source.connectionStateChanged.subscribe(state => this.connectionState = state));
+            else 
+                this.connectionState = 'connected';
+
             this._sourceSubscription.add(this._source.messageReceived.subscribe(m => this.addParticipant(m)));
             this._sourceSubscription.add(this._source.messageSent.subscribe(m => this.addParticipant(m)));
             this._sourceSubscription.add(this._source.messageObserved.subscribe(m => this.addParticipant(m)));

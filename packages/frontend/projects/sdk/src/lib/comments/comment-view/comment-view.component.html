@@ -2,76 +2,102 @@
     <ng-content select="[data-before]"></ng-content>
 
     <div class="banta-top-sticky">
-        <a *ngIf="!newestLast" mat-button class="nav" [class.visible]="shouldShowNewMessageIndicator" href="javascript:;" (click)="showNew($event)">
-            <mat-icon>file_upload</mat-icon>
-            <ng-container *ngIf="newMessages.length >= 1">
-                New ({{newMessages.length}})
-            </ng-container>
-            <ng-container *ngIf="newMessages.length == 0">
+        @if (!newestLast) {
+            <button 
+                mat-button 
+                class="banta-nav" 
+                [class.visible]="shouldShowNewMessageIndicator" 
+                href="javascript:;" 
+                (click)="showNewest($event)"
+                >
+                <mat-icon>file_upload</mat-icon>
                 Newest
-            </ng-container>
-        </a>
+                @if (heldMessages.length > 0) {
+                    <span class="count">{{ heldMessages.length | number }}</span>
+                }
+            </button>
+        }
     </div>
-    <a mat-button class="nav" [class.visible]="newestLast && hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show earlier</a>
 
-    <ng-container *ngIf="messages.length === 0">
+    <button mat-button class="pager" (click)="showPrevious()" [class.visible]="shouldShowPrevious" [disabled]="isLoadingMore">
+        <mat-icon>expand_less</mat-icon>
+        {{ previousLabel }}
+    </button>
+
+    @for (message of messages; track message.id) {
+        @if (!message.hidden) {
+            <banta-comment
+                class="abbreviated"
+                
+                [customMenuItems]="customMenuItems"
+                [message]="message"
+                [mine]="currentUser?.id === message.user?.id"
+                [permissions]="source?.permissions"
+                [showReplyAction]="allowReplies"
+                [editing]="message.transientState.editing"
+                [genericAvatarUrl]="genericAvatarUrl"
+                [readonly]="source?.readonly"
+                (click)="enableHoldOnClick ? (holdNewMessages = true) : undefined"
+                (editStarted)="startEditing(message)"
+                (deleted)="deleteMessage(message)"
+                (editEnded)="message.transientState.editing = false"
+                (edited)="saveEdit(message, $event)"
+                (userSelected)="selectMessageUser(message)"
+                (avatarSelected)="selectAvatar($event)"
+                (usernameSelected)="selectUsername($event)"
+                (liked)="likeMessage(message)"
+                (unliked)="unlikeMessage(message)"
+                (reported)="reportMessage(message)"
+                (selected)="selectMessage(message)"
+                (shared)="sharedMessage($event)"
+                />
+            <div class="banta-inline-replies-container" *ngIf="selectedMessage === message">
+                <ng-content select=".inline-replies"></ng-content>
+            </div>
+        }
+    } @empty {
         <div class="banta-empty-state" *ngIf="showEmptyState">
             Be the first to comment!
         </div>
-    </ng-container>
-    <ng-container *ngFor="let message of messages; trackBy: messageIdentity">
-        <banta-comment
-            *ngIf="!message.hidden"
-            class="abbreviated"
-            
-            [customMenuItems]="customMenuItems"
-            [message]="message"
-            [mine]="currentUser?.id === message.user?.id"
-            [permissions]="source?.permissions"
-            [showReplyAction]="allowReplies"
-            [editing]="message.transientState.editing"
-            [genericAvatarUrl]="genericAvatarUrl"
-            [readonly]="source?.readonly"
-            (click)="enableHoldOnClick ? (holdNewMessages = true) : undefined"
-            (editStarted)="startEditing(message)"
-            (deleted)="deleteMessage(message)"
-            (editEnded)="message.transientState.editing = false"
-            (edited)="saveEdit(message, $event)"
-            (userSelected)="selectMessageUser(message)"
-            (avatarSelected)="selectAvatar($event)"
-            (usernameSelected)="selectUsername($event)"
-            (liked)="likeMessage(message)"
-            (unliked)="unlikeMessage(message)"
-            (reported)="reportMessage(message)"
-            (selected)="selectMessage(message)"
-            (shared)="sharedMessage($event)"
-            ></banta-comment>
-        <div class="banta-inline-replies-container" *ngIf="selectedMessage === message">
-            <ng-content select=".inline-replies"></ng-content>
-        </div>
-    </ng-container>
+    }
+
+    <button mat-button class="pager" (click)="showNext()" [class.visible]="shouldShowNext" [disabled]="isLoadingMore">
+        <mat-icon>expand_more</mat-icon>
+        {{ nextLabel }}
+    </button>
 
     <div class="banta-nav-point banta-bottom-sticky">
-        <a *ngIf="newestLast" mat-button class="nav" [class.visible]="shouldShowNewMessageIndicator" href="javascript:;" (click)="showNew($event)">
-            <mat-icon>file_download</mat-icon>
-            <ng-container *ngIf="newMessages.length >= 1">
-                New ({{newMessages.length}})
-            </ng-container>
-            <ng-container *ngIf="newMessages.length == 0">
+        @if (newestLast) {
+            <button 
+                [matBadge]="10" matBadgeOverlap="false"
+                matBadgePosition="after" matBadgeSize="large" 
+                mat-button 
+                class="banta-nav" 
+                [class.visible]="shouldShowNewMessageIndicator" 
+                href="javascript:;" 
+                (click)="showNewest($event)"
+                >
+                <mat-icon>file_download</mat-icon>
                 Newest
-            </ng-container>
-        </a>
+                @if (heldMessages.length > 0) {
+                    <span class="count">{{ heldMessages.length | number }}</span>
+                }
+            </button>
+        }
     </div>
-    <a mat-button class="banta-nav" [class.visible]="!newestLast && hasMore && !isLoadingMore" href="javascript:;" (click)="showMore()">Show more</a>
 
     <div class="banta-loading-more" *ngIf="isLoadingMore">
         <mat-spinner></mat-spinner>
     </div>
 
-    <!-- <div style="color: #666">
-        n={{newMessages.length}}, m={{messages.length}}, o={{olderMessages.length}},
-        v={{maxVisibleMessages}}, M={{maxMessages}}
-    </div> -->
+    @if (showDebug) {
+        <div style="color: #666">
+            ({{ previousMessages.length }} .. {{ messages.length }} .. {{ nextMessages.length }})
+
+            dir={{newestLast ? '-1' : '1'}}
+            v={{maxVisibleMessages}}, M={{maxMessages}}
+        </div>
+    }
 
     <ng-content select=":not([data-before]):not(.inline-replies)"></ng-content>
 </div>
