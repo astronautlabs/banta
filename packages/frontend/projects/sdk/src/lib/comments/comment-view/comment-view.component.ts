@@ -174,7 +174,6 @@ export class CommentViewComponent {
     get shouldHoldNewMessages() {
         if (this.customSortEnabled)
             return true;
-        
         if (this.holdNewMessages || this.isViewingMore) {
             console.log(`holding due to settings`);
             return true;
@@ -549,7 +548,6 @@ export class CommentViewComponent {
             const storedMessages = this.nextMessages.splice(0, nextPageSize);
             this.messages = [ ...this.messages, ...storedMessages ];
             nextPageSize -= storedMessages.length;
-            this.hasMore = this.nextMessages.length > 0;
         }
 
         const lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
