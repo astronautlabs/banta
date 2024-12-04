@@ -327,13 +327,16 @@ export class CommentViewComponent {
     }
 
     debugMessages() {
-        console.log([ 
-            ...this.previousMessages.map(x => x.message), 
-            '[[',
-            ...this.messages.map(x => x.message),
-            ']]',
-            ...this.nextMessages.map(x => x.message) 
-        ].map(x => /\d+/.test(x) ? this.zeroPad(x, 2) : x).join(" "));
+        if (!this.showDebug)
+            return;
+        
+        // console.log([ 
+        //     ...this.previousMessages.map(x => x.message), 
+        //     '[[',
+        //     ...this.messages.map(x => x.message),
+        //     ']]',
+        //     ...this.nextMessages.map(x => x.message) 
+        // ].map(x => /\d+/.test(x) ? this.zeroPad(x, 2) : x).join(" "));
     }
 
     zeroPad(number: number | string, count: number = 2) {
