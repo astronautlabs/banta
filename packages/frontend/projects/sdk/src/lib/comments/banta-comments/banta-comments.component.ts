@@ -325,7 +325,7 @@ export class BantaCommentsComponent {
     }
 
     private updateLoading(): boolean {
-        if (this.sourceState && !['connecting', 'lost'].includes(this.sourceState)) {
+        if (this.sourceState && !['connecting', 'lost', 'no-source'].includes(this.sourceState)) {
             clearInterval(this._loadingTimer);
             this.loadingMessage = `Here we go!`;
             setTimeout(() => {
