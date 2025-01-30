@@ -698,12 +698,18 @@ export class CommentViewComponent {
         
         if (newestLast) {
             destination.push(message);
+
+            if (this.maxVisibleMessages > 0) {
             let overflow = destination.splice(this.maxVisibleMessages, destination.length);
             bucket?.push(...overflow);
+            }
         } else {
             destination.unshift(message);
+            
+            if (this.maxVisibleMessages > 0) {
             let overflow = destination.splice(this.maxVisibleMessages, destination.length);
             bucket?.unshift(...overflow);
+            }
         }
 
         if (bucket?.length > 0)
