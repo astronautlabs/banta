@@ -477,8 +477,20 @@ export class BantaCommentsComponent {
     private _reloadSourceTimeout;
     private reloadSource() {
         clearTimeout(this._reloadSourceTimeout);
-        this._reloadSourceTimeout = setTimeout(() => {
-            this.setSourceFromTopicID(this.topicID);
+
+        let showLoaderTimeout;
+        showLoaderTimeout = setTimeout(() => {
+            this.loading = true;
+            this.loadingTitle = 'Applying filters...';
+            this.loadingMessage = 'Applying your filters and sort order is taking more time than expected. Sit tight!';
+            this.showLoadingScreen = true;
+        }, 500);
+
+        this._reloadSourceTimeout = setTimeout(async () => {
+            await this.setSourceFromTopicID(this.topicID);
+            clearTimeout(showLoaderTimeout);
+            this.loading = false;
+            this.showLoadingScreen = true;
         });
     }
 
