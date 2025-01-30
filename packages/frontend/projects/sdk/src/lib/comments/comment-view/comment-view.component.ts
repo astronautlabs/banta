@@ -282,6 +282,7 @@ export class CommentViewComponent {
         this.customSortEnabled = (value?.sortOrder ?? CommentsOrder.NEWEST) !== CommentsOrder.NEWEST;
         this.newMessages = [];
         this.olderMessages = [];
+        this.heldMessages = [];
 
         (window as any).bantaSourceDebug = value;
 
@@ -703,15 +704,15 @@ export class CommentViewComponent {
             destination.push(message);
 
             if (this.maxVisibleMessages > 0) {
-            let overflow = destination.splice(this.maxVisibleMessages, destination.length);
-            bucket?.push(...overflow);
+                let overflow = destination.splice(this.maxVisibleMessages, destination.length);
+                bucket?.push(...overflow);
             }
         } else {
             destination.unshift(message);
             
             if (this.maxVisibleMessages > 0) {
-            let overflow = destination.splice(this.maxVisibleMessages, destination.length);
-            bucket?.unshift(...overflow);
+                let overflow = destination.splice(this.maxVisibleMessages, destination.length);
+                bucket?.unshift(...overflow);
             }
         }
 
