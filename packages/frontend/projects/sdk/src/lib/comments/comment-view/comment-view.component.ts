@@ -42,6 +42,7 @@ export class CommentViewComponent {
     isViewingMore = false;
     isLoadingMore = false;
     hasMore = false;
+    messageClicked = false;
 
     get previousMessages() { return this.newestLast ? this.olderMessages : this.newMessages; }
     get nextMessages() { return this.newestLast ? this.newMessages : this.olderMessages; }
@@ -178,6 +179,9 @@ export class CommentViewComponent {
             console.log(`holding due to settings`);
             return true;
         }
+
+        if (this.enableHoldOnClick && this.messageClicked)
+            return true;
 
         if (this.enableHoldOnScroll) {
             let keyMessage: ChatMessage;
@@ -385,6 +389,7 @@ export class CommentViewComponent {
         // Regardless of how we handle this, clear out our held messages
 
         this.heldMessages = [];
+        this.messageClicked = false;
 
         // If the sort order is not already Newest, switch to Newest and stop.
         // The act of changing the sort order will cause the newest content to be loaded.

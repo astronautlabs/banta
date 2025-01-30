@@ -37,7 +37,7 @@
                 [editing]="message.transientState.editing"
                 [genericAvatarUrl]="genericAvatarUrl"
                 [readonly]="source?.readonly"
-                (click)="enableHoldOnClick ? (holdNewMessages = true) : undefined"
+                (click)="messageClicked = true"
                 (editStarted)="startEditing(message)"
                 (deleted)="deleteMessage(message)"
                 (editEnded)="message.transientState.editing = false"
