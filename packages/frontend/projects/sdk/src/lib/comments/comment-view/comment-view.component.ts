@@ -206,8 +206,6 @@ export class CommentViewComponent {
             } else {
                 console.log(`could not find key message`);
             }
-
-            return false;
         }
 
         return false;
