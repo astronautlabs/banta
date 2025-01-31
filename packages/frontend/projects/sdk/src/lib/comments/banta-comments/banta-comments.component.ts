@@ -641,17 +641,22 @@ export class BantaCommentsComponent {
             await this.threadView.loadMessageInContext(message);
 
             message = await thread.get(message.id);
-            message.transientState ??= {};
-            message.transientState.highlighted = true;
-            console.dir(message);
-            await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
 
+            if (message) {
+                message.transientState ??= {};
+                message.transientState.highlighted = true;
+                console.dir(message);
+                await new Promise<void>(r => setTimeout(r, 500));
+            }
         } else {
             // Make sure that this message is loaded and visible to the user
             await this.commentView.loadMessageInContext(message);
 
-            message.transientState ??= {};
-            message.transientState.highlighted = true;
+            message = await source.get(message.id);
+            if (message) {
+                message.transientState ??= {};
+                message.transientState.highlighted = true;
+            }
         }
 
         this.loadingSharedComment = false;
