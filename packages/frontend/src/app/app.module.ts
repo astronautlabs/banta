@@ -18,6 +18,7 @@ import { MockBackend } from './mock-backend';
 import { TryChatComponent } from './try-chat/try-chat.component';
 import { CDNProvider, DataURICDNProvider } from '@banta/common';
 import { ChatBackendBase } from 'projects/sdk/src/lib';
+import { environment } from '../environments/environment';
 
 
 @NgModule({
@@ -38,6 +39,7 @@ import { ChatBackendBase } from 'projects/sdk/src/lib';
     BrowserAnimationsModule,
     SaasModule,
     BantaSdkModule.configure({
+      serviceUrl: environment.bantaServiceUrl
       //backendClass: MockBackend
     })
   ],
