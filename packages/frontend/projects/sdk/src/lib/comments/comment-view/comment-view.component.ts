@@ -473,8 +473,6 @@ export class CommentViewComponent {
         // Note: Backend only supports fetching more content in one direction.
 
         let lastMessage = this.previousMessages[0] ?? this.messages[0];
-        if (!lastMessage)
-            this.hasMore = false;
 
         if (nextPageSize > 0 && this.newestLast && lastMessage) {
             this.isLoadingMore = true;
@@ -558,8 +556,6 @@ export class CommentViewComponent {
         }
 
         const lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
-        if (!lastMessage)
-            this.hasMore = false;
 
         if (nextPageSize > 0 && !this.newestLast && lastMessage) {
             // Load more from backend
@@ -617,11 +613,6 @@ export class CommentViewComponent {
             this.hasMore = this.olderMessages.length > 0;
         }
 
-        if (nextPageSize > 0) {
-            // Load more from backend
-
-            this.isLoadingMore = true;
-
             let lastMessage: ChatMessage;
 
             if (this.newestLast) {
@@ -629,6 +620,12 @@ export class CommentViewComponent {
             } else {
                 lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
             }
+
+        if (nextPageSize > 0 && lastMessage) {
+            // Load more from backend
+
+            this.isLoadingMore = true;
+
 
             if (!lastMessage) {
                 this.isLoadingMore = false;
@@ -663,19 +660,19 @@ export class CommentViewComponent {
 
         // Extract the messages that do not fit in the maxVisibleMessages buffer.
 
-        let overflow: ChatMessage[];
-        
-        if (this.newestLast)
-            overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
-        else
-            overflow = this.messages.splice(0, this.maxVisibleMessages);
+        if (this.messages.length > this.maxVisibleMessages) {
+            let overflow: ChatMessage[] = [];
+            if (this.newestLast)
+                overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
+            else
+                overflow = this.messages.splice(0, this.messages.length - this.maxVisibleMessages);
 
-        // Regardless of the order (newestLast), newMessages represents the direction that is being pushed, since it's definition
-        // depends on that order. Move overflowing messages into newMessages.
-        
-        this.newMessages = overflow.concat(this.newMessages);
-        this.newMessages.splice(this.maxMessages - this.maxVisibleMessages, this.newMessages.length);
-
+            // Regardless of the order (newestLast), newMessages represents the direction that is being pushed, since it's definition
+            // depends on that order. Move overflowing messages into newMessages.
+            
+            this.newMessages = overflow.concat(this.newMessages);
+            this.newMessages.splice(this.maxMessages - this.maxVisibleMessages, this.newMessages.length);
+        }
     }
 
     private heldMessages: ChatMessage[] = [];
