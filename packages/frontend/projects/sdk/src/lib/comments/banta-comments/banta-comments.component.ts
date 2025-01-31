@@ -184,6 +184,15 @@ export class BantaCommentsComponent {
 
         setTimeout(async () => {
             console.log(`[Banta/Comments] Subscribing to topic source '${topicID}'`);
+
+            // If we are loading a shared comment, we must override the mode to be Newest/All
+            // to ensure we can find the comment.
+
+            if (this.sharedCommentID) {
+                this._sortOrder = CommentsOrder.NEWEST;
+                this._filterMode = FilterMode.ALL;
+            }
+
             this.source = await this.backend.getSourceForTopic(topicID, { 
                 sortOrder: this.sortOrder, 
                 filterMode: this.filterMode,
