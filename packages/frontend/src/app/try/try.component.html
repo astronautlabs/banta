@@ -43,8 +43,9 @@
         #comments
         topicID="{{topicID}}_comments"
         [customMenuItems]="customMenuItems"
-        [maxVisibleMessages]="20"
         [maxMessages]="2000"
+        [maxVisibleMessages]="200"
+        [initialMessageCount]="20"
         [useInlineReplies]="useInlineReplies"
         (usernameSelected)="alert('Username was selected')"
         (userSelected)="alert('User (avatar or username) was selected')"
