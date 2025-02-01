@@ -254,7 +254,7 @@ export class SocketRPC<PeerT = Peer> {
 
     }
 
-    private async onReceiveMessage(message: RPCMessage) {
+    protected async onReceiveMessage(message: RPCMessage) {
         if (isRequest(message)) {
             if (this.getRpcType(message.method) === 'call' && typeof this[message.method] === 'function') {
                 let value;

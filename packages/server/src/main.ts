@@ -2,30 +2,47 @@ import "@alterior/platform-nodejs";
 import { Application } from "@alterior/runtime";
 import { WebService, Mount, Get, WebServerEngine, WebEvent, WebServer } from "@alterior/web-server";
 import { ExpressEngine } from '@alterior/express';
-
-WebServerEngine.default = ExpressEngine;
 import { CORSMiddleware } from "./cors";
 import { ChatModule } from "./chat.module";
 import { ChatController } from "./chat.controller";
 import { AuthorizableAction, ChatService, simpleMentionExtractor } from "./chat.service";
-import { ChatMessage, User } from "@banta/common";
+import { User } from "@banta/common";
+import { Logger, LoggingModule } from "@alterior/logging";
+import { inject } from "@alterior/di";
+
+WebServerEngine.default = ExpressEngine;
 
 globalThis.fetch = require('node-fetch');
 
+/**
+ * An example server implementation for Banta. 
+ * It's expected that the integrator implement their own web service class, you can 
+ * start from this one as an example.
+ */
 @WebService({
     server: {
         port: 3422,
-        middleware: [ CORSMiddleware ]
+        middleware: [ CORSMiddleware ],
+        requestReporterFilters: [
+            (event, source) => {
+                if (event.request['path'] === '/socket')
+                    return false;
+
+                return true;
+            }
+        ],
     },
+    silent: true,
     imports: [
-        ChatModule
+        ChatModule,
+        LoggingModule.configure({
+            listeners: [ ChatModule.CONSOLE_LOGGER ]
+        })
     ]
 })
 class BantaService {
-    constructor(
-        readonly chat: ChatService
-    ) {
-    }
+    readonly chat = inject(ChatService);
+    readonly logger = inject(Logger);
 
     altOnInit() {
         // this.chat.transformMessage = async (message: ChatMessage, action: 'post' | 'edit', previousMessage: string) => {
@@ -64,7 +81,8 @@ class BantaService {
                     throw new Error(`Not a valid token`);
                 }
 
-                console.log(`[!!] Demo authentication for token '${token}', user '${user.username}'`);
+                this.logger.warning(`Demo authentication for token '${token}', user '${user.username}'`);
+                
                 return user;
             }
             throw new Error(`The Banta integration must specify validateToken()`);

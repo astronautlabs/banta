@@ -11,16 +11,17 @@
     "build:cjs": "tsc -b",
     "build:esm": "tsc -b tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
-    "start": "npm run build && node dist/main",
+    "start": "npm run build && node --no-deprecation dist/main",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublishOnly": "npm run build"
   },
   "author": "Astronaut Labs, LLC",
   "license": "MIT",
   "peerDependencies": {
-    "@alterior/logging": "^3.9.0",
-    "@alterior/runtime": "^3.9.0",
-    "@alterior/web-server": "^3.9.0"
+    "@alterior/logging": "^3.11.1",
+    "@alterior/di": "^3.11.1",
+    "@alterior/runtime": "^3.11.1",
+    "@alterior/web-server": "^3.12.0"
   },
   "dependencies": {
     "@banta/common": "^2.7.2",
@@ -42,11 +43,11 @@
     "zone.js": "^0.14.8"
   },
   "devDependencies": {
-    "@alterior/express": "^3.9.0",
-    "@alterior/logging": "^3.9.0",
+    "@alterior/express": "^3.12.0",
+    "@alterior/logging": "^3.11.1",
     "@alterior/platform-nodejs": "^3.6.4",
-    "@alterior/runtime": "^3.9.0",
-    "@alterior/web-server": "^3.9.0",
+    "@alterior/runtime": "^3.11.1",
+    "@alterior/web-server": "^3.12.0",
     "@astronautlabs/jwt": "^1.1.0",
     "@types/dompurify": "^2.3.3",
     "@types/express": "^4.17.13",

@@ -8,18 +8,30 @@ import { BANTA_SDK_OPTIONS, SdkOptions } from "./sdk-options";
 import { PLATFORM_ID } from "@angular/core";
 import { isPlatformServer } from "@angular/common";
 import { StaticChatSource } from "./static-chat-source";
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class ChatBackend extends ChatBackendBase {
     private options = inject(BANTA_SDK_OPTIONS);
     private platformId = inject(PLATFORM_ID);
 
+    runId = uuid();
+
     get serviceUrl() {
         return `${this.options?.serviceUrl ?? 'http://localhost:3422'}`;
     }
 
     private async connectToService() {
-        let socket = new DurableSocket(`${this.serviceUrl.replace(/^http/, 'ws')}/socket`);
+        let deviceId = uuid();
+        if (typeof localStorage !== 'undefined') {
+            if (localStorage['banta-chat:deviceId']) {
+                deviceId = localStorage['banta-chat:deviceId'];
+            } else {
+                localStorage['banta-chat:deviceId'] = deviceId;
+            }
+        }
+
+        let socket = new DurableSocket(`${this.serviceUrl.replace(/^http/, 'ws')}/socket`, undefined, `${deviceId},${this.runId}`);
         await new Promise<void>((resolve, reject) => {
             socket.onopen = () => {
                 resolve();

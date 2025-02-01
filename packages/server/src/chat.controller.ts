@@ -1,13 +1,14 @@
-import { Body, Controller, Get, Post, QueryParam, WebEvent, WebServer } from "@alterior/web-server";
-import { Cache } from "@alterior/common";
-import { ChatService } from "./chat.service";
-import * as bodyParser from 'body-parser';
-import { HttpError } from "@alterior/common";
-import type * as express from 'express';
-import { ChatConnection } from "./chat-connection";
+import { Cache, HttpError } from "@alterior/common";
+import { inject } from '@alterior/di';
 import { Logger } from "@alterior/logging";
+import { Body, Controller, Get, Post, QueryParam, WebEvent, WebServer } from "@alterior/web-server";
+import { ChatMessage, CommentsOrder, FilterMode, Topic, UrlCard } from "@banta/common";
 import { v4 as uuid } from "uuid";
-import { CommentsOrder, FilterMode, UrlCard, Topic, ChatMessage } from "@banta/common";
+import { ChatConnection } from "./chat-connection";
+import { ChatService } from "./chat.service";
+
+import * as bodyParser from 'body-parser';
+import type * as express from 'express';
 import * as os from 'os';
 
 export interface SignInRequest {
@@ -19,10 +20,8 @@ export interface SignInRequest {
     middleware: [ bodyParser.json() ]
 })
 export class ChatController {
-    constructor(
-        private chat : ChatService
-    ) {
-    }
+    private chat = inject(ChatService);
+    private logger = inject(Logger);
 
     runId = uuid();
     serverId = os.hostname();
@@ -45,13 +44,48 @@ export class ChatController {
             });
         }
 
-        let conn = new ChatConnection(
-            this.chat, 
-            (WebEvent.request as express.Request).ip,
-            (WebEvent.request as express.Request).header('user-agent')
-        );
+        const ipAddress = (WebEvent.request as express.Request).ip;
+        const userAgent = (WebEvent.request as express.Request).header('user-agent');
+        const sessionId = String((WebEvent.request as express.Request).query['sessionId']);
 
-        conn.bind(await WebServer.startSocket());
+        const connectionId = WebEvent.current.requestId || uuid();
+        let prefix: string;
+        
+        let deviceId: string;
+        let deviceRunId: string;
+
+        if (sessionId) {
+            let parts = sessionId.split(',');
+
+            if (parts.length >= 2) {
+                deviceId = parts[0];
+                deviceRunId = parts[1];
+            } else {
+                deviceId = `-`;
+                deviceRunId = sessionId;
+            }
+        }
+
+        if (deviceId && deviceRunId)
+            prefix = `⚡ rpc  📱 ..${deviceId.slice(-6)}  🥾 ..${deviceRunId.slice(-6)}  🌍 ..${connectionId.slice(-6)} `;
+        else
+            prefix = `⚡ rpc  🌍 ..${connectionId.slice(-6)} `;
+
+        await this.logger.withContext({ ipAddress, userAgent, connectionId, sessionId }, prefix, async () => {
+            this.logger.info(`Connected: ${ipAddress || '<unknown>'}`);
+
+            if (process.env.BANTA_LOG_USER_AGENTS !== '0')
+                this.logger.info(`User agent: ${userAgent || '<none>'}`);
+
+            let conn = new ChatConnection(
+                connectionId,
+                this.chat, 
+                ipAddress,
+                userAgent,
+                this.logger
+            );
+            conn.bind(await WebServer.startSocket());
+        })
     }
 
     private topicsCache = new Cache<Topic>(1000 * 60 * 15, 5000);
