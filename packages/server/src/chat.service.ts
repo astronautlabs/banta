@@ -514,6 +514,7 @@ export class ChatService {
      * @param message 
      */
     notifyMessageChange(message: ChatMessage, type: 'create' | 'update') {
+        this.cacheMessage(message, type);
         this.pubsub.publish({ type, originId: this.originId, topicId: message.topicId, message });
     }
 
@@ -623,6 +624,8 @@ export class ChatService {
             type: 'edit',
             message
         });
+
+        return this.prepareMessage(message);
     }
 
     /**
@@ -679,14 +682,16 @@ export class ChatService {
             );
         });
 
-        await this.modifyMessageLikesCount(message, +1);
-        await this.pubsub.publish({ type: 'create', originId: this.originId, topicId: message.topicId, like });
-        this._events.next(<LikeEvent>{ type: 'like', message, user });
-
         // Add user to likers array (both locally and in DB)
+        // Important to do this before changing like count, so it gets synced to 
+        // other servers correctly.
 
         if (!message.likers.includes(user.id))
             message.likers.push(user.id);
+
+        // Update the likes count on the message for all clients and all servers
+        await this.modifyMessageLikesCount(message, +1);
+        this._events.next(<LikeEvent>{ type: 'like', message, user });
 
         setTimeout(() => {
             this.updateOne(this.messages, { id: message.id }, {
@@ -695,6 +700,8 @@ export class ChatService {
                 }
             });
         });
+        
+        await this.pubsub.publish({ type: 'create', originId: this.originId, topicId: message.topicId, like });
         
         return message;
     }
@@ -751,19 +758,8 @@ export class ChatService {
 
         await this.likes.deleteOne({ messageId: message.id, userId: user.id });
 
-        this.modifyMessageLikesCount(message, -1);
-        this.pubsub.publish({
-            type: 'update',
-            originId: this.originId,
-            topicId: message.topicId,
-            like: {
-                ...like,
-                liked: false
-            }
-        });
-        this._events.next(<UnlikeEvent>{ type: 'unlike', message, user });
-
-        // Remove user from likers array (locally and in DB)
+        // Remove user from likers array (locally and in DB) 
+        // Important to do this first so it gets synced to other servers
 
         if (message.likers.includes(user.id))
             message.likers = message.likers.filter(x => x !== user.id);
@@ -775,6 +771,20 @@ export class ChatService {
                 }
             });
         });
+
+        // Update the message's likes count for all clients and servers
+
+        this.modifyMessageLikesCount(message, -1);
+        this.pubsub.publish({
+            type: 'update',
+            originId: this.originId,
+            topicId: message.topicId,
+            like: {
+                ...like,
+                liked: false
+            }
+        });
+        this._events.next(<UnlikeEvent>{ type: 'unlike', message, user });
 
         return message;
     }
@@ -809,7 +819,7 @@ export class ChatService {
      * @returns 
      */
     async getMessage(messageOrId: ChatMessage | string, throwIfMissing = false) {
-        return await this.prepareMessage(await this.getUnpreparedMessage(messageOrId, throwIfMissing));
+        return this.prepareMessage(await this.getUnpreparedMessage(messageOrId, throwIfMissing));
     }
 
     /**
@@ -918,7 +928,7 @@ export class ChatService {
      */
     async getMessages(query: MessageQuery): Promise<ChatMessage[]> {
         let messages = await this.getUnpreparedMessages(query);
-        return await Promise.all(messages.map(async message => this.prepareMessage(message, query.userId)));
+        return messages.map(message => this.prepareMessage(message, query.userId));
     }
 
     /**
@@ -928,7 +938,7 @@ export class ChatService {
      * @param userId 
      * @returns 
      */
-    async prepareMessage(message: ChatMessage, userId?: string) {
+    prepareMessage(message: ChatMessage, userId?: string) {
         message = {
             ...message,
             userState: {
@@ -943,8 +953,7 @@ export class ChatService {
         delete message.user?.userAgent;
 
         if (userId) {
-            let like = await this.getLike(userId, message.id);
-            message.userState.liked = !!like;
+            message.userState.liked = (message.likers || []).includes(userId);
         }
 
         return message;

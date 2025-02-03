@@ -5,6 +5,7 @@ import * as mongodb from 'mongodb';
 import { Logger, LogOptions } from "@alterior/logging";
 import { v4 as uuid } from 'uuid';
 import { Subscription } from "rxjs";
+import { deepCopy } from "./deep-copy";
 
 export interface ChatPubSubEvent {
     message?: ChatMessage;
@@ -134,12 +135,12 @@ export class ChatConnection extends SocketRPC {
      * @param message 
      */
     private async sendChatMessage(message: ChatMessage) {
-        message = await this.prepareMessage(message);
+        message = this.prepareMessage(message);
         this.sendEvent('onChatMessage', message);
     }
 
-    private async prepareMessage(message: ChatMessage) {
-        message = Object.assign({}, message);
+    private prepareMessage(message: ChatMessage) {
+        message = deepCopy(message);
         message.userState = {
             liked: false
         };
@@ -151,8 +152,7 @@ export class ChatConnection extends SocketRPC {
         delete message.user?.userAgent;
 
         if (this.user) {
-            let like = await this.chat.getLike(this.user.id, message.id);
-            message.userState.liked = !!like;
+            message.userState.liked = (message.likers || []).includes(this.user.id);
         }
 
         return message;
@@ -177,8 +177,12 @@ export class ChatConnection extends SocketRPC {
      */
     @RpcCallable()
     async loadSince(id: string) {
+        
+        // TODO: this does not include paging information, which will break
+        // TODO: this does not prepare messages, which will break
+
         if (this.canUseCache) {
-            let cachedMessages = this.chat.getCachedMessages(this.topicId, this.parentMessage?.id);
+            let cachedMessages = this.chat.getCachedMessages(this.topicId, this.parentMessage?.id).map(x => this.prepareMessage(x));
             let existingIndex = cachedMessages.findIndex(x => x.id === id);
             
             if (existingIndex >= 0)
@@ -204,19 +208,19 @@ export class ChatConnection extends SocketRPC {
                 this.logInfo(`[Load More] Cache miss: Need to get ${count - results.length} more messages.`);
             }
 
-            results.push(...await Promise.all(
-                (
+            results.push(
+                ...(
                     await this.chat.messages.find(this.getFilter(), { 
                         sort: this.getSortOrder(),
                         skip: messageIndex + 1, // We add one here because the user already has the message at messageIndex
                         limit: Math.min(100, count - results.length)
-                    })
-                    .toArray()
-                )
-                .map((m, i) => (m.pagingCursor = String(messageIndex  + 1 + i), m))
-                .map(m => this.prepareMessage(m))
-            ));
+                    }).toArray()
+                ).map(m => this.prepareMessage(m))
+            );
         }
+
+        // Add paging information
+        results = results.map((m, i) => (m.pagingCursor = String(messageIndex  + 1 + i), m))
 
         let time = Date.now() - startedAt;
         this.logInfo(`... Returning ${results.length} / ${count} more messages to client (took ${time} ms)`);
@@ -249,7 +253,16 @@ export class ChatConnection extends SocketRPC {
             this.logError(`Error authenticating while attempting to edit message ${messageId || '<none>'}: '${e.message}' -- Content was: '${newText}'`);
             throw e;
         }
-        await this.chat.editMessage(message, newText);
+
+        let finalMessage = await this.chat.editMessage(message, newText);
+        
+        // TODO: we need to send the message back for backwards compatibility.
+        // In the future we should change the expectation so that only one copy of 
+        // the message is sent, in the response to this API call (instead of using sendChatMessage).
+        // This should hold true for all other interaction events such as like/unlike/edit etc.
+        this.sendChatMessage(finalMessage);
+
+        return this.prepareMessage(finalMessage);
     }
 
     sortOrder: CommentsOrder;
@@ -424,7 +437,7 @@ export class ChatConnection extends SocketRPC {
         
         
         if (this.canUseCache) {
-            results = this.chat.getCachedMessages(this.topicId, this.parentMessage?.id);
+            results = this.chat.getCachedMessages(this.topicId, this.parentMessage?.id).map(x => this.prepareMessage(x));
         }
 
         if (results.length < limit) {
@@ -560,7 +573,16 @@ export class ChatConnection extends SocketRPC {
         if (process.env.BANTA_LOG_MESSAGES !== '0') {
             this.logInfoAlways(`says: ${loggedMessage}`);
         }
-        return this.chat.postMessage(message);
+        
+        let finalMessage = await this.chat.postMessage(message);
+        
+        // TODO: we need to send the message back for backwards compatibility.
+        // In the future we should change the expectation so that only one copy of 
+        // the message is sent, in the response to this API call (instead of using sendChatMessage).
+        // This should hold true for all other interaction events such as like/unlike/edit etc.
+        this.sendChatMessage(finalMessage);
+
+        return this.prepareMessage(finalMessage);
     }
 
     @RpcCallable()
@@ -595,8 +617,8 @@ export class ChatConnection extends SocketRPC {
             this.logError(`Error authenticating while attempting to fetch message '${id}': ${e.message}`);
             throw e;
         }
-        message = await this.prepareMessage(message);
-        return message;
+
+        return this.prepareMessage(message);
     }
 
     @RpcCallable()
@@ -629,6 +651,8 @@ export class ChatConnection extends SocketRPC {
         message = await this.chat.like(message, this.user);
         if (message && this.ownsMessage(message))
             this.sendChatMessage(message);
+
+        return this.prepareMessage(message);
     }
 
     @RpcCallable()
@@ -660,5 +684,7 @@ export class ChatConnection extends SocketRPC {
         
         message = await this.chat.unlike(message, this.user);
         this.sendChatMessage(message);
+
+        return this.prepareMessage(message);
     }
 }

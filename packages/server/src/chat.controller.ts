@@ -38,14 +38,18 @@ export class ChatController {
         };
     }
 
+    prepareForCacheDisplay(x: ChatMessage) {
+        return ({ id: x.id, user: { username: x.user.username }, message: x.message });
+    }
+
     @Get('/cache/:topicID')
     async getTopicCache(topicID: string) {
-        return this.chat.getCachedMessages(topicID, undefined);
+        return this.chat.getCachedMessages(topicID, undefined).map(x => this.prepareForCacheDisplay(x));
     }
-    
+
     @Get('/cache/:topicID/:parentMessageId')
     async getReplyCache(topicID: string, parentMessageId: string) {
-        return this.chat.getCachedMessages(topicID, parentMessageId);
+        return this.chat.getCachedMessages(topicID, parentMessageId).map(x => this.prepareForCacheDisplay(x));
     }
 
     @Get('/socket')

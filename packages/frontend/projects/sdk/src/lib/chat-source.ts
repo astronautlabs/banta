@@ -265,9 +265,6 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         message.id ??= uuid();
         let finishedMessage = await this.idempotentPeer.sendMessage(message);
 
-        this.messageMap.set(finishedMessage.id, finishedMessage);
-        this._messageReceived.next(finishedMessage);
-
         return finishedMessage;
     }
 
