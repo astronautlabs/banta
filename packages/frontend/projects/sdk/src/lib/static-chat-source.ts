@@ -56,6 +56,10 @@ export class StaticChatSource implements ChatSourceBase {
         this.backend.getSourceCountForTopic(this.identifier);
     }
     
+    async loadSince(id: string) {
+        return undefined;
+    }
+
     async getExistingMessages() {
         if (this.parentIdentifier) {
             return await this.backend.getReplies(this.parentIdentifier, this.sortOrder, this.filterMode, 0, this.initialMessageCount);

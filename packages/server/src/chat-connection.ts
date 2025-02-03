@@ -156,24 +156,66 @@ export class ChatConnection extends SocketRPC {
 
     topic: Topic;
 
-    @RpcCallable()
-    async loadAfter(offset: number, count: number) {
-        let startedAt = Date.now();
-        this.logInfo(`Loading more messages (offset=${offset}, count=${count})`);
+    get canUseCache() {
+        return this.sortOrder === CommentsOrder.NEWEST && this.filterMode === FilterMode.ALL;
+    }
 
-        let results = await Promise.all(
-            (await this.chat.messages.find(this.getFilter(), { 
-                sort: this.getSortOrder(),
-                skip: offset + 1,
-                limit: Math.min(100, count)
-            })
-            .toArray())
-            .map((m, i) => (m.pagingCursor = String(offset + 1 + i), m))
-            .map(m => this.prepareMessage(m))
-        );
+    /**
+     * Load the messages that were sent after the previous disconnect, used for short disconnects.
+     * This only works in some scenarios where it is performant (namely cacheable cases like Newest/All)
+     * 
+     * Clients should not call this if the disconnect period was extensive (ie more than a few minutes).
+     * In that case it would be more efficient to just call getExistingMessages() directly.
+     * 
+     * TODO: this is not yet used
+     * 
+     * @param id 
+     */
+    @RpcCallable()
+    async loadSince(id: string) {
+        if (this.canUseCache) {
+            let cachedMessages = this.chat.getCachedMessages(this.topicId);
+            let existingIndex = cachedMessages.findIndex(x => x.id === id);
+            
+            if (existingIndex >= 0)
+                return cachedMessages.slice(0, existingIndex);
+        }
+
+        // Return undefined to signal the client to just reset using getExistingMessages() instead
+        return undefined;
+    }
+
+    @RpcCallable()
+    async loadAfter(messageIndex : number, count: number) {
+        let startedAt = Date.now();
+        this.logInfo(`Loading more messages (offset=${messageIndex + 1}, count=${count})`);
+
+        let results: ChatMessage[] = [];
+        if (this.canUseCache) {
+            results = this.chat.getCachedMessages(this.topicId, messageIndex + 1, count);
+        }
+
+        if (results.length < count) {
+            if (this.canUseCache) {
+                this.logInfo(`[Load More] Cache miss: Need to get ${count - results.length} more messages.`);
+            }
+
+            results.push(...await Promise.all(
+                (
+                    await this.chat.messages.find(this.getFilter(), { 
+                        sort: this.getSortOrder(),
+                        skip: messageIndex + 1, // We add one here because the user already has the message at messageIndex
+                        limit: Math.min(100, count - results.length)
+                    })
+                    .toArray()
+                )
+                .map((m, i) => (m.pagingCursor = String(messageIndex  + 1 + i), m))
+                .map(m => this.prepareMessage(m))
+            ));
+        }
 
         let time = Date.now() - startedAt;
-        this.logInfo(`... Returning ${results.length} more messages to client (took ${time} ms)`);
+        this.logInfo(`... Returning ${results.length} / ${count} more messages to client (took ${time} ms)`);
         return results;
     }
 
@@ -289,6 +331,7 @@ export class ChatConnection extends SocketRPC {
                 if (topicId != '-' && chatMessage.topicId !== topicId)
                     return;
                 
+                await this.chat.cacheMessage(chatMessage);
                 await this.sendChatMessage(chatMessage);
             } else if (message.like) {
                 // A like has just occurred
@@ -337,8 +380,11 @@ export class ChatConnection extends SocketRPC {
             if (this.topicId)
                 prefix += `#${this.topicId}`;
             if (this.user)
-                prefix += `@${this.user.username || this.user.id || '<unknown>'} `;
+                prefix += `@${this.user.username || this.user.id || '<unknown>'}`;
 
+            if (prefix)
+                prefix = `${prefix} `;
+            
             this.logger.log(`${prefix}${message}`, options);
         } catch (e) {
             // Fall back to logging directly to console. 
@@ -365,16 +411,41 @@ export class ChatConnection extends SocketRPC {
             throw new Error(`Invalid request: Maximum limit is 1000.`);
         }
 
-        let results = await this.chat.getMessages({
-            topicId: this.topicId,
-            parentMessageId: this.parentMessage?.id,
-            filter: this.filterMode,
-            sort: this.sortOrder,
-            userId: this.user?.id,
-            limit
-        });
+        let results: ChatMessage[] = [];
+        let cacheState = 'uncached';
+        
+        
+        if (this.canUseCache) {
+            results = this.chat.getCachedMessages(this.topicId);
+        }
 
-        this.logInfo(`... Sending ${results.length} existing messages (took ${Date.now() - startedAt} ms)`);
+        if (results.length < limit) {
+            if (this.canUseCache) {
+                cacheState = results.length > 0 ? 'partial' : `miss`;
+                this.logger.info(`[Existing Messages] Cache: Need to fetch ${limit - results.length} additional messages (state: ${cacheState})`);
+            }
+
+            let cachedCount = results.length;
+
+            results.push(...await this.chat.getMessages({
+                topicId: this.topicId,
+                parentMessageId: this.parentMessage?.id,
+                filter: this.filterMode,
+                sort: this.sortOrder,
+                userId: this.user?.id,
+                limit: limit - results.length,
+                offset: results.length
+            }));
+            if (results.length > cachedCount && this.canUseCache) {
+                await this.chat.cacheMessages(this.topicId, results);
+                cacheState = `filled`;
+            }
+        } else if (results.length > limit) {
+            results.splice(limit);
+            cacheState = 'hit';
+        }
+        
+        this.logInfo(`... Sending ${results.length} existing messages (took ${Date.now() - startedAt} ms, cache: ${cacheState})`);
 
         return results;
     }

@@ -162,6 +162,10 @@ export class MockSource implements ChatSourceBase {
         return undefined;
     }
     
+    async loadSince(id: string) {
+        return undefined;
+    }
+    
     async getExistingMessages(): Promise<ChatMessage[]> {
         return this.messages.slice(0, this.options.initialMessageCount);
     }

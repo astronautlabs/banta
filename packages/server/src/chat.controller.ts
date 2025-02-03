@@ -1,4 +1,4 @@
-import { Cache, HttpError } from "@alterior/common";
+import { HttpError } from "@alterior/common";
 import { inject } from '@alterior/di';
 import { Logger } from "@alterior/logging";
 import { Body, Controller, Get, Post, QueryParam, WebEvent, WebServer } from "@alterior/web-server";
@@ -10,6 +10,7 @@ import { ChatService } from "./chat.service";
 import * as bodyParser from 'body-parser';
 import type * as express from 'express';
 import * as os from 'os';
+import { Cache } from "./cache";
 
 export interface SignInRequest {
     email : string;
@@ -32,8 +33,14 @@ export class ChatController {
             service: `@banta/server`,
             serverId: this.serverId,
             runId: this.runId,
-            connections: this.chat.activeConnections
+            connections: this.chat.activeConnections,
+            cache: this.chat.getCacheStatus()
         };
+    }
+
+    @Get('/cache/:topicID')
+    async getCache(topicID: string) {
+        return this.chat.getCachedMessages(topicID);
     }
 
     @Get('/socket')
@@ -54,7 +61,7 @@ export class ChatController {
         let deviceId: string;
         let deviceRunId: string;
 
-        if (sessionId) {
+        if (sessionId && sessionId !== 'undefined') {
             let parts = sessionId.split(',');
 
             if (parts.length >= 2) {
@@ -88,7 +95,7 @@ export class ChatController {
         })
     }
 
-    private topicsCache = new Cache<Topic>(1000 * 60 * 15, 5000);
+    private topicsCache = new Cache<Topic>('topics', { timeToLive: 1000 * 60 * 15, maxItems: 5000 });
 
     @Get('/topics')
     async getTopics(@QueryParam('ids') idsString: string): Promise<Topic[]> {
@@ -201,7 +208,7 @@ export class ChatController {
         return this.chat.getMessages({ topicId: message.topicId, parentMessageId: id, sort, filter, offset, limit });
     }
 
-    private urlCardsCache = new Cache<UrlCard>(1000 * 60 * 15, 5000);
+    private urlCardsCache = new Cache<UrlCard>('urlCards', { timeToLive: 1000 * 60 * 15, maxItems: 5000 });
 
     @Post('/urls')
     async getUrlCard(@Body() body: { url: string }) {

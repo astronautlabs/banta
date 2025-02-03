@@ -103,6 +103,33 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         return message;
     }
 
+    /**
+     * Ask server for messages that have occurred since the message with the given ID.
+     * This is used during brief reconnects to avoid dropping messages, while also not 
+     * causing mobbing as everyone reconnects after an issue. The backend can choose to 
+     * not service this request, instead returning undefined. In that case, the client 
+     * is expected to fetch the existing messages and start state anew.
+     * 
+     * TODO: this is not yet used
+     * 
+     * @param id 
+     * @returns 
+     */
+    async loadSince(id: string): Promise<ChatMessage[]> {
+        try {
+            let messages = await this.idempotentPeer.loadSince(id);
+            if (messages) {
+                messages = this.mapOrUpdateMessages(messages);
+            }
+
+            return messages;
+        } catch (e) {
+            console.error(`[Banta/${this.identifier}] Error occurred while trying to get existing messages:`);
+            console.error(e);
+            return [];
+        }
+    }
+
     async getExistingMessages(): Promise<ChatMessage[]> {
         try {
             let messages = await this.idempotentPeer.getExistingMessages(this.options.initialMessageCount ?? 20);

@@ -1,5 +1,5 @@
-import { Injectable } from "@alterior/di";
-import { Cache } from "@alterior/common";
+import { inject, Injectable } from "@alterior/di";
+import { Cache } from "./cache";
 import { ChatMessage, CommentsOrder, FilterMode, UrlCard, User, Topic } from "@banta/common";
 import { Subject } from "rxjs";
 import * as mongodb from 'mongodb';
@@ -25,6 +25,11 @@ export interface PostMessageEvent extends ChatEvent {
 export interface EditMessageEvent extends ChatEvent {
     type: 'edit';
     message: ChatMessage;
+}
+
+interface RecentMessagesCache {
+    newest: ChatMessage[];
+    ids: Set<string>;
 }
 
 export interface MessageQuery {
@@ -150,6 +155,8 @@ export const simpleMentionExtractor = (linker: (username: string) => string): Me
 
 @Injectable()
 export class ChatService {
+    private logger = inject(Logger);
+
     constructor(
     ) {
         this.mongoClient = new mongodb.MongoClient(process.env.BANTA_DB_URL || process.env.MONGO_URL || 'mongodb://127.0.0.1:27017');
@@ -189,6 +196,17 @@ export class ChatService {
     readonly pubsubs: PubSubManager;
 
     activeConnections: number = 0;
+
+    getCacheStatus() {
+        let entries = Array.from(this.recentMessageTopicCache.getInternalEntries().values());
+        let messageCounts = entries.map(e => e.value.newest.length);
+
+        return {
+            topicCount: entries.length,
+            messageCount: messageCounts.reduce((x, a) => x + a, 0),
+            topics: Object.fromEntries(entries.map(e => [e.key, e.value.newest.length ]))
+        };
+    }
 
     /**
      * Handle validation of a token sent by the client, and resolution of that token into a User object.
@@ -310,7 +328,7 @@ export class ChatService {
         return await this.findOne(this.topics, { id });
     }
 
-    private topicCache = new Cache<Topic>(60_000, 100);
+    private topicCache = new Cache<Topic>('topics', { timeToLive: 60_000, maxItems: 100 });
 
     /**
      * Get or create a topic with the given identifier, using a cache.
@@ -908,6 +926,61 @@ export class ChatService {
 
     async getOrigin(origin: string) {
         return await this.findOne(this.origins, { origin });
+    }
+
+    private recentMessageTopicCache = new Cache<RecentMessagesCache>('recentMessageTopics', { timeToLive: 60*60*1000, maxItems: 100, deepCopy: false });
+    maxCachedMessagesPerTopic = 1000;
+
+    async cacheMessage(message: ChatMessage) {
+        let messageCache = await this.recentMessageTopicCache.fetch(message.topicId, async () => ({ newest: [], ids: new Set() }));
+        if (messageCache.ids.has(message.id)) {
+            messageCache.newest[messageCache.newest.findIndex(x => x.id === message.id)] = message;
+        } else {
+            messageCache.newest.unshift(message);
+            messageCache.ids.add(message.id);
+        }
+
+        this.trimRecentMessageCache(messageCache);
+    }
+
+    async cacheMessages(topicId: string, messages: ChatMessage[]) {
+        if (!topicId)
+            return;
+
+        this.logger.info(`Caching ${messages.length} messages for topic '${topicId}'`);
+
+        let messageCache = await this.recentMessageTopicCache.fetch(topicId, async () => ({ newest: [], ids: new Set() }));
+        messageCache.newest = messages.slice();
+        messageCache.ids.clear();
+        for (let message of messages)
+            messageCache.ids.add(message.id);
+        
+        this.trimRecentMessageCache(messageCache);
+    }
+
+    private trimRecentMessageCache(messageCache: RecentMessagesCache) {
+        for (let removed of messageCache.newest.splice(this.maxCachedMessagesPerTopic)) {
+            messageCache.ids.delete(removed.id);
+        }
+    }
+
+    getCachedMessages(topicId: string, offset = 0, limit = 0) {
+        this.logger
+        let cache = this.recentMessageTopicCache.get(topicId);
+        if (cache) {
+            let messages = cache.newest;
+            if (offset && limit)
+                messages = messages.slice(offset, offset + limit);
+            else if (offset)
+                messages = messages.slice(offset);
+            else if (limit)
+                messages = messages.slice(0, limit);
+            else
+                messages = messages.slice();
+
+            return messages;
+        }
+        return [];
     }
 
     async getUrlCard(url: string): Promise<UrlCard> {
