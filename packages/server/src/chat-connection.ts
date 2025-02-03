@@ -4,6 +4,7 @@ import { PubSub } from "./pubsub";
 import * as mongodb from 'mongodb';
 import { Logger, LogOptions } from "@alterior/logging";
 import { v4 as uuid } from 'uuid';
+import { Subscription } from "rxjs";
 
 export interface ChatPubSubEvent {
     message?: ChatMessage;
@@ -24,6 +25,8 @@ export class ChatConnection extends SocketRPC {
         this.logContextLabel = this.logger.contextLabel;
     }
 
+    private subs = new Subscription();
+
     userToken: string;
     user: User;
     topicId: string;
@@ -43,6 +46,7 @@ export class ChatConnection extends SocketRPC {
 
         socket.addEventListener('close', () => {
             this.chat.activeConnections -= 1;
+            this.subs.unsubscribe();
             this.logInfo(`Disconnected.`);
         });
         return await super.bind(socket);
@@ -174,7 +178,7 @@ export class ChatConnection extends SocketRPC {
     @RpcCallable()
     async loadSince(id: string) {
         if (this.canUseCache) {
-            let cachedMessages = this.chat.getCachedMessages(this.topicId);
+            let cachedMessages = this.chat.getCachedMessages(this.topicId, this.parentMessage?.id);
             let existingIndex = cachedMessages.findIndex(x => x.id === id);
             
             if (existingIndex >= 0)
@@ -192,7 +196,7 @@ export class ChatConnection extends SocketRPC {
 
         let results: ChatMessage[] = [];
         if (this.canUseCache) {
-            results = this.chat.getCachedMessages(this.topicId, messageIndex + 1, count);
+            results = this.chat.getCachedMessages(this.topicId, this.parentMessage?.id, messageIndex + 1, count);
         }
 
         if (results.length < count) {
@@ -319,35 +323,39 @@ export class ChatConnection extends SocketRPC {
 
         await this.sendPermissions();
 
-        this.pubsub = new PubSub<ChatPubSubEvent>(this.chat.pubsubs, topicId === '-' ? null : topicId);
-        this.pubsub.subscribe(async message => {
-            if (message.message) {
-                // A message has been created/updated
+        this.subs.add(this.chat.messageChangedRemotely.subscribe(async message => {
+            if (message.topicId !== this.topicId)
+                return;
 
-                let chatMessage = message.message;
-                if (!this.ownsMessage(chatMessage))
-                    return;
+            // A message has been created/updated
 
-                if (topicId != '-' && chatMessage.topicId !== topicId)
-                    return;
+            let chatMessage = message;
+            if (!this.ownsMessage(chatMessage))
+                return;
+
+            if (topicId != '-' && chatMessage.topicId !== topicId)
+                return;
+            
+            await this.sendChatMessage(chatMessage);
+
+        }));
+
+        this.subs.add(this.chat.likeChangedRemotely.subscribe(async like => {
+            if (like.topicId !== this.topicId)
+                return;
+
+            // A like has just occurred
+
+            if (this.user?.id === like.userId) {
+                // This like is for _us_
+                // Send an updated message down to the client so it knows that it has liked a message.
+
+                let message = await this.chat.getUnpreparedMessage(like.messageId);
                 
-                await this.chat.cacheMessage(chatMessage);
-                await this.sendChatMessage(chatMessage);
-            } else if (message.like) {
-                // A like has just occurred
-                let like = message.like;
-
-                if (this.user?.id === like.userId) {
-                    // This like is for _us_
-                    // Send an updated message down to the client so it knows that it has liked a message.
-
-                    let message = await this.chat.getUnpreparedMessage(like.messageId);
-                    
-                    if (message && this.ownsMessage(message))
-                        this.sendChatMessage(message);
-                }
+                if (message && this.ownsMessage(message))
+                    this.sendChatMessage(message);
             }
-        });
+        }));
     }
 
     private ownsMessage(chatMessage: ChatMessage, allowSubMessages = false) {
@@ -416,7 +424,7 @@ export class ChatConnection extends SocketRPC {
         
         
         if (this.canUseCache) {
-            results = this.chat.getCachedMessages(this.topicId);
+            results = this.chat.getCachedMessages(this.topicId, this.parentMessage?.id);
         }
 
         if (results.length < limit) {
@@ -436,10 +444,20 @@ export class ChatConnection extends SocketRPC {
                 limit: limit - results.length,
                 offset: results.length
             }));
-            if (results.length > cachedCount && this.canUseCache) {
-                await this.chat.cacheMessages(this.topicId, results);
-                cacheState = `filled`;
+
+            // Backfill these messages from MongoDB into the local cache. 
+            // This feature is disabled by default as there are race conditions 
+            // which may cause ordering problems, and existing message fetches 
+            // on MongoDB are mainly slow when there are a large amount of writes
+            // (at least that's the theory).
+
+            if (process.env.BANTA_BACKFILL_CACHES === '1') {
+                if (results.length > cachedCount && this.canUseCache) {
+                    await this.chat.cacheMessages(this.topicId, results);
+                    cacheState = `filled`;
+                }
             }
+
         } else if (results.length > limit) {
             results.splice(limit);
             cacheState = 'hit';
@@ -608,7 +626,9 @@ export class ChatConnection extends SocketRPC {
             throw e;
         }
 
-        await this.chat.like(message, this.user);
+        message = await this.chat.like(message, this.user);
+        if (message && this.ownsMessage(message))
+            this.sendChatMessage(message);
     }
 
     @RpcCallable()
@@ -637,6 +657,8 @@ export class ChatConnection extends SocketRPC {
             this.logError(`Error authenticating while attempting to unlike message '${id}': ${e.message}`);
             throw e;
         }
-        await this.chat.unlike(message, this.user);
+        
+        message = await this.chat.unlike(message, this.user);
+        this.sendChatMessage(message);
     }
 }

@@ -72,7 +72,7 @@ export class PubSub<T> {
             this._messageSubject = subject;
             this._subscription = this.manager.messages.subscribe((ev: { channel: string, message: any }) => {
                 if (!this.id || ev.channel == this.id)
-                    subject.next(ev.message);
+                    subject.next(JSON.parse(ev.message));
             });
         },
         stop: () => {

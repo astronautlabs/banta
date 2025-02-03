@@ -39,8 +39,13 @@ export class ChatController {
     }
 
     @Get('/cache/:topicID')
-    async getCache(topicID: string) {
-        return this.chat.getCachedMessages(topicID);
+    async getTopicCache(topicID: string) {
+        return this.chat.getCachedMessages(topicID, undefined);
+    }
+    
+    @Get('/cache/:topicID/:parentMessageId')
+    async getReplyCache(topicID: string, parentMessageId: string) {
+        return this.chat.getCachedMessages(topicID, parentMessageId);
     }
 
     @Get('/socket')

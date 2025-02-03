@@ -21,7 +21,7 @@ globalThis.fetch = require('node-fetch');
  */
 @WebService({
     server: {
-        port: 3422,
+        port: Number(process.env.BANTA_PORT || 3422),
         middleware: [ CORSMiddleware ],
         requestReporterFilters: [
             (event, source) => {

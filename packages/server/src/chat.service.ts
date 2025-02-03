@@ -5,7 +5,7 @@ import { Subject } from "rxjs";
 import * as mongodb from 'mongodb';
 import * as ioredis from 'ioredis';
 import IORedis from 'ioredis';
-import { PubSubManager } from "./pubsub";
+import { PubSub, PubSubManager } from "./pubsub";
 import { v4 as uuid } from 'uuid';
 import createDOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom';
@@ -152,10 +152,20 @@ export const simpleMentionExtractor = (linker: (username: string) => string): Me
     };
 }
 
+export interface ChatPubSubEvent {
+    type: 'create' | 'update';
+    originId: string;
+    topicId: string;
+    message?: ChatMessage;
+    like?: Like;
+}
+
 
 @Injectable()
 export class ChatService {
     private logger = inject(Logger);
+
+    originId = uuid();
 
     constructor(
     ) {
@@ -187,13 +197,34 @@ export class ChatService {
             Logger.current.error(`[Banta/ChatService] Redis error: ${err.stack || err.message || err}`);
         });
 
+        this.logger.info(`Connecting to Redis pubsub`);
         this.pubsubs = new PubSubManager(this.redis);
+        this.pubsub = new PubSub<ChatPubSubEvent>(this.pubsubs, "bantaMessages", false);
+        this.pubsub.messages.subscribe(async event => {
+            if (event.originId === this.originId)
+                return;
+
+            if (event.message) {
+                this._messageChangedRemotely.next(event.message);
+                await this.cacheMessage(event.message, event.type);
+            }
+
+            if (event.like)
+                this._likeChangedRemotely.next({ ...event.like, topicId: event.topicId });
+        });
     }
 
     readonly redis: ioredis.Redis;
     readonly mongoClient: mongodb.MongoClient;
     readonly db: mongodb.Db;
     readonly pubsubs: PubSubManager;
+    readonly pubsub: PubSub<ChatPubSubEvent>;
+
+    private _messageChangedRemotely = new Subject<ChatMessage>();
+    readonly messageChangedRemotely = this._messageChangedRemotely.asObservable();
+    
+    private _likeChangedRemotely = new Subject<Like & { topicId: string }>();
+    readonly likeChangedRemotely = this._likeChangedRemotely.asObservable();
 
     activeConnections: number = 0;
 
@@ -426,11 +457,11 @@ export class ChatService {
                     }
                 });
                 let updatedParentMessage = await this.getUnpreparedMessage(parentMessage.id, true);
-                this.notifyMessageChange(updatedParentMessage);
+                this.notifyMessageChange(updatedParentMessage, 'update');
             }
         });
 
-        this.notifyMessageChange(message);
+        this.notifyMessageChange(message, 'create');
         this._events.next(<PostMessageEvent>{ type: 'post', message });
 
         return message;
@@ -460,7 +491,7 @@ export class ChatService {
         let message = await this.getUnpreparedMessage(messageOrId, true);
         message.submessageCount = (message.submessageCount || 0) + delta;
         this.updateOne(this.messages, { id: message.id }, { $inc: { submessageCount: delta } });
-        this.notifyMessageChange(message);
+        this.notifyMessageChange(message, 'update');
     }
 
     /**
@@ -474,7 +505,7 @@ export class ChatService {
         let message = await this.getUnpreparedMessage(messageOrId, true);
         message.likes += delta;
         await this.updateOne(this.messages, { id: message.id }, { $inc: { likes: delta } });
-        this.notifyMessageChange(message);
+        this.notifyMessageChange(message, 'update');
         return message;
     }
 
@@ -482,8 +513,8 @@ export class ChatService {
      * Notify all interested clients that the given message has created/updated.
      * @param message 
      */
-    notifyMessageChange(message: ChatMessage) {
-        this.pubsubs.publish(message.topicId, { message });
+    notifyMessageChange(message: ChatMessage, type: 'create' | 'update') {
+        this.pubsub.publish({ type, originId: this.originId, topicId: message.topicId, message });
     }
 
     /**
@@ -535,7 +566,7 @@ export class ChatService {
 
         // Notify all listeners of the change to this method.
 
-        this.notifyMessageChange(message);
+        this.notifyMessageChange(message, 'update');
     }
 
     /**
@@ -586,7 +617,7 @@ export class ChatService {
         });
 
         message.message = newText;
-        this.pubsubs.publish(message.topicId, { message });
+        this.pubsub.publish({ type: 'update', originId: this.originId, topicId: message.topicId, message });
 
         this._events.next(<EditMessageEvent>{
             type: 'edit',
@@ -649,8 +680,13 @@ export class ChatService {
         });
 
         await this.modifyMessageLikesCount(message, +1);
-        await this.pubsubs.publish(message.topicId, { like });
+        await this.pubsub.publish({ type: 'create', originId: this.originId, topicId: message.topicId, like });
         this._events.next(<LikeEvent>{ type: 'like', message, user });
+
+        // Add user to likers array (both locally and in DB)
+
+        if (!message.likers.includes(user.id))
+            message.likers.push(user.id);
 
         setTimeout(() => {
             this.updateOne(this.messages, { id: message.id }, {
@@ -659,6 +695,8 @@ export class ChatService {
                 }
             });
         });
+        
+        return message;
     }
 
     private async findOne<T>(collection: mongodb.Collection<T>, criteria: mongodb.Filter<T>) {
@@ -714,13 +752,22 @@ export class ChatService {
         await this.likes.deleteOne({ messageId: message.id, userId: user.id });
 
         this.modifyMessageLikesCount(message, -1);
-        this.pubsubs.publish(message.topicId, {
+        this.pubsub.publish({
+            type: 'update',
+            originId: this.originId,
+            topicId: message.topicId,
             like: {
                 ...like,
                 liked: false
             }
         });
         this._events.next(<UnlikeEvent>{ type: 'unlike', message, user });
+
+        // Remove user from likers array (locally and in DB)
+
+        if (message.likers.includes(user.id))
+            message.likers = message.likers.filter(x => x !== user.id);
+
         setTimeout(() => {
             this.updateOne(this.messages, { id: message.id }, {
                 $pull: {
@@ -728,6 +775,8 @@ export class ChatService {
                 }
             });
         });
+
+        return message;
     }
 
     /**
@@ -928,16 +977,34 @@ export class ChatService {
         return await this.findOne(this.origins, { origin });
     }
 
-    private recentMessageTopicCache = new Cache<RecentMessagesCache>('recentMessageTopics', { timeToLive: 60*60*1000, maxItems: 100, deepCopy: false });
+    /**
+     * Stores recently sent messages in an LRU cache so that we can read from it when getting existing 
+     * messages during client start and also when fetching additional pages of messages during paging.
+     */
+    private recentMessageTopicCache = new Cache<RecentMessagesCache>('recentMessageTopics', { 
+        timeToLive: 60*60*1000, 
+        maxItems: 100, 
+        evictionStrategy: 'lru',
+        deepCopy: false 
+    });
+
     maxCachedMessagesPerTopic = 1000;
 
-    async cacheMessage(message: ChatMessage) {
+    private async cacheMessage(message: ChatMessage, type: 'create' | 'update') {
+        if (message.parentMessageId)
+            return;
+
         let messageCache = await this.recentMessageTopicCache.fetch(message.topicId, async () => ({ newest: [], ids: new Set() }));
         if (messageCache.ids.has(message.id)) {
             messageCache.newest[messageCache.newest.findIndex(x => x.id === message.id)] = message;
         } else {
-            messageCache.newest.unshift(message);
-            messageCache.ids.add(message.id);
+            // Only add this message to the cached set if it is being created.
+            // Updated messages are handled above, and if an updated message has fallen out of 
+            // the message cache, we don't want to add it in as if it is new.
+            if (type === 'create') {
+                messageCache.newest.unshift(message);
+                messageCache.ids.add(message.id);
+            }
         }
 
         this.trimRecentMessageCache(messageCache);
@@ -964,7 +1031,7 @@ export class ChatService {
         }
     }
 
-    getCachedMessages(topicId: string, offset = 0, limit = 0) {
+    getCachedMessages(topicId: string, parentMessageId: string, offset = 0, limit = 0) {
         this.logger
         let cache = this.recentMessageTopicCache.get(topicId);
         if (cache) {

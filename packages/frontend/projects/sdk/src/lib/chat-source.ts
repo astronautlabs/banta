@@ -263,7 +263,12 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     async send(message: ChatMessage): Promise<ChatMessage> {
         await this.ensureConnection();
         message.id ??= uuid();
-        return await this.idempotentPeer.sendMessage(message);
+        let finishedMessage = await this.idempotentPeer.sendMessage(message);
+
+        this.messageMap.set(finishedMessage.id, finishedMessage);
+        this._messageReceived.next(finishedMessage);
+
+        return finishedMessage;
     }
 
     async loadAfter(message: ChatMessage, count: number): Promise<ChatMessage[]> {
