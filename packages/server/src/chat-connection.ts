@@ -161,7 +161,7 @@ export class ChatConnection extends SocketRPC {
     topic: Topic;
 
     get canUseCache() {
-        return this.sortOrder === CommentsOrder.NEWEST && this.filterMode === FilterMode.ALL;
+        return this.sortOrder === CommentsOrder.NEWEST && this.filterMode === FilterMode.ALL && !this.parentMessage;
     }
 
     /**

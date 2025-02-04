@@ -1041,7 +1041,9 @@ export class ChatService {
     }
 
     getCachedMessages(topicId: string, parentMessageId: string, offset = 0, limit = 0) {
-        this.logger
+        if (parentMessageId)
+            return [];
+
         let cache = this.recentMessageTopicCache.get(topicId);
         if (cache) {
             let messages = cache.newest;
