@@ -1,17 +1,19 @@
 import { inject, Injectable } from "@alterior/di";
-import { Cache } from "./cache";
-import { ChatMessage, CommentsOrder, FilterMode, UrlCard, User, Topic } from "@banta/common";
-import { Subject } from "rxjs";
-import * as mongodb from 'mongodb';
-import * as ioredis from 'ioredis';
-import IORedis from 'ioredis';
-import { PubSub, PubSubManager } from "./pubsub";
-import { v4 as uuid } from 'uuid';
-import createDOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
-import sanitizeHtml from 'sanitize-html';
 import { Logger } from '@alterior/logging';
-import * as fs from 'fs';
+import { RolesService } from "@alterior/runtime";
+import { ChatMessage, CommentsOrder, FilterMode, Topic, UrlCard, User } from "@banta/common";
+import { JSDOM } from 'jsdom';
+import { Subject } from "rxjs";
+import { v4 as uuid } from 'uuid';
+import { Cache } from "./cache";
+import { PubSub, PubSubManager } from "./pubsub";
+
+import createDOMPurify from 'dompurify';
+import IORedis from 'ioredis';
+import sanitizeHtml from 'sanitize-html';
+
+import * as ioredis from 'ioredis';
+import * as mongodb from 'mongodb';
 
 export interface ChatEvent {
     type: 'post' | 'edit' | 'like' | 'unlike' | 'delete';
@@ -164,11 +166,25 @@ export interface ChatPubSubEvent {
 @Injectable()
 export class ChatService {
     private logger = inject(Logger);
+    private roles = inject(RolesService);
 
     originId = uuid();
 
-    constructor(
-    ) {
+    constructor() {
+        this.roles.registerRole({
+            identifier: 'banta-chat',
+            name: 'Banta Chat Services',
+            summary: 'Acts as a Banta Chat Services cluster member',
+            enabledByDefault: true,
+            start: async () => this.start(),
+            stop: async () => this.stop()
+        })
+    }
+
+    private running = false;
+
+    private start() {
+        this.running = true;
         this.mongoClient = new mongodb.MongoClient(process.env.BANTA_DB_URL || process.env.MONGO_URL || 'mongodb://127.0.0.1:27017');
         this.mongoClient.addListener('topologyClosed', () => {
             Logger.current.error(`MongoDB topology was closed. Exiting.`);
@@ -214,11 +230,18 @@ export class ChatService {
         });
     }
 
-    readonly redis: ioredis.Redis;
-    readonly mongoClient: mongodb.MongoClient;
-    readonly db: mongodb.Db;
-    readonly pubsubs: PubSubManager;
-    readonly pubsub: PubSub<ChatPubSubEvent>;
+    private stop() {
+        this.running = false;
+        this.mongoClient.close();
+        this.redis.disconnect();
+        this.pubsubs.disconnect();
+    }
+
+    private redis: ioredis.Redis;
+    private mongoClient: mongodb.MongoClient;
+    private db: mongodb.Db;
+    private pubsubs: PubSubManager;
+    private pubsub: PubSub<ChatPubSubEvent>;
 
     private _messageChangedRemotely = new Subject<ChatMessage>();
     readonly messageChangedRemotely = this._messageChangedRemotely.asObservable();
@@ -227,6 +250,11 @@ export class ChatService {
     readonly likeChangedRemotely = this._likeChangedRemotely.asObservable();
 
     activeConnections: number = 0;
+
+    private guardRunning() {
+        if (!this.running)
+            throw new Error(`Banta Chat Services must be running to perform this action.`);
+    }
 
     getCacheStatus() {
         let entries = Array.from(this.recentMessageTopicCache.getInternalEntries().values());
@@ -304,27 +332,27 @@ export class ChatService {
     /**
      * The MongoDB `messages` collection
      */
-    get messages() { return this.db.collection<ChatMessage>('messages'); }
+    get messages() { this.guardRunning(); return this.db.collection<ChatMessage>('messages'); }
 
     /**
      * The MongoDB `urlCards` collection
      */
-    private get urlCards() { return this.db.collection<PersistedUrlCard>('urlCards'); }
+    private get urlCards() { this.guardRunning(); return this.db.collection<PersistedUrlCard>('urlCards'); }
 
     /**
      * The MongoDB `origins` collection
      */
-    private get origins() { return this.db.collection<UrlOrigin>('origins'); }
+    private get origins() { this.guardRunning(); return this.db.collection<UrlOrigin>('origins'); }
 
     /**
      * The MongoDB `topics` collection
      */
-    private get likes() { return this.db.collection<Like>('likes'); }
+    private get likes() { this.guardRunning(); return this.db.collection<Like>('likes'); }
 
     /**
      * The MongoDB `topics` collection
      */
-    private get topics() { return this.db.collection<Topic>('topics'); }
+    private get topics() { this.guardRunning(); return this.db.collection<Topic>('topics'); }
 
     private _events = new Subject<ChatEvent>();
 
@@ -341,6 +369,8 @@ export class ChatService {
      * @returns 
      */
     async getOrCreateTopic(topicOrId: Topic | string): Promise<Topic> {
+        this.guardRunning(); 
+
         if (typeof topicOrId === 'object')
             return topicOrId;
 
@@ -367,6 +397,8 @@ export class ChatService {
      * @returns 
      */
     async getOrCreateTopicCached(topicOrId: Topic | string): Promise<Topic> {
+        this.guardRunning(); 
+
         if (typeof topicOrId === 'object')
             return topicOrId;
 
@@ -394,6 +426,8 @@ export class ChatService {
      * @returns 
      */
     async postMessage(message: ChatMessage) {
+        this.guardRunning(); 
+
         if (!message.id) {
             message.id = uuid();
         } else {
@@ -475,6 +509,8 @@ export class ChatService {
      * @returns 
      */
     async modifyTopicMessageCount(topicOrId: Topic | string, delta: number) {
+        this.guardRunning(); 
+
         let topic = await this.getOrCreateTopic(topicOrId);
         topic.messageCount += delta;
         await this.updateOne(this.topics, { id: topic.id }, { $inc: { messageCount: delta } });
@@ -488,6 +524,8 @@ export class ChatService {
      * @returns 
      */
     async modifySubmessageCount(messageOrId: ChatMessage | string, delta: number) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         message.submessageCount = (message.submessageCount || 0) + delta;
         this.updateOne(this.messages, { id: message.id }, { $inc: { submessageCount: delta } });
@@ -502,6 +540,8 @@ export class ChatService {
      * @returns 
      */
     async modifyMessageLikesCount(messageOrId: string | ChatMessage, delta: number) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         message.likes += delta;
         await this.updateOne(this.messages, { id: message.id }, { $inc: { likes: delta } });
@@ -514,6 +554,8 @@ export class ChatService {
      * @param message 
      */
     notifyMessageChange(message: ChatMessage, type: 'create' | 'update') {
+        this.guardRunning(); 
+
         this.cacheMessage(message, type);
         this.pubsub.publish({ type, originId: this.originId, topicId: message.topicId, message });
     }
@@ -525,6 +567,8 @@ export class ChatService {
      * @returns 
      */
     async setMessageHiddenStatus(messageOrId: ChatMessage | string, hidden: boolean) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         if (message.hidden === hidden || message.deleted)
             return;
@@ -576,6 +620,8 @@ export class ChatService {
      * @returns The number of actual visible submessages
      */
     async countVisibleSubMessages(parentMessageId: string): Promise<number> {
+        this.guardRunning(); 
+
         return await this.messages.countDocuments({
             parentMessageId,
             $or: [
@@ -591,6 +637,8 @@ export class ChatService {
      * @param newText 
      */
     async editMessage(messageOrId: string | ChatMessage, newText: string) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         let previousText = message.message;
         message.message = newText;
@@ -637,6 +685,8 @@ export class ChatService {
      * @param messageOrId 
      */
     async deleteMessage(messageOrId: ChatMessage | string) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         await this.setMessageHiddenStatus(message.id, true);
 
@@ -650,6 +700,8 @@ export class ChatService {
     }
 
     async getLike(userId: string, messageId: string) {
+        this.guardRunning(); 
+
         return await this.findOne(this.likes, { messageId, userId });
     }
 
@@ -660,6 +712,8 @@ export class ChatService {
      * @returns 
      */
     async like(message: ChatMessage, user: User) {
+        this.guardRunning(); 
+        
         if (!message)
             throw new Error(`Message cannot be null`);
 
@@ -749,6 +803,8 @@ export class ChatService {
      * @returns 
      */
     async unlike(message: ChatMessage, user: User) {
+        this.guardRunning(); 
+
         if (!message)
             throw new Error(`Message cannot be null`);
 
@@ -797,6 +853,8 @@ export class ChatService {
      * @returns 
      */
     async getUnpreparedMessage(messageOrId: ChatMessage | string, throwIfMissing = false) {
+        this.guardRunning(); 
+
         if (typeof messageOrId !== 'string')
             return messageOrId;
 
@@ -819,6 +877,8 @@ export class ChatService {
      * @returns 
      */
     async getMessage(messageOrId: ChatMessage | string, throwIfMissing = false) {
+        this.guardRunning(); 
+
         return this.prepareMessage(await this.getUnpreparedMessage(messageOrId, throwIfMissing));
     }
 
@@ -895,6 +955,8 @@ export class ChatService {
      * @returns 
      */
     async getUnpreparedMessages(query: MessageQuery): Promise<ChatMessage[]> {
+        this.guardRunning(); 
+
         query = {
             sort: CommentsOrder.NEWEST,
             filter: FilterMode.ALL,
@@ -927,6 +989,8 @@ export class ChatService {
      * @returns 
      */
     async getMessages(query: MessageQuery): Promise<ChatMessage[]> {
+        this.guardRunning(); 
+
         let messages = await this.getUnpreparedMessages(query);
         return messages.map(message => this.prepareMessage(message, query.userId));
     }
@@ -967,6 +1031,8 @@ export class ChatService {
      * @returns 
      */
     async getTopic(topicOrId: string | Topic, throwIfMissing = false) {
+        this.guardRunning(); 
+
         if (typeof topicOrId !== 'string')
             return topicOrId;
 
@@ -983,6 +1049,8 @@ export class ChatService {
     }
 
     async getOrigin(origin: string) {
+        this.guardRunning(); 
+
         return await this.findOne(this.origins, { origin });
     }
 
@@ -1062,6 +1130,8 @@ export class ChatService {
     }
 
     async getUrlCard(url: string): Promise<UrlCard> {
+        this.guardRunning(); 
+
         let urlCard = <PersistedUrlCard>await this.findOne(this.urlCards, { url });
         const URL_CARD_TIMEOUT = 1000 * 60 * 15;
         if (urlCard && urlCard.retrievedAt + URL_CARD_TIMEOUT > Date.now())

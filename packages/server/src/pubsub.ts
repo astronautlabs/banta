@@ -19,6 +19,10 @@ export class PubSubManager {
         });
     }
 
+    disconnect() {
+        this.subscriber.disconnect();
+    }
+
     subscriber : ioredis.Redis | ioredis.Cluster;
     private _listener = (channel, message) => {
         this._messageSubject.next({ channel, message: JSON.parse(message) });
