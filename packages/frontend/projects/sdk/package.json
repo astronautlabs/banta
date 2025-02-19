@@ -15,8 +15,6 @@
     "@angular/platform-browser": "^16 || ^17 || ^18",
     "@angular/platform-browser-dynamic": "^16 || ^17 || ^18",
     "@angular/router": "^16 || ^17 || ^18",
-    "@astronautlabs/datastore": "^3.1.2",
-    "@astronautlabs/datastore-firestore": "^3.1.2",
     "@banta/common": "^2.8.0",
     "@types/dompurify": "^3.0.5",
     "dompurify": "^3.1.5",
