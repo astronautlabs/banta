@@ -11,6 +11,9 @@ export interface EditEvent {
     newMessage: string;
 }
 
+const DEFAULT_MAX_MESSAGES = 2000;
+const DEFAULT_MAX_VISIBLE_MESSAGES = 200;
+
 @Component({
     selector: 'banta-comment-view',
     templateUrl: './comment-view.component.html',
@@ -74,8 +77,16 @@ export class CommentViewComponent {
     //#endregion
     //#region Inputs
 
-    @Input() maxMessages = 2000;
-    @Input() maxVisibleMessages: number = 200;
+    private _maxMessages: number;
+    @Input()
+    set maxMessages(value) { this._maxMessages = value; }
+    get maxMessages() { return this._maxMessages ?? DEFAULT_MAX_MESSAGES; }
+
+    private _maxVisibleMessages: number;
+    @Input() 
+    set maxVisibleMessages(value) { this._maxVisibleMessages = value; }
+    get maxVisibleMessages() { return this._maxVisibleMessages ?? DEFAULT_MAX_VISIBLE_MESSAGES; }
+
     @Input() newestLast = false;
     @Input() holdNewMessages = false;
     @Input() showEmptyState = true;
@@ -149,7 +160,6 @@ export class CommentViewComponent {
             return false;
         }
 
-        let pageSize = this.maxVisibleMessages;
         let items = [].concat(this.olderMessages, this.messages, this.newMessages);
         let index = items.findIndex(x => x.id === message.id);
 
@@ -158,9 +168,9 @@ export class CommentViewComponent {
             return false;
         }
 
-        let startIndex = Math.max(0, index - pageSize / 2);        
+        let startIndex = Math.max(0, index - this.maxVisibleMessages / 2);
         this.newMessages = items.splice(0, startIndex);
-        this.messages = items.splice(0, pageSize);
+        this.messages = items.splice(0, this.maxVisibleMessages);
         this.olderMessages = items;
         this.isViewingMore = true;
     }
@@ -454,13 +464,16 @@ export class CommentViewComponent {
     }
 
     get pageSize() {
-        return Math.min(20, this.maxVisibleMessages);
+        return Math.min(20, this.maxVisibleMessages || 20);
     }
 
     async showPrevious() {
         this.isViewingMore = true;
         let nextPageSize = this.pageSize;
         this.isLoadingMore = false;
+
+        if (isNaN(nextPageSize))
+            throw new Error(`Not safe to load more with NaN page size`);
 
         if (this.previousMessages.length > 0) {
             const storedMessages = this.previousMessages.splice(Math.max(0, this.previousMessages.length - nextPageSize), nextPageSize);
@@ -547,6 +560,9 @@ export class CommentViewComponent {
 
         let nextPageSize = this.pageSize;
 
+        if (isNaN(nextPageSize))
+            throw new Error(`Not safe to load more with NaN page size`);
+
         this.isLoadingMore = false;
 
         if (this.nextMessages.length > 0) {
@@ -604,6 +620,9 @@ export class CommentViewComponent {
 
         let nextPageSize = this.pageSize;
 
+        if (isNaN(nextPageSize))
+            throw new Error(`Not safe to load more with NaN page size`);
+
         this.isLoadingMore = false;
 
         if (this.olderMessages.length > 0) {
@@ -613,13 +632,13 @@ export class CommentViewComponent {
             this.hasMore = this.olderMessages.length > 0;
         }
 
-            let lastMessage: ChatMessage;
+        let lastMessage: ChatMessage;
 
-            if (this.newestLast) {
-                lastMessage = this.olderMessages[0] ?? this.messages[0];
-            } else {
-                lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
-            }
+        if (this.newestLast) {
+            lastMessage = this.olderMessages[0] ?? this.messages[0];
+        } else {
+            lastMessage = this.olderMessages[this.olderMessages.length - 1] ?? this.messages[this.messages.length - 1];
+        }
 
         if (nextPageSize > 0 && lastMessage) {
             // Load more from backend
@@ -662,15 +681,15 @@ export class CommentViewComponent {
 
         if (this.messages.length > this.maxVisibleMessages) {
             let overflow: ChatMessage[] = [];
-
+            
             // Move overflowing messages into newMessages.
             // Regardless of the order (newestLast), newMessages represents the direction that is being loaded, 
             // since it's definition depends on that order. 
-            
+
             if (this.newestLast) {
                 overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
-            this.newMessages = overflow.concat(this.newMessages);
-            this.newMessages.splice(this.maxMessages - this.maxVisibleMessages, this.newMessages.length);
+                this.newMessages = overflow.concat(this.newMessages);
+                this.newMessages.splice(this.maxMessages - this.maxVisibleMessages, this.newMessages.length);
             } else {
                 overflow = this.messages.splice(0, this.messages.length - this.maxVisibleMessages);
                 this.newMessages.push(...overflow);
