@@ -1,3 +1,14 @@
+:host {
+    display: block;
+    width: 960px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+hr {
+    border-color: #111;
+}
+
 banta-comments {
     display: block;
     width: 960px;
@@ -12,6 +23,14 @@ banta-comments {
     overflow-y: auto;
 }
 
+.property-row {
+    display: flex;
+    align-content: flex-start;
+    gap: 1em;
+    & > * {
+        flex-grow: 1;
+    }
+}
 :host.small-mode {
     banta-comments {
         max-width: 365px;

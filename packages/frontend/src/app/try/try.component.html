@@ -3,8 +3,28 @@
 <div class="property">
     <mat-form-field appearance="outline" floatLabel="always">
         <mat-label>Topic ID</mat-label>
-        <input matInput type="text" [(ngModel)]="topicID" />
+        <input matInput type="text" [(ngModel)]="topicID" (change)="persistSettings()" />
     </mat-form-field>
+</div>
+<div class="property-row">
+    <div class="property">
+        <mat-form-field appearance="outline" floatLabel="always">
+            <mat-label>Max Visible Messages</mat-label>
+            <input matInput type="number" [(ngModel)]="maxVisibleMessages" (change)="persistSettings()" />
+        </mat-form-field>
+    </div>
+    <div class="property">
+        <mat-form-field appearance="outline" floatLabel="always">
+            <mat-label>Max Messages</mat-label>
+            <input matInput type="number" [(ngModel)]="maxMessages" (change)="persistSettings()" />
+        </mat-form-field>
+    </div>
+    <div class="property">
+        <mat-form-field appearance="outline" floatLabel="always">
+            <mat-label>Jump to Comment</mat-label>
+            <input matInput type="string" [(ngModel)]="jumpedCommentId" (change)="persistSettings()" />
+        </mat-form-field>
+    </div>
 </div>
 
 <div class="property">
@@ -36,6 +56,12 @@
 |
 <a href="javascript:;" (click)="becomeAlice()">Become Alice</a>
 
+<br/>
+<br/>
+<hr/>
+<br/>
+<br/>
+
 <div class="fullscreen" #fullscreenElement>
     <a *ngIf="isFullScreen" href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>
     <banta-comments
@@ -43,8 +69,8 @@
         #comments
         topicID="{{topicID}}_comments"
         [customMenuItems]="customMenuItems"
-        [maxMessages]="2000"
-        [maxVisibleMessages]="200"
+        [maxMessages]="maxMessages"
+        [maxVisibleMessages]="maxVisibleMessages"
         [initialMessageCount]="20"
         [useInlineReplies]="useInlineReplies"
         (usernameSelected)="alert('Username was selected')"
