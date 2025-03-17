@@ -51,7 +51,7 @@ export class CommentViewComponent {
      * While this is called "new" messages, it really represents the messages that would be visible *at the beginning 
      * of the sort order*, which can be flipped by the newestLast feature (used for replies mode). 
      * 
-     * So, when newestLast is false, regardless of the current sortOrder, newMessages are conceptually 
+     * So, when newestLast is false (top-level comments), regardless of the current sortOrder, newMessages are conceptually 
      * *above* the visible set of messages.
      * 
      * When newestLast is true (as in replies mode), regardless of the current sortOrder, newMessages are conceptually 
@@ -662,16 +662,22 @@ export class CommentViewComponent {
 
         if (this.messages.length > this.maxVisibleMessages) {
             let overflow: ChatMessage[] = [];
-            if (this.newestLast)
-                overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
-            else
-                overflow = this.messages.splice(0, this.messages.length - this.maxVisibleMessages);
 
-            // Regardless of the order (newestLast), newMessages represents the direction that is being pushed, since it's definition
-            // depends on that order. Move overflowing messages into newMessages.
+            // Move overflowing messages into newMessages.
+            // Regardless of the order (newestLast), newMessages represents the direction that is being loaded, 
+            // since it's definition depends on that order. 
             
+            if (this.newestLast) {
+                overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
             this.newMessages = overflow.concat(this.newMessages);
             this.newMessages.splice(this.maxMessages - this.maxVisibleMessages, this.newMessages.length);
+            } else {
+                overflow = this.messages.splice(0, this.messages.length - this.maxVisibleMessages);
+                this.newMessages.push(...overflow);
+                if (this.newMessages.length > this.maxMessages - this.maxVisibleMessages)
+                    this.newMessages.splice(0, this.newMessages.length - (this.maxMessages - this.maxVisibleMessages));
+            }
+            
         }
     }
 
