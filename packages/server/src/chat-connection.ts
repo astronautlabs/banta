@@ -1,16 +1,10 @@
-import { ChatMessage, ChatPermissions, CommentsOrder, FilterMode, RpcCallable, SocketRPC, Topic, User } from "@banta/common";
-import { AuthorizableAction, ChatService, Like } from "./chat.service";
-import { PubSub } from "./pubsub";
-import * as mongodb from 'mongodb';
 import { Logger, LogOptions } from "@alterior/logging";
-import { v4 as uuid } from 'uuid';
+import { ChatMessage, ChatPermissions, CommentsOrder, FilterMode, RpcCallable, SocketRPC, Topic, User } from "@banta/common";
 import { Subscription } from "rxjs";
+import { AuthorizableAction, ChatService } from "./chat.service";
 import { deepCopy } from "./deep-copy";
 
-export interface ChatPubSubEvent {
-    message?: ChatMessage;
-    like?: Like;
-}
+import * as mongodb from 'mongodb';
 
 export class ChatConnection extends SocketRPC {
     constructor(
@@ -488,8 +482,6 @@ export class ChatConnection extends SocketRPC {
     private getSortOrder(): any {
         return this.chat.createMongoSortFromOrder(this.sortOrder);
     }
-
-    pubsub: PubSub<ChatPubSubEvent>;
 
     @RpcCallable()
     async sendMessage(message: ChatMessage): Promise<ChatMessage> {

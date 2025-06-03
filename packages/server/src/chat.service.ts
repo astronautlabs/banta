@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom';
 import { Subject } from "rxjs";
 import { v4 as uuid } from 'uuid';
 import { Cache } from "./cache";
-import { PubSub, PubSubManager } from "./pubsub";
+import { InterServerCommunications } from "./inter-server-communications";
 
 import createDOMPurify from 'dompurify';
 import IORedis from 'ioredis';
@@ -154,7 +154,7 @@ export const simpleMentionExtractor = (linker: (username: string) => string): Me
     };
 }
 
-export interface ChatPubSubEvent {
+export interface ChatServerEvent {
     type: 'create' | 'update';
     originId: string;
     topicId: string;
@@ -213,10 +213,11 @@ export class ChatService {
             Logger.current.error(`[Banta/ChatService] Redis error: ${err.stack || err.message || err}`);
         });
 
-        this.logger.info(`Connecting to Redis pubsub`);
-        this.pubsubs = new PubSubManager(this.redis);
-        this.pubsub = new PubSub<ChatPubSubEvent>(this.pubsubs, "bantaMessages", false);
-        this.pubsub.messages.subscribe(async event => {
+        
+        this.isc = new InterServerCommunications(this.logger, this.redis);
+        this.logger.info(`Connecting to Banta inter-server communication...`);
+        this.isc.connect();
+        this.isc.messages.subscribe(async event => {
             if (event.originId === this.originId)
                 return;
 
@@ -234,14 +235,13 @@ export class ChatService {
         this.running = false;
         this.mongoClient.close();
         this.redis.disconnect();
-        this.pubsubs.disconnect();
+        this.isc.disconnect();
     }
 
     private redis: ioredis.Redis;
     private mongoClient: mongodb.MongoClient;
     private db: mongodb.Db;
-    private pubsubs: PubSubManager;
-    private pubsub: PubSub<ChatPubSubEvent>;
+    private isc: InterServerCommunications<ChatServerEvent>;
 
     private _messageChangedRemotely = new Subject<ChatMessage>();
     readonly messageChangedRemotely = this._messageChangedRemotely.asObservable();
@@ -557,7 +557,7 @@ export class ChatService {
         this.guardRunning(); 
 
         this.cacheMessage(message, type);
-        this.pubsub.publish({ type, originId: this.originId, topicId: message.topicId, message });
+        this.isc.send({ type, originId: this.originId, topicId: message.topicId, message });
     }
 
     /**
@@ -666,7 +666,7 @@ export class ChatService {
         });
 
         message.message = newText;
-        this.pubsub.publish({ type: 'update', originId: this.originId, topicId: message.topicId, message });
+        this.isc.send({ type: 'update', originId: this.originId, topicId: message.topicId, message });
 
         this._events.next(<EditMessageEvent>{
             type: 'edit',
@@ -755,7 +755,7 @@ export class ChatService {
             });
         });
         
-        await this.pubsub.publish({ type: 'create', originId: this.originId, topicId: message.topicId, like });
+        this.isc.send({ type: 'create', originId: this.originId, topicId: message.topicId, like });
         
         return message;
     }
@@ -831,7 +831,7 @@ export class ChatService {
         // Update the message's likes count for all clients and servers
 
         this.modifyMessageLikesCount(message, -1);
-        this.pubsub.publish({
+        this.isc.send({
             type: 'update',
             originId: this.originId,
             topicId: message.topicId,
