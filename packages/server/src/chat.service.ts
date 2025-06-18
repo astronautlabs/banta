@@ -162,6 +162,8 @@ export interface ChatServerEvent {
     like?: Like;
 }
 
+export class UnauthorizedError extends Error {
+}
 
 @Injectable()
 export class ChatService {
