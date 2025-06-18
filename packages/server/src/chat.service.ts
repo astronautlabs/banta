@@ -725,7 +725,7 @@ export class ChatService {
 
         let like = await this.getLike(user.id, message.id);
         if (like)
-            return;
+            return message;
 
         await this.dbOperation(`Insert/update like`, async () => {
             this.updateOne(this.likes,
@@ -816,7 +816,7 @@ export class ChatService {
 
         let like = await this.findOne(this.likes, { messageId: message.id, userId: user.id });
         if (!like)
-            return;
+            return message;
 
         await this.likes.deleteOne({ messageId: message.id, userId: user.id });
 
@@ -1009,6 +1009,9 @@ export class ChatService {
      * @returns 
      */
     prepareMessage(message: ChatMessage, userId?: string) {
+        if (!message)
+            return undefined;
+        
         message = {
             ...message,
             userState: {
