@@ -1,6 +1,6 @@
 {
   "name": "@banta/server",
-  "version": "2.11.0",
+  "version": "3.0.0",
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -24,7 +24,7 @@
     "@alterior/web-server": "^3.12.0"
   },
   "dependencies": {
-    "@banta/common": "^2.8.0",
+    "@banta/common": "^3.0.0",
     "@types/express-serve-static-core": "^4.17.24",
     "@types/sanitize-html": "^2.6.2",
     "@types/serve-static": "^1.13.10",
