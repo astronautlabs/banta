@@ -1,6 +1,6 @@
 {
   "name": "@banta/bot",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -21,7 +21,7 @@
   "dependencies": {
     "@alterior/runtime": "^3.9.0",
     "@alterior/web-server": "^3.9.0",
-    "@banta/common": "^3.0.0",
+    "@banta/common": "^3.0.1",
     "jsonwebtoken": "^8.5.1",
     "rxjs": "^7.8.1",
     "uuid": "^3.3.3",
