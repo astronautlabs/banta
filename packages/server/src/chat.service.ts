@@ -292,7 +292,11 @@ export class ChatService {
         try {
             await this.authorizeAction(user, token, action);
         } catch (e) {
-            throw new Error(`permission-denied|${e.message}`);
+            if (e instanceof UnauthorizedError) 
+                throw new Error(`permission-denied|${e.message}`);
+
+            this.logger.error(`Error occurred while authorizing action: ${JSON.stringify(action)}: ${e.stack || e || e.message}`);
+            throw new Error(`permission-denied|Not available [500]`);
         }
     }
 

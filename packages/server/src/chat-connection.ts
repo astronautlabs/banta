@@ -1,7 +1,7 @@
 import { Logger, LogOptions } from "@alterior/logging";
 import { ChatMessage, ChatPermissions, CommentsOrder, FilterMode, RpcCallable, SocketRPC, Topic, User } from "@banta/common";
 import { Subscription } from "rxjs";
-import { AuthorizableAction, ChatService } from "./chat.service";
+import { AuthorizableAction, ChatService, UnauthorizedError } from "./chat.service";
 import { deepCopy } from "./deep-copy";
 
 import * as mongodb from 'mongodb';
@@ -79,7 +79,11 @@ export class ChatConnection extends SocketRPC {
                 connectionMetadata: this.metadata
             });
         } catch (e) {
-            return e.message;
+            if (e instanceof UnauthorizedError) 
+                return e.message;
+
+            this.logger.error(`Error occurred while authorizing action: ${JSON.stringify(action)}: ${e.stack || e || e.message}`);
+            return `Not available [500]`;
         }
     }
 
