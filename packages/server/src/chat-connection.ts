@@ -55,8 +55,13 @@ export class ChatConnection extends SocketRPC {
         try {
             user = await this.chat.validateToken(token);
         } catch (e) {
-            this.logError(`Token validation failed during authentication: ${e.message}. Token was: '${token}'`);
-            throw e;
+            if (e instanceof UnauthorizedError) {
+                this.logError(`Token validation failed during authentication: ${e.message}. Token was: '${token}'`);
+                throw e;
+            } else {
+                this.logError(`Unexpected error while validating token '${token}': ${e.stack || e}`);
+                throw new Error(`Unauthorized`);
+            }
         }
 
         user.ipAddress = this.ipAddress;
