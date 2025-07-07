@@ -1,14 +1,16 @@
-import { Body, Controller, Get, Post, QueryParam, WebEvent, WebServer } from "@alterior/web-server";
-import { Cache } from "@alterior/common";
-import { ChatService } from "./chat.service";
-import * as bodyParser from 'body-parser';
 import { HttpError } from "@alterior/common";
-import type * as express from 'express';
-import { ChatConnection } from "./chat-connection";
+import { inject } from '@alterior/di';
 import { Logger } from "@alterior/logging";
+import { Body, Controller, Get, Post, QueryParam, WebEvent, WebServer } from "@alterior/web-server";
+import { ChatMessage, CommentsOrder, FilterMode, Topic, UrlCard } from "@banta/common";
 import { v4 as uuid } from "uuid";
-import { CommentsOrder, FilterMode, UrlCard, Topic, ChatMessage } from "@banta/common";
+import { ChatConnection } from "./chat-connection";
+import { ChatService } from "./chat.service";
+
+import * as bodyParser from 'body-parser';
+import type * as express from 'express';
 import * as os from 'os';
+import { Cache } from "./cache";
 
 export interface SignInRequest {
     email : string;
@@ -19,10 +21,8 @@ export interface SignInRequest {
     middleware: [ bodyParser.json() ]
 })
 export class ChatController {
-    constructor(
-        private chat : ChatService
-    ) {
-    }
+    private chat = inject(ChatService);
+    private logger = inject(Logger);
 
     runId = uuid();
     serverId = os.hostname();
@@ -33,8 +33,23 @@ export class ChatController {
             service: `@banta/server`,
             serverId: this.serverId,
             runId: this.runId,
-            connections: this.chat.activeConnections
+            connections: this.chat.activeConnections,
+            cache: this.chat.getCacheStatus()
         };
+    }
+
+    prepareForCacheDisplay(x: ChatMessage) {
+        return ({ id: x.id, user: { username: x.user.username }, message: x.message });
+    }
+
+    @Get('/cache/:topicID')
+    async getTopicCache(topicID: string) {
+        return this.chat.getCachedMessages(topicID, undefined).map(x => this.prepareForCacheDisplay(x));
+    }
+
+    @Get('/cache/:topicID/:parentMessageId')
+    async getReplyCache(topicID: string, parentMessageId: string) {
+        return this.chat.getCachedMessages(topicID, parentMessageId).map(x => this.prepareForCacheDisplay(x));
     }
 
     @Get('/socket')
@@ -45,16 +60,51 @@ export class ChatController {
             });
         }
 
-        let conn = new ChatConnection(
-            this.chat, 
-            (WebEvent.request as express.Request).ip,
-            (WebEvent.request as express.Request).header('user-agent')
-        );
+        const ipAddress = (WebEvent.request as express.Request).ip;
+        const userAgent = (WebEvent.request as express.Request).header('user-agent');
+        const sessionId = String((WebEvent.request as express.Request).query['sessionId']);
 
-        conn.bind(await WebServer.startSocket());
+        const connectionId = WebEvent.current.requestId || uuid();
+        let prefix: string;
+        
+        let deviceId: string;
+        let deviceRunId: string;
+
+        if (sessionId && sessionId !== 'undefined') {
+            let parts = sessionId.split(',');
+
+            if (parts.length >= 2) {
+                deviceId = parts[0];
+                deviceRunId = parts[1];
+            } else {
+                deviceId = `-`;
+                deviceRunId = sessionId;
+            }
+        }
+
+        if (deviceId && deviceRunId)
+            prefix = `⚡ rpc  📱 ..${deviceId.slice(-6)}  🥾 ..${deviceRunId.slice(-6)}  🌍 ..${connectionId.slice(-6)} `;
+        else
+            prefix = `⚡ rpc  🌍 ..${connectionId.slice(-6)} `;
+
+        await this.logger.withContext({ ipAddress, userAgent, connectionId, sessionId }, prefix, async () => {
+            this.logger.info(`Connected: ${ipAddress || '<unknown>'}`);
+
+            if (process.env.BANTA_LOG_USER_AGENTS !== '0')
+                this.logger.info(`User agent: ${userAgent || '<none>'}`);
+
+            let conn = new ChatConnection(
+                connectionId,
+                this.chat, 
+                ipAddress,
+                userAgent,
+                this.logger
+            );
+            conn.bind(await WebServer.startSocket());
+        })
     }
 
-    private topicsCache = new Cache<Topic>(1000 * 60 * 15, 5000);
+    private topicsCache = new Cache<Topic>('topics', { timeToLive: 1000 * 60 * 15, maxItems: 5000 });
 
     @Get('/topics')
     async getTopics(@QueryParam('ids') idsString: string): Promise<Topic[]> {
@@ -167,7 +217,7 @@ export class ChatController {
         return this.chat.getMessages({ topicId: message.topicId, parentMessageId: id, sort, filter, offset, limit });
     }
 
-    private urlCardsCache = new Cache<UrlCard>(1000 * 60 * 15, 5000);
+    private urlCardsCache = new Cache<UrlCard>('urlCards', { timeToLive: 1000 * 60 * 15, maxItems: 5000 });
 
     @Post('/urls')
     async getUrlCard(@Body() body: { url: string }) {

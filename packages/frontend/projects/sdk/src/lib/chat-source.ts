@@ -103,6 +103,33 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         return message;
     }
 
+    /**
+     * Ask server for messages that have occurred since the message with the given ID.
+     * This is used during brief reconnects to avoid dropping messages, while also not 
+     * causing mobbing as everyone reconnects after an issue. The backend can choose to 
+     * not service this request, instead returning undefined. In that case, the client 
+     * is expected to fetch the existing messages and start state anew.
+     * 
+     * TODO: this is not yet used
+     * 
+     * @param id 
+     * @returns 
+     */
+    async loadSince(id: string): Promise<ChatMessage[]> {
+        try {
+            let messages = await this.idempotentPeer.loadSince(id);
+            if (messages) {
+                messages = this.mapOrUpdateMessages(messages);
+            }
+
+            return messages;
+        } catch (e) {
+            console.error(`[Banta/${this.identifier}] Error occurred while trying to get existing messages:`);
+            console.error(e);
+            return [];
+        }
+    }
+
     async getExistingMessages(): Promise<ChatMessage[]> {
         try {
             let messages = await this.idempotentPeer.getExistingMessages(this.options.initialMessageCount ?? 20);
@@ -139,7 +166,11 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
 
     async subscribeToTopic() {
         try {
-            await this.immediatePeer.subscribe(this.identifier, this.parentIdentifier, this.options.sortOrder, this.options.filterMode);
+            await this.immediatePeer.subscribe(
+                this.identifier, this.parentIdentifier, this.options.sortOrder, 
+                this.options.filterMode,
+                this.options.metadata ?? {}
+            );
             this.subscribeAttempt = 0;
             this._errorState = undefined;
             this.state = this.wasRestored ? 'restored' : 'connected';
@@ -182,9 +213,6 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         this.setSignInState('signing-in');
         if (this.backend.user) {
             try {
-                // console.log(`Artificial delay...`);
-                // await new Promise(r => setTimeout(r, 30_000));
-                // console.log(`Artificial delay complete...`);
                 await this.immediatePeer.authenticate(this.backend.user?.token);
                 this.setSignInState('signed-in');
             } catch (e) {
@@ -235,7 +263,9 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     async send(message: ChatMessage): Promise<ChatMessage> {
         await this.ensureConnection();
         message.id ??= uuid();
-        return await this.idempotentPeer.sendMessage(message);
+        let finishedMessage = await this.idempotentPeer.sendMessage(message);
+
+        return finishedMessage;
     }
 
     async loadAfter(message: ChatMessage, count: number): Promise<ChatMessage[]> {

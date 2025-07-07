@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  bantaServiceUrl: 'http://localhost:3000'
+  bantaServiceUrl: `http://localhost:${ new URL(location.href).searchParams.get('port') || 3422 }`
 };
 
 /*

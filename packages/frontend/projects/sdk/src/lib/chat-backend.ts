@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@angular/core";
+import { inject, Inject, Injectable } from "@angular/core";
 import { ChatMessage, CommentsOrder, DurableSocket, FilterMode, Notification, Topic, UrlCard, User, Vote, buildQuery } from "@banta/common";
 import { Observable } from "rxjs";
 import { ChatBackendBase, ChatSourceOptions } from "./chat-backend-base";
@@ -8,22 +8,30 @@ import { BANTA_SDK_OPTIONS, SdkOptions } from "./sdk-options";
 import { PLATFORM_ID } from "@angular/core";
 import { isPlatformServer } from "@angular/common";
 import { StaticChatSource } from "./static-chat-source";
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class ChatBackend extends ChatBackendBase {
-    constructor(
-        @Inject(BANTA_SDK_OPTIONS) private options: SdkOptions,
-        @Inject(PLATFORM_ID) private platformId
-    ) {
-        super();
-    }
+    private options = inject(BANTA_SDK_OPTIONS);
+    private platformId = inject(PLATFORM_ID);
+
+    runId = uuid();
 
     get serviceUrl() {
         return `${this.options?.serviceUrl ?? 'http://localhost:3422'}`;
     }
 
     private async connectToService() {
-        let socket = new DurableSocket(`${this.serviceUrl.replace(/^http/, 'ws')}/socket`);
+        let deviceId = uuid();
+        if (typeof localStorage !== 'undefined') {
+            if (localStorage['banta-chat:deviceId']) {
+                deviceId = localStorage['banta-chat:deviceId'];
+            } else {
+                localStorage['banta-chat:deviceId'] = deviceId;
+            }
+        }
+
+        let socket = new DurableSocket(`${this.serviceUrl.replace(/^http/, 'ws')}/socket`, undefined, `${deviceId},${this.runId}`);
         await new Promise<void>((resolve, reject) => {
             socket.onopen = () => {
                 resolve();

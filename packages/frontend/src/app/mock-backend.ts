@@ -19,24 +19,24 @@ export class MockBackend extends ChatBackendBase {
      * @internal
      */
     sourceWasClosed(source: MockSource) {
-        this.sources.delete(`${source.identifier}:${source.sortOrder}`);
+        this.sources.delete(`${source.identifier}:${source}`);
     }
 
-    private getSourceForId(topicId: string, messageId: string, options: ChatSourceOptions) {
-        let sortOrder = options?.sortOrder ?? CommentsOrder.NEWEST;
+    private getSourceForId(topicId: string, messageId: string, options: ChatSourceOptions = {}) {
+        options.sortOrder ??= CommentsOrder.NEWEST;
 
-        let key = `${topicId}:${sortOrder}`;
+        let key = `${topicId}:${options.sortOrder}`;
         if (this.sources.has(key))
             return this.sources.get(key);
 
         let source : MockSource;
 
         if (messageId)
-            source = new MockReplySource(this, topicId, messageId, sortOrder);
+            source = new MockReplySource(this, topicId, messageId, options);
         else if (topicId.endsWith('_comments'))
-            source = new MockCommentsSource(this, topicId, sortOrder);
+            source = new MockCommentsSource(this, topicId, options);
         else if (topicId.endsWith('_chat'))
-            source = new MockChatSource(this, topicId, sortOrder);
+            source = new MockChatSource(this, topicId, options);
 
         this.sources.set(key, source);
         return source;
@@ -144,7 +144,7 @@ export class MockSource implements ChatSourceBase {
     constructor(
         readonly backend : MockBackend,
         readonly identifier: string,
-        public sortOrder: CommentsOrder
+        public options: ChatSourceOptions
     ) {
         this.currentUserChanged.next(this.currentUser);
     }
@@ -162,8 +162,12 @@ export class MockSource implements ChatSourceBase {
         return undefined;
     }
     
+    async loadSince(id: string) {
+        return undefined;
+    }
+    
     async getExistingMessages(): Promise<ChatMessage[]> {
-        return [];
+        return this.messages.slice(0, this.options.initialMessageCount);
     }
 
     permissions: ChatPermissions = {
@@ -277,23 +281,25 @@ export class SimulatedSource extends MockSource {
     constructor(
         readonly backend : MockBackend,
         readonly identifier : string,
-        readonly sortOrder: CommentsOrder,
+        readonly options: ChatSourceOptions,
         readonly possibleMessages : string[],
         readonly interval : number,
         readonly initialCount : number
     ) {
-        super(backend, identifier, sortOrder);
+        super(backend, identifier, options);
 
         for (let i = 0; i < initialCount; ++i) {
-            this.messages.push(this.generateMessage());
+            this.messages.push(this.generateMessage(`Message ${i}`));
         }
 
         console.log(`[MockBackend] Opening simulated source...`);
-        this._interval = setInterval(() => {
-            let message = this.generateMessage();
-            this.addMessage(message);
-            this.messageReceived.next(message);
-        }, interval);
+        if (interval > 0) {
+            this._interval = setInterval(() => {
+                let message = this.generateMessage();
+                this.addMessage(message);
+                this.messageReceived.next(message);
+            }, interval);
+        }
     }
 
     private _interval;
@@ -303,8 +309,8 @@ export class SimulatedSource extends MockSource {
         clearInterval(this._interval);
     }
 
-    protected generateMessage() {
-        let messageText = this.possibleMessages[Math.floor(this.possibleMessages.length * Math.random())];
+    protected generateMessage(messageText?: string | undefined) {
+        messageText ??= this.possibleMessages[Math.floor(this.possibleMessages.length * Math.random())];
         let user = MOCK_USERS[Math.floor(MOCK_USERS.length * Math.random())];
 
         if (!user.avatarUrl)
@@ -387,9 +393,9 @@ export class MockChatSource extends SimulatedSource {
     constructor(
         readonly backend : MockBackend,
         readonly identifier : string,
-        readonly sortOrder: CommentsOrder
+        readonly options: ChatSourceOptions
     ) {
-        super(backend, identifier, sortOrder, pmq.getAll().map(x => x.quote), 3000, 8);
+        super(backend, identifier, options, pmq.getAll().map(x => x.quote), 3000, 8);
     }
 }
 
@@ -397,9 +403,9 @@ export class MockCommentsSource extends SimulatedSource {
     constructor(
         readonly backend : MockBackend,
         readonly identifier : string,
-        readonly sortOrder: CommentsOrder
+        readonly options: ChatSourceOptions
     ) {
-        super(backend, identifier, sortOrder, pmq.getAll().map(x => x.quote), 5000, 8);
+        super(backend, identifier, options, pmq.getAll().map(x => x.quote), -1, 100);
     }
 }
 
@@ -408,9 +414,9 @@ export class MockReplySource extends SimulatedSource {
         readonly backend : MockBackend,
         readonly identifier : string,
         readonly parentIdentifier: string,
-        readonly sortOrder: CommentsOrder
+        readonly options: ChatSourceOptions
     ) {
-        super(backend, identifier, sortOrder, [
+        super(backend, identifier, options, [
             `Good point.`,
             `Do you have a blog?`,
             `Not sure this is such a great take tbh`,

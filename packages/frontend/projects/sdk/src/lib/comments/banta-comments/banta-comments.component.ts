@@ -184,7 +184,21 @@ export class BantaCommentsComponent {
 
         setTimeout(async () => {
             console.log(`[Banta/Comments] Subscribing to topic source '${topicID}'`);
-            this.source = await this.backend.getSourceForTopic(topicID, { sortOrder: this.sortOrder, filterMode: this.filterMode });
+
+            // If we are loading a shared comment, we must override the mode to be Newest/All
+            // to ensure we can find the comment.
+
+            if (this.sharedCommentID) {
+                this._sortOrder = CommentsOrder.NEWEST;
+                this._filterMode = FilterMode.ALL;
+            }
+
+            this.source = await this.backend.getSourceForTopic(topicID, { 
+                sortOrder: this.sortOrder, 
+                filterMode: this.filterMode,
+                metadata: this.metadata,
+                initialMessageCount: this.initialMessageCount
+            });
             this._sourceIsOwned = true;
         });
     }
@@ -312,8 +326,15 @@ export class BantaCommentsComponent {
     markLoaded: () => void;
     loaded = new Promise<void>(r => this.markLoaded = r);
 
+    get sourceState() {
+        if (!this.source)
+            return 'no-source';
+
+        return this.source.state ?? 'connected';
+    }
+
     private updateLoading(): boolean {
-        if (this.source?.state && !['connecting', 'lost'].includes(this.source?.state)) {
+        if (this.sourceState && !['connecting', 'lost', 'no-source'].includes(this.sourceState)) {
             clearInterval(this._loadingTimer);
             this.loadingMessage = `Here we go!`;
             setTimeout(() => {
@@ -323,7 +344,7 @@ export class BantaCommentsComponent {
             return true;
         }
 
-        console.log(`[Banta/Loader] State=${this.source ? this.source.state : 'no-source'}`);
+        console.log(`[Banta/Loader] State=${this.sourceState}`);
         let messageSwitchTime = 5*1000;
         if (this.messageChangedAt + messageSwitchTime < Date.now()) {
             if (this.loadingMessages[this._loadingMessageIndex]) {
@@ -408,7 +429,11 @@ export class BantaCommentsComponent {
 
             this._source.messages.forEach(m => this.addParticipant(m));
 
-            this._sourceSubscription.add(this._source.connectionStateChanged.subscribe(state => this.connectionState = state));
+            if (this._source.connectionStateChanged)
+                this._sourceSubscription.add(this._source.connectionStateChanged.subscribe(state => this.connectionState = state));
+            else 
+                this.connectionState = 'connected';
+
             this._sourceSubscription.add(this._source.messageReceived.subscribe(m => this.addParticipant(m)));
             this._sourceSubscription.add(this._source.messageSent.subscribe(m => this.addParticipant(m)));
             this._sourceSubscription.add(this._source.messageObserved.subscribe(m => this.addParticipant(m)));
@@ -461,8 +486,20 @@ export class BantaCommentsComponent {
     private _reloadSourceTimeout;
     private reloadSource() {
         clearTimeout(this._reloadSourceTimeout);
-        this._reloadSourceTimeout = setTimeout(() => {
-            this.setSourceFromTopicID(this.topicID);
+
+        let showLoaderTimeout;
+        showLoaderTimeout = setTimeout(() => {
+            this.loading = true;
+            this.loadingTitle = 'Applying filters...';
+            this.loadingMessage = 'Applying your filters and sort order is taking more time than expected. Sit tight!';
+            this.showLoadingScreen = true;
+        }, 500);
+
+        this._reloadSourceTimeout = setTimeout(async () => {
+            await this.setSourceFromTopicID(this.topicID);
+            clearTimeout(showLoaderTimeout);
+            this.loading = false;
+            this.showLoadingScreen = true;
         });
     }
 
@@ -480,6 +517,22 @@ export class BantaCommentsComponent {
     set filterMode(value) { 
         if (this._filterMode !== value) {
             this._filterMode = value;
+            this.reloadSource();
+        }
+    }
+
+    @Input() initialMessageCount: number = 100;
+
+    private _metadata: Record<string, any> = {};
+
+    /**
+     * Arbitrary metadata to send to the chat server. This can be used to provide context about the client to the server
+     * for things like validating authorization and other uses.
+     */
+    @Input() get metadata() { return this._metadata; }
+    set metadata(value) {
+        if (JSON.stringify(this._metadata) !== JSON.stringify(value)) {
+            this._metadata = value;
             this.reloadSource();
         }
     }
@@ -588,17 +641,22 @@ export class BantaCommentsComponent {
             await this.threadView.loadMessageInContext(message);
 
             message = await thread.get(message.id);
-            message.transientState ??= {};
-            message.transientState.highlighted = true;
-            console.dir(message);
-            await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
 
+            if (message) {
+                message.transientState ??= {};
+                message.transientState.highlighted = true;
+                console.dir(message);
+                await new Promise<void>(r => setTimeout(r, 500));
+            }
         } else {
             // Make sure that this message is loaded and visible to the user
             await this.commentView.loadMessageInContext(message);
 
-            message.transientState ??= {};
-            message.transientState.highlighted = true;
+            message = await source.get(message.id);
+            if (message) {
+                message.transientState ??= {};
+                message.transientState.highlighted = true;
+            }
         }
 
         this.loadingSharedComment = false;

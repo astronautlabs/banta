@@ -1,26 +1,27 @@
 import { Overlay } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
-import { Component, ElementRef, HostBinding, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostBinding, inject, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {ChatMessage} from "@banta/common";
 import { BantaCommentsComponent, ChatBackendBase } from '@banta/sdk';
 import { MessageMenuItem } from 'projects/sdk/src/lib';
 
 const DEFAULT_CUSTOM_THEME = `
-.use-custom-theme banta-comment-view .message-container {
+.use-custom-theme banta-comment-view .banta-message-container {
     display: flex;
     flex-direction: column;
     gap: 1em;
 }
 
-.use-custom-theme banta-comment .actions .spacer {
+.use-custom-theme banta-comment .banta-actions .spacer {
     order: 99;
 }
 
-.use-custom-theme banta-comment .actions.actions {
+.use-custom-theme banta-comment .banta-actions.banta-actions {
     margin-left: 0;
 }
 
-.use-custom-theme banta-comment .message-content.message-content .content.content {
+.use-custom-theme banta-comment .banta-message-content.banta-message-content .banta-content.banta-content {
     border: 1px solid #666;
     padding: 1em;
     margin: 0.5em 0;
@@ -32,12 +33,10 @@ const DEFAULT_CUSTOM_THEME = `
     styleUrls: ['./try.component.scss']
 })
 export class TryComponent {
-    constructor(
-        private chatBackend: ChatBackendBase,
-        private element: ElementRef<HTMLElement>,
-        private overlay: Overlay
-    ) {
-    }
+    private chatBackend = inject(ChatBackendBase);
+    private element = inject(ElementRef) as ElementRef<HTMLElement>;
+    private overlay = inject(Overlay);
+    private route = inject(ActivatedRoute);
 
     @ViewChild('comments')
     comments: BantaCommentsComponent;
@@ -63,6 +62,9 @@ export class TryComponent {
     ];
 
     topicID: string;
+    maxVisibleMessages = 200;
+    maxMessages = 2000;
+    jumpedCommentId: string;
     newTopicID: string;
     messageCount: number;
     useInlineReplies = true;
@@ -118,13 +120,34 @@ export class TryComponent {
             element['msRequestFullscreen']();
     }
 
+    private persistSettingsTimeout;
+    persistSettings() {
+        this.persistSettingsTimeout = setTimeout(() => {
+            let qp = new URLSearchParams({
+                topic: this.topicID,
+                maxVisibleMessages: String(this.maxVisibleMessages),
+                maxMessages: String(this.maxMessages)
+            });
+
+            if (this.jumpedCommentId)
+                qp.set('comment', this.jumpedCommentId);
+
+            window.location.replace(`/try?${qp.toString()}`);
+        }, 100);
+    }
     async ngOnInit() {
-        this.allowChangingTopic = true;
-        this.topicID = 'home_comments';
-        this.newTopicID = this.topicID;
-        
-        this.messageCount = await this.chatBackend.getSourceCountForTopic(this.topicID);
-        console.log(this.messageCount);
+        this.route.queryParams.subscribe(async qp => {
+            this.allowChangingTopic = true;
+            this.topicID = qp.topic ?? 'home';
+            this.maxVisibleMessages = qp.maxVisibleMessages ?? 200;
+            this.maxMessages = qp.maxMessages ?? 2000;
+            this.jumpedCommentId = qp.comment;
+
+            this.newTopicID = this.topicID;
+            
+            this.messageCount = await this.chatBackend.getSourceCountForTopic(this.topicID);
+            console.log(this.messageCount);
+        });
     }
 
     changeTopic() {

@@ -41,7 +41,6 @@ export class AttachmentButtonComponent {
     async fileChange(event: Event): Promise<void> {
         const element = (event.currentTarget as HTMLInputElement);
         if (element.files.length) {
-            console.log('[Banta] File Added to comment');
             const file = element.files[0];
             let publicURL: string;
 

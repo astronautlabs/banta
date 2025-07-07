@@ -24,27 +24,27 @@
 
 </mat-menu>
 
-<div class="message-content">
-    <div class="user">
-        <div class="user-1">
+<div class="banta-message-content-container">
+    <div class="banta-user">
+        <div class="banta-user-1">
             <a
                 href="javascript:;"
-                class="avatar"
+                class="banta-avatar"
                 (click)="selectAvatar(message.user)"
                 [style.background-image]="avatarForUser(message.user)"></a>
-            <div class="user-identity">
-                <a href="javascript:;" class="display-name" (click)="selectUser()">{{message.user.displayName}}</a>
-                <a href="javascript:;" class="username" (click)="selectUsername(message.user)">&#64;{{message.user.username}}</a>
+            <div class="banta-user-identity">
+                <a href="javascript:;" class="banta-display-name" (click)="selectUser()">{{message.user.displayName}}</a>
+                <a href="javascript:;" class="banta-username" (click)="selectUsername(message.user)">&#64;{{message.user.username}}</a>
             </div>
         </div>
-        <div class="user-2">
-            <span class="user-tag" *ngIf="message.user.tag">{{message.user.tag}}</span>
+        <div class="banta-user-2">
+            <span class="banta-user-tag" *ngIf="message.user.tag">{{message.user.tag}}</span>
             <banta-timestamp [value]="message.sentAt"></banta-timestamp>
             <span class="spacer"></span>
         </div>
     </div>
-    <div class="content" *ngIf="!editing">
-        <span class="banta-message-content" [innerHTML]="message.message | mentionLinker: message.mentionLinks | markdownToHtml"></span>
+    <div class="banta-content" *ngIf="!editing">
+        <span class="banta-message-content" [innerHTML]="message.message | mentionLinker: message.mentionLinks | bantaMarkdownToHtml"></span>
         <banta-attachments 
             [attachments]="message.attachments"
             (loaded)="markAttachmentsLoaded()"
@@ -53,7 +53,7 @@
             <li *ngIf="message.edits?.length > 0">(Edited)</li>
         </ul>
     </div>
-    <div class="content" *ngIf="editing" style="padding-bottom: 2em;">
+    <div class="banta-content" *ngIf="editing" style="padding-bottom: 2em;">
         <div>
             <mat-form-field floatLabel="always" appearance="outline" style="width: 100%;">
                 <mat-label>Edit Message</mat-label>
@@ -65,18 +65,18 @@
     </div>
 
 
-    <div class="actions">
+    <div class="banta-actions">
         <div class="spacer"></div>
-        <div class="counted-action" *ngIf="showReplyAction">
+        <div class="banta-counted-action" *ngIf="showReplyAction">
             <button mat-button [matTooltip]="replyCount > 0 ? 'Replies' : 'Reply'" matTooltipPosition="below" (click)="select()">
                 <mat-icon>comment</mat-icon>
-                <span class="count-indicator">
+                <span class="banta-count-indicator">
                     {{replyCount > 0 ? 'Replies' : 'Reply'}}
                     {{replyCount > 0 ? '(' + replyCount + ')' : ''}}
                 </span>
             </button>
         </div>
-        <div class="counted-action" [class.active]="message.userState?.liked">
+        <div class="banta-counted-action" [class.active]="message.userState?.liked">
             <button 
                 *ngIf="message.transientState?.liking"
                 mat-icon-button 
@@ -95,7 +95,7 @@
                 (click)="message.userState?.liked ? unlike() : like()" 
                 >
                 <mat-icon>thumb_up</mat-icon>
-                <span class="count-indicator" *ngIf="message.likes > 0">
+                <span class="banta-count-indicator" *ngIf="message.likes > 0">
                     {{message.likes}}
                 </span>
             </button>

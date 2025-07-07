@@ -1,9 +1,11 @@
-import { Pipe, PipeTransform, Inject, Optional } from '@angular/core';
-import * as marked from 'marked';
-import createDOMPurify from 'dompurify';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+import { BANTA_SDK_OPTIONS } from '../sdk-options';
+
+import createDOMPurify from 'dompurify';
 import twemoji from 'twemoji';
-import { BANTA_SDK_OPTIONS, SdkOptions } from '../sdk-options';
+
+import * as marked from 'marked';
 
 const underline = {
     name: 'underline',
@@ -30,21 +32,17 @@ marked.marked.use({
 });
 
 @Pipe({
-    name: 'markdownToHtml'
+    name: 'bantaMarkdownToHtml'
 })
 export class BantaMarkdownToHtmlPipe implements PipeTransform {
-    constructor(
-        private sanitizer: DomSanitizer,
+    private sanitizer = inject(DomSanitizer);
+    private sdkOptions = inject(BANTA_SDK_OPTIONS, { optional: true });
 
-        @Inject(BANTA_SDK_OPTIONS) @Optional()
-        private sdkOptions: SdkOptions
-    ) {
-        this.renderer = new marked.Renderer({
-            headerPrefix: ''
-        });
+    constructor() {
+        this.renderer = new marked.Renderer();
         const linkRenderer = this.renderer.link;
-        this.renderer.link = (href, title, text) => {
-            const html = linkRenderer.call(this.renderer, href, title, text);
+        this.renderer.link = token => {
+            const html = linkRenderer.call(this.renderer, token);
             return html.replace(/^<a /, '<a target="_blank" rel="noopener noreferrer nofollow" ');
         };
     }
@@ -79,14 +77,15 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
 
         value = marked.marked.parse(value, {
             renderer: this.renderer
-        });
+        }) as string;
 
         value = twemoji.parse(value, { base: this.emojiUrl });
 
         return this.sanitizer.bypassSecurityTrustHtml(
             purifier.sanitize(value,
                 {
-                    FORBID_TAGS: ['h1', 'h2', 'h3', 'h4'],
+                    FORBID_TAGS: ['h1', 'h2', 'h3', 'h4', 'style', 'link', 'script'],
+                    FORBID_ATTR: ['style'],
                     KEEP_CONTENT: true
                 }
             )

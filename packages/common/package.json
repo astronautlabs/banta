@@ -1,6 +1,6 @@
 {
   "name": "@banta/common",
-  "version": "2.3.3",
+  "version": "3.0.1",
   "description": "",
   "private": false,
   "main": "dist/index.js",
@@ -17,9 +17,9 @@
   "repository": "https://github.com/astronautlabs/banta",
   "peerDependencies": {
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^6.6.7"
+    "rxjs": "^7.8.1"
   },
-  "gitHead": "0cb1cd13e2196f54d2fd67e17f447cc2b70df1bf",
+  "gitHead": "79ad2fd0f04c7b7158eee72c3ec75d2140069df1",
   "devDependencies": {
     "reflect-metadata": "^0.1.13",
     "typescript": "^4.6.3"

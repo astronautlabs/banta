@@ -53,11 +53,35 @@ export class BantaChatComponent {
         this.setSourceFromTopicID(value);
     }
 
+    private _metadata: Record<string, any> = {};
+
+    /**
+     * Arbitrary metadata to send to the chat server. This can be used to provide context about the client to the server
+     * for things like validating authorization and other uses.
+     */
+    @Input() get metadata() { return this._metadata; }
+    set metadata(value) {
+        if (JSON.stringify(this._metadata) !== JSON.stringify(value)) {
+            this._metadata = value;
+            this.reloadSource();
+        }
+    }
+
+    private _reloadSourceTimeout;
+    private reloadSource() {
+        clearTimeout(this._reloadSourceTimeout);
+        this._reloadSourceTimeout = setTimeout(() => {
+            this.setSourceFromTopicID(this.topicID);
+        });
+    }
+
     private async setSourceFromTopicID(topicID : string) {
         if (this._source && this._source.close)
             this._source.close();
         this._source = null;
-        this._source = await this.backend.getSourceForTopic(topicID);
+        this._source = await this.backend.getSourceForTopic(topicID, { 
+            metadata: this.metadata
+        });
     }
 
     @Input() signInLabel = 'Sign In';

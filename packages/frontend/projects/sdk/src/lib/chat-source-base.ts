@@ -25,6 +25,7 @@ export interface ChatSourceBase {
     send(message: ChatMessage): Promise<ChatMessage>;
     close();
     getCount(): Promise<number>;
+    loadSince(id: string): Promise<ChatMessage[]>;
     getExistingMessages(): Promise<ChatMessage[]>;
     loadAfter(message: ChatMessage, count: number): Promise<ChatMessage[]>;
     get(id: string): Promise<ChatMessage>;

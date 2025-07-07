@@ -1,6 +1,6 @@
 {
   "name": "@banta/server",
-  "version": "2.4.1",
+  "version": "3.0.3",
   "description": "",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -11,38 +11,43 @@
     "build:cjs": "tsc -b",
     "build:esm": "tsc -b tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
-    "start": "npm run build && node dist/main",
+    "start": "npm run build && node --no-deprecation dist/main",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublishOnly": "npm run build"
   },
   "author": "Astronaut Labs, LLC",
   "license": "MIT",
+  "peerDependencies": {
+    "@alterior/di": "^3.11.1",
+    "@alterior/logging": "^3.11.1",
+    "@alterior/runtime": "^3.11.1",
+    "@alterior/web-server": "^3.12.0"
+  },
   "dependencies": {
-    "@alterior/runtime": "^3.0.0-beta.98",
-    "@alterior/tasks": "^3.0.0-beta.98",
-    "@alterior/web-server": "^3.0.0-rc.8",
-    "@banta/common": "^2.3.3",
+    "@banta/common": "^3.0.1",
     "@types/express-serve-static-core": "^4.17.24",
-    "@types/ioredis": "^4.28.10",
     "@types/sanitize-html": "^2.6.2",
     "@types/serve-static": "^1.13.10",
     "@types/uuid": "^3.4.6",
     "aws-sdk": "^2.579.0",
     "body-parser": "^1.20.2",
     "dompurify": "^2.3.10",
-    "ioredis": "^4.28.5",
+    "ioredis": "^5.4.1",
     "jsdom": "^20.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.8.0",
-    "rxjs": "^6.5.5",
+    "rxjs": "^7.8.1",
     "sanitize-html": "^2.7.1",
     "sharp": "^0.30.5",
     "uuid": "^3.3.3",
-    "zone.js": "^0.11.4"
+    "zone.js": "^0.14.8"
   },
   "devDependencies": {
-    "@alterior/express": "^3.0.0-rc.8",
-    "@alterior/platform-nodejs": "^3.0.0-rc.7",
+    "@alterior/express": "^3.12.0",
+    "@alterior/logging": "^3.11.1",
+    "@alterior/platform-nodejs": "^3.6.4",
+    "@alterior/runtime": "^3.11.1",
+    "@alterior/web-server": "^3.12.0",
     "@astronautlabs/jwt": "^1.1.0",
     "@types/dompurify": "^2.3.3",
     "@types/express": "^4.17.13",
@@ -52,5 +57,5 @@
     "rimraf": "^3.0.2",
     "typescript": "^4.6.3"
   },
-  "gitHead": "d2cd94ce4f7c16445408ceadbef9a4cb7385a94f"
+  "gitHead": "79ad2fd0f04c7b7158eee72c3ec75d2140069df1"
 }

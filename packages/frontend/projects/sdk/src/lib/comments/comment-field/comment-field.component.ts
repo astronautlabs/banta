@@ -128,7 +128,7 @@ export class CommentFieldComponent {
         if (this.signInState === 'signing-in')
             return false;
         
-        if (!['connected', 'restored'].includes(this.source.state))
+        if (!['connected', 'restored'].includes(this.source?.state ?? 'connected'))
             return false;
             
         if (!this.canComment) {

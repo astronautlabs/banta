@@ -1,29 +1,37 @@
-import { Injectable } from "@alterior/di";
-import { ChatMessage, CommentsOrder, FilterMode, UrlCard, User, Topic } from "@banta/common";
-import { Subject } from "rxjs";
-import * as mongodb from 'mongodb';
-import * as ioredis from 'ioredis';
-import IORedis from 'ioredis';
-import { PubSubManager } from "./pubsub";
-import { v4 as uuid } from 'uuid';
-import createDOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
-import sanitizeHtml from 'sanitize-html';
+import { inject, Injectable } from "@alterior/di";
 import { Logger } from '@alterior/logging';
-import * as fs from 'fs';
+import { RolesService } from "@alterior/runtime";
+import { ChatMessage, CommentsOrder, FilterMode, Topic, UrlCard, User } from "@banta/common";
+import { JSDOM } from 'jsdom';
+import { Subject } from "rxjs";
+import { v4 as uuid } from 'uuid';
+import { Cache } from "./cache";
+import { InterServerCommunications } from "./inter-server-communications";
+
+import createDOMPurify from 'dompurify';
+import IORedis from 'ioredis';
+import sanitizeHtml from 'sanitize-html';
+
+import * as ioredis from 'ioredis';
+import * as mongodb from 'mongodb';
 
 export interface ChatEvent {
-    type : 'post' | 'edit' | 'like' | 'unlike' | 'delete';
+    type: 'post' | 'edit' | 'like' | 'unlike' | 'delete';
 }
 
 export interface PostMessageEvent extends ChatEvent {
-    type : 'post';
-    message : ChatMessage;
+    type: 'post';
+    message: ChatMessage;
 }
 
 export interface EditMessageEvent extends ChatEvent {
-    type : 'edit';
-    message : ChatMessage;
+    type: 'edit';
+    message: ChatMessage;
+}
+
+interface RecentMessagesCache {
+    newest: ChatMessage[];
+    ids: Set<string>;
 }
 
 export interface MessageQuery {
@@ -36,22 +44,22 @@ export interface MessageQuery {
     userId?: string;
 }
 
-const DEFAULT_COOLOFF_PERIOD = 10*1000;
+const DEFAULT_COOLOFF_PERIOD = 10 * 1000;
 
 export interface DeleteMessageEvent extends ChatEvent {
-    type : 'delete';
-    message : ChatMessage;
+    type: 'delete';
+    message: ChatMessage;
 }
 
 export interface LikeEvent extends ChatEvent {
     type: 'like';
-    message : ChatMessage;
+    message: ChatMessage;
     user: User;
 }
 
 export interface UnlikeEvent extends ChatEvent {
     type: 'unlike';
-    message : ChatMessage;
+    message: ChatMessage;
     user: User;
 }
 
@@ -82,6 +90,13 @@ export interface AuthorizableAction {
     topic?: Topic;
     parentMessage?: ChatMessage;
     message?: ChatMessage;
+
+    /**
+     * Information provided by the client via the subscribeToTopic() call. This is ignored by Banta.
+     * It can be used to pass arbitrary context information about the client into a pluggable authorizdation
+     * handler provided by the end application.
+     */
+    connectionMetadata?: Record<string, any>;
 }
 
 export type ValidateToken = (token: string) => Promise<User>;
@@ -130,20 +145,48 @@ export type MentionExtractor = (message: ChatMessage) => Promise<void>;
  */
 export const simpleMentionExtractor = (linker: (username: string) => string): MentionExtractor => {
     return async (message: ChatMessage) => {
-        message.mentionLinks = 
+        message.mentionLinks =
             Array.from(message.message.match(/@[A-Za-z0-9-]+/g) ?? [])
                 .map(un => un.slice(1))
                 .reduce((uniq, username) => uniq.concat(uniq.includes(username) ? [] : [username]), [])
                 .map(un => ({ text: `@${un}`, link: linker(un), external: true }))
-        ;
+            ;
     };
 }
 
+export interface ChatServerEvent {
+    type: 'create' | 'update';
+    originId: string;
+    topicId: string;
+    message?: ChatMessage;
+    like?: Like;
+}
+
+export class UnauthorizedError extends Error {
+}
 
 @Injectable()
 export class ChatService {
-    constructor(
-    ) {
+    private logger = inject(Logger);
+    private roles = inject(RolesService);
+
+    originId = uuid();
+
+    constructor() {
+        this.roles.registerRole({
+            identifier: 'banta-chat',
+            name: 'Banta Chat Services',
+            summary: 'Acts as a Banta Chat Services cluster member',
+            enabledByDefault: true,
+            start: async () => this.start(),
+            stop: async () => this.stop()
+        })
+    }
+
+    private running = false;
+
+    private start() {
+        this.running = true;
         this.mongoClient = new mongodb.MongoClient(process.env.BANTA_DB_URL || process.env.MONGO_URL || 'mongodb://127.0.0.1:27017');
         this.mongoClient.addListener('topologyClosed', () => {
             Logger.current.error(`MongoDB topology was closed. Exiting.`);
@@ -167,15 +210,64 @@ export class ChatService {
         this.redis = new IORedis(Number(process.env.REDIS_PORT ?? 6379), process.env.REDIS_HOST ?? 'localhost', {
             password: process.env.REDIS_PASSWORD,
         });
-        this.pubsubs = new PubSubManager(this.redis);
+
+        this.redis.addListener('error', err => {
+            Logger.current.error(`[Banta/ChatService] Redis error: ${err.stack || err.message || err}`);
+        });
+
+        
+        this.isc = new InterServerCommunications(this.logger, this.redis);
+        this.logger.info(`Connecting to Banta inter-server communication...`);
+        this.isc.connect();
+        this.isc.messages.subscribe(async event => {
+            if (event.originId === this.originId)
+                return;
+
+            if (event.message) {
+                this._messageChangedRemotely.next(event.message);
+                await this.cacheMessage(event.message, event.type);
+            }
+
+            if (event.like)
+                this._likeChangedRemotely.next({ ...event.like, topicId: event.topicId });
+        });
     }
 
-    readonly redis: ioredis.Redis;
-    readonly mongoClient: mongodb.MongoClient;
-    readonly db: mongodb.Db;
-    readonly pubsubs: PubSubManager;
+    private stop() {
+        this.running = false;
+        this.mongoClient.close();
+        this.redis.disconnect();
+        this.isc.disconnect();
+    }
+
+    private redis: ioredis.Redis;
+    private mongoClient: mongodb.MongoClient;
+    private db: mongodb.Db;
+    private isc: InterServerCommunications<ChatServerEvent>;
+
+    private _messageChangedRemotely = new Subject<ChatMessage>();
+    readonly messageChangedRemotely = this._messageChangedRemotely.asObservable();
+    
+    private _likeChangedRemotely = new Subject<Like & { topicId: string }>();
+    readonly likeChangedRemotely = this._likeChangedRemotely.asObservable();
 
     activeConnections: number = 0;
+
+    private guardRunning() {
+        if (!this.running)
+            throw new Error(`Banta Chat Services must be running to perform this action.`);
+    }
+
+    getCacheStatus() {
+        let entries = Array.from(this.recentMessageTopicCache.getInternalEntries().values());
+        let messageCounts = entries.map(e => e.value.newest.length);
+
+        return {
+            topicCount: entries.length,
+            messageCount: messageCounts.reduce((x, a) => x + a, 0),
+            topics: Object.fromEntries(entries.map(e => [e.key, e.value.newest.length ]))
+        };
+    }
 
     /**
      * Handle validation of a token sent by the client, and resolution of that token into a User object.
@@ -184,8 +276,8 @@ export class ChatService {
      * @param token 
      * @returns 
      */
-    validateToken: ValidateToken = async (token: string) => { 
-        throw new Error(`The Banta integration must specify validateToken()`); 
+    validateToken: ValidateToken = async (token: string) => {
+        throw new Error(`The Banta integration must specify validateToken()`);
     };
 
     /**
@@ -193,7 +285,7 @@ export class ChatService {
      * Should be provided by the site integrating Banta. If the user is not allowed,
      * then an error should be thrown.
      */
-    authorizeAction: AuthorizeAction = () => {};
+    authorizeAction: AuthorizeAction = () => { };
 
     /**
      * @internal
@@ -202,7 +294,11 @@ export class ChatService {
         try {
             await this.authorizeAction(user, token, action);
         } catch (e) {
-            throw new Error(`permission-denied|${e.message}`);
+            if (e instanceof UnauthorizedError) 
+                throw new Error(`permission-denied|${e.message}`);
+
+            this.logger.error(`Error occurred while authorizing action: ${JSON.stringify(action)}: ${e.stack || e || e.message}`);
+            throw new Error(`permission-denied|Not available [500]`);
         }
     }
 
@@ -242,27 +338,27 @@ export class ChatService {
     /**
      * The MongoDB `messages` collection
      */
-    get messages() { return this.db.collection<ChatMessage>('messages'); }
+    get messages() { this.guardRunning(); return this.db.collection<ChatMessage>('messages'); }
 
     /**
      * The MongoDB `urlCards` collection
      */
-    private get urlCards() { return this.db.collection<PersistedUrlCard>('urlCards'); }
+    private get urlCards() { this.guardRunning(); return this.db.collection<PersistedUrlCard>('urlCards'); }
 
     /**
      * The MongoDB `origins` collection
      */
-    private get origins() { return this.db.collection<UrlOrigin>('origins'); }
+    private get origins() { this.guardRunning(); return this.db.collection<UrlOrigin>('origins'); }
 
     /**
      * The MongoDB `topics` collection
      */
-    private get likes() { return this.db.collection<Like>('likes'); }
+    private get likes() { this.guardRunning(); return this.db.collection<Like>('likes'); }
 
     /**
      * The MongoDB `topics` collection
      */
-    private get topics() { return this.db.collection<Topic>('topics'); }
+    private get topics() { this.guardRunning(); return this.db.collection<Topic>('topics'); }
 
     private _events = new Subject<ChatEvent>();
 
@@ -279,22 +375,55 @@ export class ChatService {
      * @returns 
      */
     async getOrCreateTopic(topicOrId: Topic | string): Promise<Topic> {
+        this.guardRunning(); 
+
         if (typeof topicOrId === 'object')
             return topicOrId;
-        
+
         let id = <string>topicOrId;
-        await this.updateOne(this.topics, 
-            { id }, 
+        await this.updateOne(this.topics,
+            { id },
             {
                 $setOnInsert: {
                     id,
                     createdAt: Date.now()
                 }
-            }, 
+            },
             { upsert: true }
         );
 
         return await this.findOne(this.topics, { id });
+    }
+
+    private topicCache = new Cache<Topic>('topics', { timeToLive: 60_000, maxItems: 100 });
+
+    /**
+     * Get or create a topic with the given identifier, using a cache.
+     * @param id 
+     * @returns 
+     */
+    async getOrCreateTopicCached(topicOrId: Topic | string): Promise<Topic> {
+        this.guardRunning(); 
+
+        if (typeof topicOrId === 'object')
+            return topicOrId;
+
+        let id = <string>topicOrId;
+
+        return await this.topicCache.fetch(id, async () => {
+            await this.updateOne(this.topics,
+                { id },
+                {
+                    $setOnInsert: {
+                        id,
+                        createdAt: Date.now()
+                    }
+                },
+                { upsert: true }
+            );
+    
+            return await this.findOne(this.topics, { id });
+        });
     }
 
     /**
@@ -302,7 +431,9 @@ export class ChatService {
      * @param message 
      * @returns 
      */
-    async postMessage(message : ChatMessage) {
+    async postMessage(message: ChatMessage) {
+        this.guardRunning(); 
+
         if (!message.id) {
             message.id = uuid();
         } else {
@@ -310,7 +441,7 @@ export class ChatService {
                 throw new Error(`A message with this ID already exists.`);
             }
         }
-        
+
         message.hidden = false;
 
         // Make sure we strip the user's auth token, we never need that to be stored.
@@ -319,9 +450,9 @@ export class ChatService {
 
         if (!message.user || !message.user.id)
             throw new Error(`Message must include a valid user reference`);
-            
+
         let parentMessage: ChatMessage;
-        
+
         if (message.parentMessageId) {
             parentMessage = await this.getUnpreparedMessage(message.parentMessageId, false);
             if (!parentMessage)
@@ -342,13 +473,13 @@ export class ChatService {
 
         if (this.transformMessage)
             await this.transformMessage(message, 'post');
-        
+
         await this.extractMentions?.(message);
 
         // Definitely keeping this message at this point.
 
         await this.insertOne(this.messages, message);
-        
+
         setTimeout(async () => {
             // Update the parent's submessage count, if needed
 
@@ -366,11 +497,11 @@ export class ChatService {
                     }
                 });
                 let updatedParentMessage = await this.getUnpreparedMessage(parentMessage.id, true);
-                this.notifyMessageChange(updatedParentMessage);
+                this.notifyMessageChange(updatedParentMessage, 'update');
             }
         });
 
-        this.notifyMessageChange(message);
+        this.notifyMessageChange(message, 'create');
         this._events.next(<PostMessageEvent>{ type: 'post', message });
 
         return message;
@@ -384,9 +515,11 @@ export class ChatService {
      * @returns 
      */
     async modifyTopicMessageCount(topicOrId: Topic | string, delta: number) {
+        this.guardRunning(); 
+
         let topic = await this.getOrCreateTopic(topicOrId);
         topic.messageCount += delta;
-        await this.updateOne(this.topics, { id: topic.id }, { $inc: { messageCount: delta }});
+        await this.updateOne(this.topics, { id: topic.id }, { $inc: { messageCount: delta } });
     }
 
     /**
@@ -397,10 +530,12 @@ export class ChatService {
      * @returns 
      */
     async modifySubmessageCount(messageOrId: ChatMessage | string, delta: number) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         message.submessageCount = (message.submessageCount || 0) + delta;
         this.updateOne(this.messages, { id: message.id }, { $inc: { submessageCount: delta } });
-        this.notifyMessageChange(message);
+        this.notifyMessageChange(message, 'update');
     }
 
     /**
@@ -411,10 +546,12 @@ export class ChatService {
      * @returns 
      */
     async modifyMessageLikesCount(messageOrId: string | ChatMessage, delta: number) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         message.likes += delta;
         await this.updateOne(this.messages, { id: message.id }, { $inc: { likes: delta } });
-        this.notifyMessageChange(message);
+        this.notifyMessageChange(message, 'update');
         return message;
     }
 
@@ -422,8 +559,11 @@ export class ChatService {
      * Notify all interested clients that the given message has created/updated.
      * @param message 
      */
-    notifyMessageChange(message: ChatMessage) {
-        this.pubsubs.publish(message.topicId, { message });
+    notifyMessageChange(message: ChatMessage, type: 'create' | 'update') {
+        this.guardRunning(); 
+
+        this.cacheMessage(message, type);
+        this.isc.send({ type, originId: this.originId, topicId: message.topicId, message });
     }
 
     /**
@@ -433,12 +573,14 @@ export class ChatService {
      * @returns 
      */
     async setMessageHiddenStatus(messageOrId: ChatMessage | string, hidden: boolean) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         if (message.hidden === hidden || message.deleted)
             return;
-        
+
         // Update the message itself to reflect the new status.
-        this.updateOne(this.messages, { id: message.id }, { $set: { hidden }});
+        this.updateOne(this.messages, { id: message.id }, { $set: { hidden } });
         message.hidden = hidden;
 
         // Address the effect this operation will have on cached message counters.
@@ -468,14 +610,14 @@ export class ChatService {
 
         if (affectedMessages !== 0) {
             await this.modifyTopicMessageCount(
-                message.topicId, 
+                message.topicId,
                 (hidden ? -1 : 1) * affectedMessages
             );
         }
 
         // Notify all listeners of the change to this method.
 
-        this.notifyMessageChange(message);
+        this.notifyMessageChange(message, 'update');
     }
 
     /**
@@ -484,6 +626,8 @@ export class ChatService {
      * @returns The number of actual visible submessages
      */
     async countVisibleSubMessages(parentMessageId: string): Promise<number> {
+        this.guardRunning(); 
+
         return await this.messages.countDocuments({
             parentMessageId,
             $or: [
@@ -499,6 +643,8 @@ export class ChatService {
      * @param newText 
      */
     async editMessage(messageOrId: string | ChatMessage, newText: string) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         let previousText = message.message;
         message.message = newText;
@@ -526,12 +672,14 @@ export class ChatService {
         });
 
         message.message = newText;
-        this.pubsubs.publish(message.topicId, { message });
-        
+        this.isc.send({ type: 'update', originId: this.originId, topicId: message.topicId, message });
+
         this._events.next(<EditMessageEvent>{
             type: 'edit',
             message
         });
+
+        return this.prepareMessage(message);
     }
 
     /**
@@ -543,12 +691,14 @@ export class ChatService {
      * @param messageOrId 
      */
     async deleteMessage(messageOrId: ChatMessage | string) {
+        this.guardRunning(); 
+
         let message = await this.getUnpreparedMessage(messageOrId, true);
         await this.setMessageHiddenStatus(message.id, true);
 
         message.deleted = true;
-        await this.updateOne(this.messages, { id: message.id }, { $set: { deleted: true }});
-        
+        await this.updateOne(this.messages, { id: message.id }, { $set: { deleted: true } });
+
         this._events.next(<DeleteMessageEvent>{
             type: 'delete',
             message
@@ -556,6 +706,8 @@ export class ChatService {
     }
 
     async getLike(userId: string, messageId: string) {
+        this.guardRunning(); 
+
         return await this.findOne(this.likes, { messageId, userId });
     }
 
@@ -565,31 +717,40 @@ export class ChatService {
      * @param user 
      * @returns 
      */
-    async like(message : ChatMessage, user : User) {
+    async like(message: ChatMessage, user: User) {
+        this.guardRunning(); 
+        
         if (!message)
             throw new Error(`Message cannot be null`);
 
         let like = await this.getLike(user.id, message.id);
-        if (like) 
-            return;
+        if (like)
+            return message;
 
         await this.dbOperation(`Insert/update like`, async () => {
-            this.updateOne(this.likes, 
-                { messageId: message.id, user: user.id }, 
+            this.updateOne(this.likes,
+                { messageId: message.id, user: user.id },
                 {
                     $setOnInsert: {
                         liked: true,
                         createdAt: Date.now(),
-                        messageId: message.id, 
+                        messageId: message.id,
                         userId: user.id
                     }
-                }, 
+                },
                 { upsert: true }
             );
         });
 
+        // Add user to likers array (both locally and in DB)
+        // Important to do this before changing like count, so it gets synced to 
+        // other servers correctly.
+
+        if (!message.likers.includes(user.id))
+            message.likers.push(user.id);
+
+        // Update the likes count on the message for all clients and all servers
         await this.modifyMessageLikesCount(message, +1);
-        await this.pubsubs.publish(message.topicId, { like });
         this._events.next(<LikeEvent>{ type: 'like', message, user });
 
         setTimeout(() => {
@@ -599,6 +760,10 @@ export class ChatService {
                 }
             });
         });
+        
+        this.isc.send({ type: 'create', originId: this.originId, topicId: message.topicId, like });
+        
+        return message;
     }
 
     private async findOne<T>(collection: mongodb.Collection<T>, criteria: mongodb.Filter<T>) {
@@ -608,14 +773,14 @@ export class ChatService {
     }
 
     private async updateOne<T>(
-        collection: mongodb.Collection<T>, 
-        filter: mongodb.Filter<T>, 
-        update: Partial<T> | mongodb.UpdateFilter<T>, 
+        collection: mongodb.Collection<T>,
+        filter: mongodb.Filter<T>,
+        update: Partial<T> | mongodb.UpdateFilter<T>,
         options?: mongodb.UpdateOptions
     ) {
-        const label = `${collection.collectionName}.updateOne(` 
-            + `${JSON.stringify(filter)}, ${JSON.stringify(update)}, ${JSON.stringify(options)}` 
-        + `)`;
+        const label = `${collection.collectionName}.updateOne(`
+            + `${JSON.stringify(filter)}, ${JSON.stringify(update)}, ${JSON.stringify(options)}`
+            + `)`;
         return await this.dbOperation(label, () => {
             return collection.updateOne(filter, update, options);
         })
@@ -643,24 +808,24 @@ export class ChatService {
      * @param user 
      * @returns 
      */
-    async unlike(message : ChatMessage, user : User) {
+    async unlike(message: ChatMessage, user: User) {
+        this.guardRunning(); 
+
         if (!message)
             throw new Error(`Message cannot be null`);
 
         let like = await this.findOne(this.likes, { messageId: message.id, userId: user.id });
         if (!like)
-            return;
+            return message;
 
         await this.likes.deleteOne({ messageId: message.id, userId: user.id });
 
-        this.modifyMessageLikesCount(message, -1);
-        this.pubsubs.publish(message.topicId, {
-            like: {
-                ...like,
-                liked: false
-            }
-        });
-        this._events.next(<UnlikeEvent>{ type: 'unlike', message, user });
+        // Remove user from likers array (locally and in DB) 
+        // Important to do this first so it gets synced to other servers
+
+        if (message.likers.includes(user.id))
+            message.likers = message.likers.filter(x => x !== user.id);
+
         setTimeout(() => {
             this.updateOne(this.messages, { id: message.id }, {
                 $pull: {
@@ -668,6 +833,22 @@ export class ChatService {
                 }
             });
         });
+
+        // Update the message's likes count for all clients and servers
+
+        this.modifyMessageLikesCount(message, -1);
+        this.isc.send({
+            type: 'update',
+            originId: this.originId,
+            topicId: message.topicId,
+            like: {
+                ...like,
+                liked: false
+            }
+        });
+        this._events.next(<UnlikeEvent>{ type: 'unlike', message, user });
+
+        return message;
     }
 
     /**
@@ -678,6 +859,8 @@ export class ChatService {
      * @returns 
      */
     async getUnpreparedMessage(messageOrId: ChatMessage | string, throwIfMissing = false) {
+        this.guardRunning(); 
+
         if (typeof messageOrId !== 'string')
             return messageOrId;
 
@@ -686,7 +869,7 @@ export class ChatService {
 
         if (throwIfMissing && !message)
             throw new Error(`No such message with ID '${id}'`);
-        
+
         return message;
     }
 
@@ -700,9 +883,11 @@ export class ChatService {
      * @returns 
      */
     async getMessage(messageOrId: ChatMessage | string, throwIfMissing = false) {
-        return await this.prepareMessage(await this.getUnpreparedMessage(messageOrId, throwIfMissing));
+        this.guardRunning(); 
+
+        return this.prepareMessage(await this.getUnpreparedMessage(messageOrId, throwIfMissing));
     }
-    
+
     /**
      * Creates a MongoDB filter object for the given MessageQuery.
      * @param query 
@@ -722,8 +907,8 @@ export class ChatService {
      * @returns 
      */
     createMongoMessagesFilter(topicId: string, parentMessageId: string, filterMode: FilterMode, userId: string): mongodb.Filter<ChatMessage> {
-        let filter = <mongodb.Filter<ChatMessage>>{ 
-            topicId: topicId, 
+        let filter = <mongodb.Filter<ChatMessage>>{
+            topicId: topicId,
             parentMessageId: parentMessageId,
             $or: [
                 { hidden: undefined },
@@ -776,23 +961,25 @@ export class ChatService {
      * @returns 
      */
     async getUnpreparedMessages(query: MessageQuery): Promise<ChatMessage[]> {
-        query = { 
+        this.guardRunning(); 
+
+        query = {
             sort: CommentsOrder.NEWEST,
             filter: FilterMode.ALL,
-            ...query 
+            ...query
         };
-        
+
         let messages = <ChatMessage[]>await this.messages
             .find(
-                this.createMongoMessagesFilterForQuery(query), 
-                { 
-                    limit: query.limit ?? 20, 
-                    skip: query.offset ?? 0, 
+                this.createMongoMessagesFilterForQuery(query),
+                {
+                    limit: query.limit ?? 20,
+                    skip: query.offset ?? 0,
                     sort: this.createMongoSortFromOrder(query.sort)
                 }
             )
             .toArray()
-        ;
+            ;
 
         messages = await Promise.all(messages.map(async (message, i) => {
             message.pagingCursor = String(i);
@@ -808,8 +995,10 @@ export class ChatService {
      * @returns 
      */
     async getMessages(query: MessageQuery): Promise<ChatMessage[]> {
+        this.guardRunning(); 
+
         let messages = await this.getUnpreparedMessages(query);
-        return await Promise.all(messages.map(async message => this.prepareMessage(message, query.userId)));
+        return messages.map(message => this.prepareMessage(message, query.userId));
     }
 
     /**
@@ -819,8 +1008,11 @@ export class ChatService {
      * @param userId 
      * @returns 
      */
-    async prepareMessage(message: ChatMessage, userId?: string) {
-        message = { 
+    prepareMessage(message: ChatMessage, userId?: string) {
+        if (!message)
+            return undefined;
+        
+        message = {
             ...message,
             userState: {
                 liked: false
@@ -834,8 +1026,7 @@ export class ChatService {
         delete message.user?.userAgent;
 
         if (userId) {
-            let like = await this.getLike(userId, message.id);
-            message.userState.liked = !!like;
+            message.userState.liked = (message.likers || []).includes(userId);
         }
 
         return message;
@@ -849,12 +1040,14 @@ export class ChatService {
      * @returns 
      */
     async getTopic(topicOrId: string | Topic, throwIfMissing = false) {
+        this.guardRunning(); 
+
         if (typeof topicOrId !== 'string')
             return topicOrId;
 
         let id = <string>topicOrId;
         let topic = await this.findOne(this.topics, { id });
-        
+
         if (throwIfMissing && !topic)
             throw new Error(`No such topic with ID '${id}'`);
 
@@ -865,18 +1058,97 @@ export class ChatService {
     }
 
     async getOrigin(origin: string) {
+        this.guardRunning(); 
+
         return await this.findOne(this.origins, { origin });
     }
 
+    /**
+     * Stores recently sent messages in an LRU cache so that we can read from it when getting existing 
+     * messages during client start and also when fetching additional pages of messages during paging.
+     */
+    private recentMessageTopicCache = new Cache<RecentMessagesCache>('recentMessageTopics', { 
+        timeToLive: 60*60*1000, 
+        maxItems: 100, 
+        evictionStrategy: 'lru',
+        deepCopy: false 
+    });
+
+    maxCachedMessagesPerTopic = 1000;
+
+    private async cacheMessage(message: ChatMessage, type: 'create' | 'update') {
+        if (message.parentMessageId)
+            return;
+
+        let messageCache = await this.recentMessageTopicCache.fetch(message.topicId, async () => ({ newest: [], ids: new Set() }));
+        if (messageCache.ids.has(message.id)) {
+            messageCache.newest[messageCache.newest.findIndex(x => x.id === message.id)] = message;
+        } else {
+            // Only add this message to the cached set if it is being created.
+            // Updated messages are handled above, and if an updated message has fallen out of 
+            // the message cache, we don't want to add it in as if it is new.
+            if (type === 'create') {
+                messageCache.newest.unshift(message);
+                messageCache.ids.add(message.id);
+            }
+        }
+
+        this.trimRecentMessageCache(messageCache);
+    }
+
+    async cacheMessages(topicId: string, messages: ChatMessage[]) {
+        if (!topicId)
+            return;
+
+        this.logger.info(`Caching ${messages.length} messages for topic '${topicId}'`);
+
+        let messageCache = await this.recentMessageTopicCache.fetch(topicId, async () => ({ newest: [], ids: new Set() }));
+        messageCache.newest = messages.slice();
+        messageCache.ids.clear();
+        for (let message of messages)
+            messageCache.ids.add(message.id);
+        
+        this.trimRecentMessageCache(messageCache);
+    }
+
+    private trimRecentMessageCache(messageCache: RecentMessagesCache) {
+        for (let removed of messageCache.newest.splice(this.maxCachedMessagesPerTopic)) {
+            messageCache.ids.delete(removed.id);
+        }
+    }
+
+    getCachedMessages(topicId: string, parentMessageId: string, offset = 0, limit = 0) {
+        if (parentMessageId)
+            return [];
+
+        let cache = this.recentMessageTopicCache.get(topicId);
+        if (cache) {
+            let messages = cache.newest;
+            if (offset && limit)
+                messages = messages.slice(offset, offset + limit);
+            else if (offset)
+                messages = messages.slice(offset);
+            else if (limit)
+                messages = messages.slice(0, limit);
+            else
+                messages = messages.slice();
+
+            return messages;
+        }
+        return [];
+    }
+
     async getUrlCard(url: string): Promise<UrlCard> {
-        let urlCard = <PersistedUrlCard> await this.findOne(this.urlCards, { url });
+        this.guardRunning(); 
+
+        let urlCard = <PersistedUrlCard>await this.findOne(this.urlCards, { url });
         const URL_CARD_TIMEOUT = 1000 * 60 * 15;
         if (urlCard && urlCard.retrievedAt + URL_CARD_TIMEOUT > Date.now())
             return urlCard.card || null;
 
         let details = new URL(url);
         let originName = details.origin;
-        let origin = <UrlOrigin> await this.getOrigin(originName);
+        let origin = <UrlOrigin>await this.getOrigin(originName);
 
         if (origin) {
             let lastFetchedAt = new Date(origin.lastFetchedAt).getTime();
@@ -888,7 +1160,7 @@ export class ChatService {
             }
 
             // If we haven't seen the origin in a long time (30 days), go ahead and reset its cooloff period.
-            if (timeSinceLastFetch > 1000*60*60*24*30) {
+            if (timeSinceLastFetch > 1000 * 60 * 60 * 24 * 30) {
                 Logger.current.info(`Link Fetcher: Origin was last seen more than 30 days ago. Resetting cool-off period to default.`);
                 origin.cooloffPeriodMS = DEFAULT_COOLOFF_PERIOD;
             }
@@ -920,7 +1192,7 @@ export class ChatService {
         } catch (e) {
             Logger.current.error(`Failed to connect to ${originName} while fetching URL card for '${url}': ${e.message}`);
             Logger.current.error(`Origin cooldown period will be extended by 5 minutes.`);
-            origin.cooloffPeriodMS += 1000*60*5;
+            origin.cooloffPeriodMS += 1000 * 60 * 5;
         }
 
         try {
@@ -929,27 +1201,27 @@ export class ChatService {
 
             // Cool-off period should approach the request duration if its not already larger.
             if (origin.cooloffPeriodMS < requestDuration) {
-                origin.cooloffPeriodMS = (origin.cooloffPeriodMS*7 + (requestDuration + 1000)*3) / 10;
+                origin.cooloffPeriodMS = (origin.cooloffPeriodMS * 7 + (requestDuration + 1000) * 3) / 10;
             }
             origin.lastFetchedAt = new Date().toISOString();
             origin.lastFetchedStatusCode = response.status;
-            
+
             if (response.status >= 500) {
-                origin.cooloffPeriodMS += 1000*60*15;
+                origin.cooloffPeriodMS += 1000 * 60 * 15;
                 Logger.current.error(
                     `Received server error ${response.status} while fetching URL card for '${url}'. `
                     + `Origin cooldown period will be extended by 15 minutes. New cooldown: ${origin.cooloffPeriodMS}ms`
                 );
                 throw new Error(`Received error ${response.status} while fetching URL card`);
             } else if (response.status == 420) {
-                origin.cooloffPeriodMS += 1000*60*5;
+                origin.cooloffPeriodMS += 1000 * 60 * 5;
                 Logger.current.error(
                     `Received rate limit (${response.status}) while fetching URL card for '${url}'. `
                     + `Origin cooldown period will be extended by 5 minutes. New cooldown: ${origin.cooloffPeriodMS}`
                 );
                 throw new Error(`Received error ${response.status} while fetching URL card`);
             } else if (response.status === 401 || response.status === 403) {
-                origin.cooloffPeriodMS += 1000*60*10;
+                origin.cooloffPeriodMS += 1000 * 60 * 10;
                 Logger.current.error(
                     `Received unauthorized response (${response.status}) while fetching URL card for '${url}'. `
                     + `Origin cooldown period will be extended by 10 minutes. New cooldown: ${origin.cooloffPeriodMS}`
@@ -958,7 +1230,7 @@ export class ChatService {
             } else {
                 // Successful request. Decay the cool-off period for this origin.
                 origin.cooloffPeriodMS *= 0.9;
-                
+
                 if (response.status >= 400) {
                     Logger.current.info(`Link Fetcher: Received client-error status ${response.status} for '${url}'`);
                     urlCard = {

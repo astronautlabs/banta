@@ -225,8 +225,9 @@ export class SocketRPC<PeerT = Peer> {
 
     private resendQueuedRequests() {
         let calls = this.retryOnReconnectQueue.splice(0);
+        if (calls.length > 0)
+            console.log(`[Banta/RPC] Resending ${calls.length} idempotent call requests...`);
 
-        console.log(`Resending ${calls.length} idempotent call requests...`);
         calls.forEach(req => this.startCall(req));
     }
 
@@ -253,7 +254,7 @@ export class SocketRPC<PeerT = Peer> {
 
     }
 
-    private async onReceiveMessage(message: RPCMessage) {
+    protected async onReceiveMessage(message: RPCMessage) {
         if (isRequest(message)) {
             if (this.getRpcType(message.method) === 'call' && typeof this[message.method] === 'function') {
                 let value;
