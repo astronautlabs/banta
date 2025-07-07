@@ -783,7 +783,9 @@ export class BantaCommentsComponent {
         this._selected.next(message);
 
         console.log(`[Banta] Opening thread for ${this.topicID}/${message.id}...`);
-        let selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id);
+        let selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id, {
+            metadata: this.metadata
+        });
 
         if (!selectedMessageThread) {
             console.warn(`Failed to locate thread for message ${this.topicID}/${message.id}!`);
