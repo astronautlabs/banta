@@ -28,12 +28,23 @@ export class InterServerCommunications<T> {
     private connected = false;
 
     connect() {
+        const TRACE_ISC = process.env.BANTA_TRACE_ISC === '1';
+
         if (this.connected)
             return;
 
         this.connected = true;
         setTimeout(async () => {
             let lastMessageReceived = '$';
+
+            this.logger.error(`[Banta/InterServerCommunications] Connected.`);
+
+            if (TRACE_ISC) {
+                this.logger.info(`[Banta/InterServerCommunications] ISC Tracing is enabled (set BANTA_TRACE_ISC=0 or remove to disable)`);
+            } else {
+                this.logger.info(`[Banta/InterServerCommunications] ISC Tracing is disabled (set BANTA_TRACE_ISC=1 to enable)`);
+            }
+
             while (this.connected) {
                 let results = await this.subscriber.xread('BLOCK', 0, 'STREAMS', STREAM_ID, lastMessageReceived);
                 for (let [ key, items ] of results) {
@@ -45,12 +56,16 @@ export class InterServerCommunications<T> {
                         try {
                             let event = JSON.parse(json);
                             this._messages.next(event);
+                            if (TRACE_ISC) {
+                                this.logger.info(`[Banta/InterServerCommunications] Received message ${id}: ${JSON.stringify(event, undefined, 2)}`);
+                            }
                         } catch (e) {
                             this.logger.error(`[Banta/InterServerCommunications] Failed to parse Banta ISC event #${id} : '${json}': ${e.message}! Event will be skipped!`);
                         }
                     }
                 }
             }
+            this.logger.error(`[Banta/InterServerCommunications] Disconnected.`);
         });
     }
 
