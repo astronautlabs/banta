@@ -158,6 +158,19 @@ export class MockSource implements ChatSourceBase {
     messageSent = new Subject<ChatMessage>();
     messages: ChatMessage[] = [];
 
+    async getServerInfo() {
+        return {
+            service: '@banta/mock-source',
+            connections: 0,
+            originId: '',
+            serverId: '',
+            cache: {
+                topicCount: 0,
+                messageCount: 0,
+                topics: {}
+            }
+        };
+    }
     get errorState() {
         return undefined;
     }

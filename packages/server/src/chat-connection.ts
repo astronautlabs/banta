@@ -4,6 +4,7 @@ import { Subscription } from "rxjs";
 import { AuthorizableAction, ChatService, UnauthorizedError } from "./chat.service";
 import { deepCopy } from "./deep-copy";
 
+import * as os from 'os';
 import * as mongodb from 'mongodb';
 
 export class ChatConnection extends SocketRPC {
@@ -45,6 +46,17 @@ export class ChatConnection extends SocketRPC {
             this.logInfo(`Disconnected.`);
         });
         return await super.bind(socket);
+    }
+
+    @RpcCallable()
+    async getServerInfo() {
+        return { 
+            service: `@banta/server`,
+            serverId: os.hostname(),
+            originId: this.chat.originId,
+            connections: this.chat.activeConnections,
+            cache: this.chat.getCacheStatus()
+        };
     }
 
     @RpcCallable()

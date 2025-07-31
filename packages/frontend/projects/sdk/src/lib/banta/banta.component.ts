@@ -146,6 +146,7 @@ export class BantaComponent {
 
     @Input() chatLabel = 'Chat';
     @Input() commentsLabel = 'Comments';
+    @Input() allowServerInfoRequest = false;
 
     set topicID(value) {
         this._topicID = value;

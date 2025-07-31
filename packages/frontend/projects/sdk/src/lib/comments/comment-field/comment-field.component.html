@@ -60,6 +60,21 @@
                         (attachmentError)="attachmentError($event)"
                         ></banta-attachment-button>
                     <emoji-selector-button [disabled]="readonly" (selected)="insertEmoji($event)"></emoji-selector-button>
+                    <mat-menu #overflowMenu>
+                        <button mat-menu-item (click)="reconnectRequested.next()">
+                            <mat-icon>refresh</mat-icon>
+                            Reconnect
+                        </button>
+                        @if (allowServerInfoRequest) {
+                            <button mat-menu-item (click)="serverInfoRequested.next()">
+                                <mat-icon>code</mat-icon>
+                                Server Information
+                            </button>
+                        }
+                    </mat-menu>
+                    <button mat-icon-button [mat-menu-trigger-for]="overflowMenu">
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
                 </div>
                 
             </div>

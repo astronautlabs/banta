@@ -1,4 +1,4 @@
-import { ChatMessage, ChatPermissions, CommentsOrder, DurableSocket, User } from "@banta/common";
+import { ChatMessage, ChatPermissions, CommentsOrder, DurableSocket, ServerInfo, User } from "@banta/common";
 import { BehaviorSubject, Subject, Subscription } from "rxjs";
 import { RpcEvent, SocketRPC } from "@banta/common";
 import { ChatSourceBase } from "./chat-source-base";
@@ -259,6 +259,11 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     get messageObserved() { return this._messageObserved.asObservable(); }
 
     messages: ChatMessage[] = [];
+
+    async getServerInfo(): Promise<ServerInfo> {
+        await this.ensureConnection();
+        return await this.idempotentPeer.getServerInfo();
+    }
 
     async send(message: ChatMessage): Promise<ChatMessage> {
         await this.ensureConnection();

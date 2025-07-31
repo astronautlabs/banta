@@ -1,7 +1,7 @@
 /// <reference types="@types/resize-observer-browser" />
 
 import { Component, ContentChild, ElementRef, HostBinding, Input, NgZone, Output, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
-import { User, ChatMessage, CommentsOrder, FilterMode } from '@banta/common';
+import { User, ChatMessage, CommentsOrder, FilterMode, ServerInfo } from '@banta/common';
 import { HashTag } from '../comment-field/comment-field.component';
 import { Subject, Observable, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -368,6 +368,7 @@ export class BantaCommentsComponent {
     private _shared = new Subject<ChatMessage>();
     private _usernameSelected = new Subject<User>();
     private _avatarSelected = new Subject<User>();
+    private _reconnectRequested = new Subject<void>();
     private _source: ChatSourceBase;
 
     /**
@@ -396,6 +397,7 @@ export class BantaCommentsComponent {
     @Input() postCommentLabel = 'Post a comment';
     @Input() postReplyLabel = 'Post a reply';
     @Input() allowAttachments = true;
+    @Input() allowServerInfoRequest = false;
     @Input() fixedHeight: boolean;
     @Input() maxMessages: number;
     @Input() maxVisibleMessages: number = 20;
@@ -405,6 +407,14 @@ export class BantaCommentsComponent {
     @Input() participants: User[] = [];
 
     private _sourceSubscription: Subscription;
+
+    reconnect() {
+        if (this._sourceIsOwned) {
+            this.reloadSource();
+        } else {
+            this._reconnectRequested.next();
+        }
+    }
 
     @Input()
     get source(): ChatSourceBase { return this._source; }
@@ -472,16 +482,17 @@ export class BantaCommentsComponent {
 
     // Outputs
 
-    @Output() get signInSelected(): Observable<void> { return this._signInSelected; }
-    @Output() get editAvatarSelected() { return this._editAvatarSelected; }
-    @Output() get permissionDeniedError(): Observable<string> { return this._permissionDeniedError; }
-    @Output() get upvoted() { return this._upvoted.asObservable(); }
-    @Output() get reported() { return this._reported.asObservable(); }
-    @Output() get selected() { return this._selected.asObservable(); }
-    @Output() get userSelected() { return this._userSelected.asObservable(); }
-    @Output() get usernameSelected() { return this._usernameSelected.asObservable(); }
-    @Output() get avatarSelected() { return this._avatarSelected.asObservable(); }
-    @Output() get shared() { return this._shared.asObservable(); }
+    @Output() readonly signInSelected = this._signInSelected.asObservable();
+    @Output() readonly editAvatarSelected = this._editAvatarSelected.asObservable();
+    @Output() readonly permissionDeniedError = this._permissionDeniedError.asObservable();
+    @Output() readonly upvoted = this._upvoted.asObservable();
+    @Output() readonly reported = this._reported.asObservable();
+    @Output() readonly selected = this._selected.asObservable();
+    @Output() readonly userSelected = this._userSelected.asObservable();
+    @Output() readonly usernameSelected = this._usernameSelected.asObservable();
+    @Output() readonly avatarSelected = this._avatarSelected.asObservable();
+    @Output() readonly shared = this._shared.asObservable();
+    @Output() readonly reconnectRequested = this._reconnectRequested.asObservable();
 
     private _reloadSourceTimeout;
     private reloadSource() {
@@ -580,6 +591,17 @@ export class BantaCommentsComponent {
                 block: 'center'
             });
         }
+    }
+
+    serverInfoVisible = false;
+    serverInfoLoading = true;
+    serverInfo: ServerInfo;
+
+    async showServerInfo() {
+        this.serverInfoVisible = true;
+        this.serverInfoLoading = true;
+        this.serverInfo = await this.source.getServerInfo();
+        this.serverInfoLoading = false;
     }
 
     loadingSharedComment = false;

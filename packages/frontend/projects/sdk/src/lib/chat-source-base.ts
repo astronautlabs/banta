@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { ChatMessage, CommentsOrder, ChatPermissions, FilterMode } from '@banta/common';
+import { ChatMessage, CommentsOrder, ChatPermissions, FilterMode, ServerInfo } from '@banta/common';
 
 export interface ChatSourceBase {
     /**
@@ -29,6 +29,7 @@ export interface ChatSourceBase {
     getExistingMessages(): Promise<ChatMessage[]>;
     loadAfter(message: ChatMessage, count: number): Promise<ChatMessage[]>;
     get(id: string): Promise<ChatMessage>;
+    getServerInfo(): Promise<ServerInfo>;
     likeMessage(messageId: string): Promise<void>;
     unlikeMessage(messageId: string): Promise<void>;
     editMessage(messageId: string, text: string): Promise<void>;

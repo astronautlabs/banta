@@ -159,3 +159,15 @@ banta-comment-sort {
 .settings {
     display: flex;
 }
+
+
+.server-info {
+    border: 1px solid #0089ff;
+    padding: 0 0.5em;
+    border-radius: 4px;
+    margin: 0.5em 0;
+    .server-info-header {
+        display: flex;
+        align-items: center;
+    }
+}

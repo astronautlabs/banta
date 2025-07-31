@@ -1,3 +1,4 @@
+export * from './server-info';
 export * from './chat-message';
 export * from './counter';
 export * from './new-message-form';

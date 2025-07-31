@@ -81,7 +81,7 @@ export class CommentFieldComponent {
     @Input() url: string;
     @Input() submit: (message: ChatMessage) => boolean;
     @Input() readonly = false;
-
+    @Input() allowServerInfoRequest = false;
     //#endregion
     //#region Outputs
 
@@ -89,6 +89,8 @@ export class CommentFieldComponent {
     @Output() editAvatarSelected = new Subject<void>();
     @Output() focusChange = new Subject<boolean>();
     @Output() textChanged = new Subject<void>();
+    @Output() serverInfoRequested = new Subject<void>();
+    @Output() reconnectRequested = new Subject<void>();
     @Output() get permissionDeniedError() { return this._permissionDeniedError; }
     
     //#endregion

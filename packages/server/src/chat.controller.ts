@@ -33,6 +33,7 @@ export class ChatController {
             service: `@banta/server`,
             serverId: this.serverId,
             runId: this.runId,
+            originId: this.chat.originId,
             connections: this.chat.activeConnections,
             cache: this.chat.getCacheStatus()
         };

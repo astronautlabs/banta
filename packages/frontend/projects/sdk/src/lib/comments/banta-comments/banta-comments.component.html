@@ -122,6 +122,9 @@
             [allowAttachments]="allowAttachments"
             [genericAvatarUrl]="genericAvatarUrl"
             [readonly]="source?.readonly"
+            [allowServerInfoRequest]="allowServerInfoRequest"
+            (serverInfoRequested)="showServerInfo()"
+            (reconnectRequested)="reconnect()"
             (editAvatarSelected)="showEditAvatar()"
             (signInSelected)="showSignIn()"
             (permissionDeniedError)="handlePermissionDenied($event)"
@@ -129,6 +132,25 @@
         
         </banta-comment-field>
 
+        @if (serverInfoVisible) {
+            <div class="server-info">
+                <div class="server-info-header">
+                    Server Info
+                    <div class="spacer"></div>
+                    <button mat-icon-button matTooltip="Reload" (click)="showServerInfo()">
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                    <button mat-icon-button matTooltip="Hide" (click)="serverInfoVisible = false">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
+                @if (serverInfoLoading) {
+                    <mat-spinner />
+                } @else {
+                    <pre>{{ serverInfo | json }}</pre>
+                }
+            </div>
+        }
         <mat-menu #filterMenu="matMenu">
             <button mat-menu-item *ngFor="let filter of filterModes" (click)="filterMode = filter">
                 {{filterModeLabels[filter]}}

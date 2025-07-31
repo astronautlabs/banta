@@ -1,4 +1,4 @@
-import { ChatMessage, ChatPermissions, CommentsOrder, FilterMode } from "@banta/common";
+import { ChatMessage, ChatPermissions, CommentsOrder, FilterMode, ServerInfo } from "@banta/common";
 import { ChatSourceBase } from "./chat-source-base";
 import { Observable, Subject } from "rxjs";
 import { ChatBackend } from "./chat-backend";
@@ -38,6 +38,20 @@ export class StaticChatSource implements ChatSourceBase {
     messageSent = new Subject<ChatMessage>();
 
     messages: ChatMessage[] = [];
+
+    async getServerInfo(): Promise<ServerInfo> {
+        return {
+            service: '@banta/static-chat-source',
+            connections: 0,
+            originId: '',
+            serverId: '',
+            cache: {
+                topicCount: 0,
+                messageCount: 0,
+                topics: {}
+            }
+        };
+    }
 
     async send(message: ChatMessage): Promise<ChatMessage> {
         throw new Error(`Cannot send a message in this state.`);

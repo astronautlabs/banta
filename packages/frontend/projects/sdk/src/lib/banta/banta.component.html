@@ -243,6 +243,7 @@
     <div class="points-section">
         <banta-comments
             [source]="pointSource"
+            [allowServerInfoRequest]="allowServerInfoRequest"
             (signInSelected)="showSignIn()"
             (upvoted)="upvoteMessage($event)"
             (reported)="reportMessage($event)"
