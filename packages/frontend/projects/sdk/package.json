@@ -1,6 +1,6 @@
 {
   "name": "@banta/sdk",
-  "version": "5.9.0",
+  "version": "5.9.1",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -15,7 +15,7 @@
     "@angular/platform-browser": "^16 || ^17 || ^18 || ^19",
     "@angular/platform-browser-dynamic": "^16 || ^17 || ^18 || ^19",
     "@angular/router": "^16 || ^17 || ^18 || ^19",
-    "@banta/common": "^2.8.0",
+    "@banta/common": "^3.1.0",
     "@types/dompurify": "^3.0.5",
     "dompurify": "^3.1.5",
     "marked": "^13.0.1",
