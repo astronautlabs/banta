@@ -1,7 +1,7 @@
 
-import { Subject, Subscription } from 'rxjs';
-import { lazyConnection } from './lazy-connection';
+import { Subject } from 'rxjs';
 import { Logger } from '@alterior/logging';
+import { v4 as uuid } from 'uuid';
 
 import * as ioredis from 'ioredis';
 
@@ -55,9 +55,16 @@ export class InterServerCommunications<T> {
                         lastMessageReceived = id;
                         try {
                             let event = JSON.parse(json);
-                            this._messages.next(event);
-                            if (TRACE_ISC) {
-                                this.logger.info(`[Banta/InterServerCommunications] Received message ${id}: ${JSON.stringify(event, undefined, 2)}`);
+
+                            if (event['$iscOrigin'] !== this.clientId) {
+                                this._messages.next(event);
+                                if (TRACE_ISC) {
+                                    this.logger.info(`[Banta/InterServerCommunications] Received message ${id}: ${JSON.stringify(event, undefined, 2)}`);
+                                }
+                            } else {
+                                if (TRACE_ISC) {
+                                    this.logger.info(`[Banta/InterServerCommunications] Received echoback for message ${id}: ${JSON.stringify(event, undefined, 2)}`);
+                                }
                             }
                         } catch (e) {
                             this.logger.error(`[Banta/InterServerCommunications] Failed to parse Banta ISC event #${id} : '${json}': ${e.message}! Event will be skipped!`);
@@ -74,7 +81,11 @@ export class InterServerCommunications<T> {
     private _messages  = new Subject<T>();
     readonly messages = this._messages.asObservable();
 
+    clientId = uuid();
+
     async send(message: any) {
+        message['$iscOrigin'] = this.clientId;
+        this._messages.next(message);
         return await this.redis.xadd(STREAM_ID, 'MAXLEN', '~', 100, '*', 'json', JSON.stringify(message));
     }
 }

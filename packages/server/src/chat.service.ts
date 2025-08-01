@@ -220,9 +220,6 @@ export class ChatService {
         this.logger.info(`Connecting to Banta inter-server communication...`);
         this.isc.connect();
         this.isc.messages.subscribe(async event => {
-            if (event.originId === this.originId)
-                return;
-
             if (event.message) {
                 this._messageChangedRemotely.next(event.message);
                 await this.cacheMessage(event.message, event.type);
