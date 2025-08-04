@@ -303,22 +303,24 @@ export class ChatService {
     get authorizeAction() { return this._authorizeAction; }
     set authorizeAction(value) {
         this._authorizeAction = value;
-        this.shouldNeverAuthorize(undefined, undefined, { action: `${Math.random() * 10000 | 0}` as any });
-        this.shouldNeverAuthorize(undefined, `invalid token`, { action: `${Math.random() * 10000 | 0}` as any });
-        this.shouldNeverAuthorize(
-            { displayName: 'Not a real user', username: '[not_a_real_user]', id: 'invalid_id' }, 
-            `invalid token`, 
-            { action: `${Math.random() * 10000 | 0}` as any }
-        );
+        setTimeout(async () => {
+            await this.shouldNeverAuthorize(undefined, undefined, { action: `${Math.random() * 10000 | 0}` as any });
+            await this.shouldNeverAuthorize(undefined, `invalid token`, { action: `${Math.random() * 10000 | 0}` as any });
+            await this.shouldNeverAuthorize(
+                { displayName: 'Not a real user', username: '[not_a_real_user]', id: 'invalid_id' }, 
+                `invalid token`, 
+                { action: `${Math.random() * 10000 | 0}` as any }
+            );
+        });
     }
     private _authorizeAction: AuthorizeAction = () => { };
 
     private _testedAuthorizeAction = false;
 
-    private shouldNeverAuthorize(user: User, token: string, action: AuthorizableAction) {
+    private async shouldNeverAuthorize(user: User, token: string, action: AuthorizableAction) {
         let passedNegativeCheck = false;
         try {
-            this.authorizeAction(user, token, action);
+            await this.authorizeAction(user, token, action);
         } catch (e) {
             if (e instanceof UnauthorizedError) {
                 passedNegativeCheck = true;
