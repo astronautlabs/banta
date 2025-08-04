@@ -303,12 +303,12 @@ export class ChatService {
     get authorizeAction() { return this._authorizeAction; }
     set authorizeAction(value) {
         this._authorizeAction = value;
-        this.shouldNeverAuthorize(undefined, undefined, `${Math.random() * 10000 | 0}` as any);
-        this.shouldNeverAuthorize(undefined, `invalid token`, `${Math.random() * 10000 | 0}` as any);
+        this.shouldNeverAuthorize(undefined, undefined, { action: `${Math.random() * 10000 | 0}` as any });
+        this.shouldNeverAuthorize(undefined, `invalid token`, { action: `${Math.random() * 10000 | 0}` as any });
         this.shouldNeverAuthorize(
             { displayName: 'Not a real user', username: '[not_a_real_user]', id: 'invalid_id' }, 
             `invalid token`, 
-            `${Math.random() * 10000 | 0}` as any
+            { action: `${Math.random() * 10000 | 0}` as any }
         );
     }
     private _authorizeAction: AuthorizeAction = () => { };
