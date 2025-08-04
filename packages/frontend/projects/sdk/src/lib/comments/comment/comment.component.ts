@@ -3,6 +3,7 @@ import { Subject } from 'rxjs';
 import { ChatMessage, ChatPermissions, User } from '@banta/common';
 import { MessageMenuItem } from "../../message-menu-item";
 import { take } from 'rxjs/operators';
+import { PinOptions } from "../../chat-source";
 
 @Component({
     selector: 'banta-comment',
@@ -38,6 +39,11 @@ export class CommentComponent {
     
     private isLoaded = false;
     editedMessage: string;
+    pinFormVisible = false;
+    pinUntilDate: Date;
+    pinUntilTime: string;
+    pinMode: 'forever' | 'until';
+    today = new Date();
 
     //#endregion
     //#region Inputs
@@ -67,6 +73,8 @@ export class CommentComponent {
     private _editEnded = new Subject<void>();
     private _edited = new Subject<string>();
     private _loaded = new Subject<void>();
+    private _pinned = new Subject<{ message: ChatMessage, options: PinOptions }>();
+    private _unpinned = new Subject<ChatMessage>();
     
     @Output() readonly liked = this._liked.asObservable();
     @Output() readonly unliked = this._unliked.asObservable();
@@ -81,6 +89,8 @@ export class CommentComponent {
 	@Output() readonly avatarSelected = this._avatarSelected.asObservable();
     @Output() readonly reported = this._reported.asObservable();
     @Output() readonly loaded = this._loaded.asObservable();
+    @Output() readonly pinned = this._pinned.asObservable();
+    @Output() readonly unpinned = this._unpinned.asObservable();
 
     //#endregion
     //#region UI Bindings
@@ -92,6 +102,21 @@ export class CommentComponent {
 
     get replyCount() { return this.message.submessages?.length || this.message.submessageCount || 0; }
     get element() { return this.elementRef.nativeElement; }
+    @HostBinding('class.pinned') 
+    get isPinned() { 
+        return this.message.pinned && (!this.message.pinnedUntil || this.message.pinnedUntil > Date.now());
+    }
+
+    get pinFormValid() {
+        if (!this.pinMode)
+            return false;
+
+        if (this.pinMode === 'until') {
+            return !!this.pinUntilDate && !!this.pinUntilTime;
+        }
+
+        return true;
+    }
 
     avatarForUser(user : User) { return `url(${user?.avatarUrl ?? this.genericAvatarUrl})`; }
 
@@ -126,11 +151,36 @@ export class CommentComponent {
     like() { this._liked.next(); }
     unlike() { this._unliked.next(); }
     share() { this._shared.next(this.message); }
+    unpin() { this._unpinned.next(this.message); }
     select() { this._selected.next(); }
 	selectUser() { this._userSelected.next(); }
     startEdit() { this._editStarted.next(); this.editedMessage = this.message.message;  }
     selectUsername(user: User) { this._usernameSelected.next(user); this.selectUser(); }
 	selectAvatar(user: User) { this._avatarSelected.next(user); this.selectUser(); }
+    
+    showPinForm() {
+        this.pinFormVisible = true;
+        this.pinUntilTime = '08:00';
+    }
+
+    submitPin() {
+        let pinUntil: number;
+        if (this.pinMode === 'until') {
+            let date = new Date(this.pinUntilDate);
+            let [hour, minute] = this.pinUntilTime.split(':');
+            date.setHours(Number(hour));
+            date.setMinutes(Number(minute));
+            pinUntil = date.getTime();
+        }
+        
+        this.pinFormVisible = false;
+        this._pinned.next({
+            message: this.message,
+            options: {
+                until: pinUntil
+            }
+        })
+    }
 
     //#endregion
 }

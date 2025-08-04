@@ -167,7 +167,8 @@ export class ChatController {
         @QueryParam() sort: CommentsOrder, 
         @QueryParam() filter: FilterMode, 
         @QueryParam() offset: number, 
-        @QueryParam() limit: number
+        @QueryParam() limit: number,
+        @QueryParam() pinned: boolean
     ): Promise<ChatMessage[]> {
         sort ??= CommentsOrder.NEWEST;
         filter ??= FilterMode.ALL;
@@ -188,7 +189,8 @@ export class ChatController {
             sort,
             filter,
             offset,
-            limit
+            limit,
+            pinned
         })
     }
 

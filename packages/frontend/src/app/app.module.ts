@@ -19,6 +19,7 @@ import { TryChatComponent } from './try-chat/try-chat.component';
 import { CDNProvider, DataURICDNProvider } from '@banta/common';
 import { ChatBackendBase } from 'projects/sdk/src/lib';
 import { environment } from '../environments/environment';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 
 @NgModule({
@@ -47,7 +48,8 @@ import { environment } from '../environments/environment';
     {
       provide: CDNProvider,
       useFactory: () => new DataURICDNProvider()
-    }
+    },
+    provideNativeDateAdapter()
   ],
   bootstrap: [AppComponent]
 })

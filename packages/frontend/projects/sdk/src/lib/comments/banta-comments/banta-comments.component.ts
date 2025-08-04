@@ -14,6 +14,7 @@ import { BantaReplySendOptionsDirective } from '../reply-send-options.directive'
 import { MessageMenuItem } from '../../message-menu-item';
 import { CommentViewComponent } from '../comment-view/comment-view.component';
 import { CommentComponent } from '../comment/comment.component';
+import { PinOptions } from '../../chat-source';
 
 /**
  * Comments component
@@ -739,6 +740,18 @@ export class BantaCommentsComponent {
             await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
             message.transientState.liking = false;
         }
+    }
+
+    async pinMessage(source: ChatSourceBase, message: ChatMessage, options: PinOptions) {
+        await source.pinMessage(message.id, options);
+        //this.reloadSource();
+        this.matSnackBar.open(`The message has been pinned.`, undefined, { duration: 5000 });
+    }
+
+    async unpinMessage(source: ChatSourceBase, message: ChatMessage) {
+        await source.unpinMessage(message.id);
+        //this.reloadSource();
+        this.matSnackBar.open(`The message has been unpinned.`, undefined, { duration: 5000 });
     }
 
     async unlikeMessage(source: ChatSourceBase, message: ChatMessage) {

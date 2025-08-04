@@ -5,6 +5,7 @@ import { ChatBackendBase } from "../../chat-backend-base";
 import { ChatSourceBase } from "../../chat-source-base";
 import { MessageMenuItem } from "../../message-menu-item";
 import { CommentComponent } from "../comment/comment.component";
+import { PinOptions } from "../../chat-source";
 
 export interface EditEvent {
     message: ChatMessage;
@@ -37,6 +38,7 @@ export class CommentViewComponent {
 
     private _sourceSubs = new Subscription();
     menuMessage: ChatMessage = null;
+    pinnedMessages: ChatMessage[] = [];
     messages: ChatMessage[] = [];
     currentUser: User;
     customSortEnabled = false;
@@ -87,6 +89,7 @@ export class CommentViewComponent {
     set maxVisibleMessages(value) { this._maxVisibleMessages = value; }
     get maxVisibleMessages() { return this._maxVisibleMessages ?? DEFAULT_MAX_VISIBLE_MESSAGES; }
 
+    @Input() collapsePins = false;
     @Input() newestLast = false;
     @Input() holdNewMessages = false;
     @Input() showEmptyState = true;
@@ -104,6 +107,8 @@ export class CommentViewComponent {
     private _selected = new Subject<ChatMessage>();
     private _liked = new Subject<ChatMessage>();
     private _unliked = new Subject<ChatMessage>();
+    private _pinned = new Subject<{ message: ChatMessage, options: PinOptions }>();
+    private _unpinned = new Subject<ChatMessage>();
     private _reported = new Subject<ChatMessage>();
     private _userSelected = new Subject<ChatMessage>();
     private _usernameSelected = new Subject<User>();
@@ -118,6 +123,8 @@ export class CommentViewComponent {
     @Output() readonly reported = this._reported.asObservable();
     @Output() readonly liked = this._liked.asObservable();
     @Output() readonly unliked = this._unliked.asObservable();
+    @Output() readonly pinned = this._pinned.asObservable();
+    @Output() readonly unpinned = this._unpinned.asObservable();
     @Output() readonly usernameSelected = this._usernameSelected.asObservable();
     @Output() readonly avatarSelected = this._avatarSelected.asObservable();
     @Output() readonly shared = this._shared.asObservable();
@@ -255,6 +262,14 @@ export class CommentViewComponent {
         this._unliked.next(message);
     }
 
+    pinMessage(message: ChatMessage, options: PinOptions) {
+        this._pinned.next({ message, options });
+    }
+
+    unpinMessage(message: ChatMessage) {
+        this._unpinned.next(message);
+    }
+
     reportMessage(message: ChatMessage) {
         this._reported.next(message);
     }
@@ -311,8 +326,9 @@ export class CommentViewComponent {
             this._sourceSubs = new Subscription();
             this._sourceSubs.add(this._source.messageReceived.subscribe(msg => this.messageReceived(msg)));
             this._sourceSubs.add(this._source.messageSent.subscribe(msg => this.messageSent(msg)));
+            this._sourceSubs.add(this._source.messageUpdated.subscribe(msg => this.messageUpdated(msg)));
 
-            this._sourceSubs.add(
+            this._sourceSubs.add( 
                 this.backend.userChanged.subscribe(user => this.currentUser = user)
             );
 
@@ -321,7 +337,14 @@ export class CommentViewComponent {
     }
 
     private async getInitialMessages() {
-        let messages = (await this._source.getExistingMessages());
+
+        // Get the pinned messages
+        let pinnedMessages = await this._source.getPinnedMessages();
+        pinnedMessages.forEach(m => m.transientState ??= {});
+        this.pinnedMessages = pinnedMessages;
+
+
+        let messages = await this._source.getExistingMessages();
         messages.forEach(m => m.transientState ??= {});
         this.messages = this.newestLast ? messages.slice().reverse() : messages;
 
@@ -814,6 +837,31 @@ export class CommentViewComponent {
             return;
 
         this.scrollToLatest();
+    }
+
+    private isPinned(message: ChatMessage) {
+        return message.pinned && (!message.pinnedUntil || message.pinnedUntil > Date.now());
+    }
+
+    private messageUpdated(message: ChatMessage) {
+        let pinned = this.isPinned(message);
+        let inPins = this.pinnedMessages.some(x => x.id === message.id);
+
+        if (pinned && !inPins) {
+            this.pinnedMessages.unshift(message);
+            let index = this.messages.indexOf(message);
+            if (index >= 0) {
+                this.messages.splice(index, 1);
+            }
+        } else if (!pinned && inPins) {
+            this.messages.push(message);
+            let index = this.pinnedMessages.indexOf(message);
+            if (index >= 0) {
+                this.pinnedMessages.splice(index, 1);
+            }
+
+            this.sortMessages();
+        }
     }
 
     scrollToLatest() {

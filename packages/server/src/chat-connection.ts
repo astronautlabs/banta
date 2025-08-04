@@ -1,7 +1,7 @@
 import { Logger, LogOptions } from "@alterior/logging";
 import { ChatMessage, ChatPermissions, CommentsOrder, FilterMode, RpcCallable, SocketRPC, Topic, User } from "@banta/common";
 import { Subscription } from "rxjs";
-import { AuthorizableAction, ChatService, UnauthorizedError } from "./chat.service";
+import { AuthorizableAction, ChatService, PinOptions, UnauthorizedError } from "./chat.service";
 import { deepCopy } from "./deep-copy";
 
 import * as os from 'os';
@@ -110,7 +110,8 @@ export class ChatConnection extends SocketRPC {
                 canEdit: false,
                 canLike: false,
                 canPost: false,
-                canDelete: false
+                canDelete: false,
+                canPin: false
             });
             return;
         }
@@ -131,6 +132,10 @@ export class ChatConnection extends SocketRPC {
             action: 'deleteMessage',
             topic: this.topic
         });
+        let pinErrorMessage = await this.precheckAuthorization({
+            action: 'pinMessage',
+            topic: this.topic
+        });
 
         this.sendEvent('onPermissions', <ChatPermissions>{
             canPost: !postErrorMessage,
@@ -140,7 +145,9 @@ export class ChatConnection extends SocketRPC {
             canLike: !likeErrorMessage,
             canLikeErrorMessage: likeErrorMessage,
             canDelete: !deleteErrorMessage,
-            canDeleteErrorMessage: deleteErrorMessage
+            canDeleteErrorMessage: deleteErrorMessage,
+            canPin: !pinErrorMessage,
+            canPinErrorMessage: pinErrorMessage
         });
     }
 
@@ -436,6 +443,27 @@ export class ChatConnection extends SocketRPC {
     logWarning(message: string) { this.log(message, { severity: 'warning' }); }
 
     @RpcCallable()
+    async getPinnedMessages(limit?: number) {
+        if (limit > 1000) {
+            this.logError(`getExistingMessages: Limit is too high (limit=${limit}), rejecting request.`);
+            throw new Error(`Invalid request: Maximum limit is 1000.`);
+        }
+
+        let results = await this.chat.getMessages({
+            topicId: this.topicId,
+            parentMessageId: this.parentMessage?.id,
+            filter: this.filterMode,
+            sort: this.sortOrder,
+            userId: this.user?.id,
+            limit: limit,
+            offset: 0,
+            pinned: true
+        });
+
+        return results;
+    }
+
+    @RpcCallable()
     async getExistingMessages(limit?: number) {
         limit ??= 20;
 
@@ -449,19 +477,21 @@ export class ChatConnection extends SocketRPC {
 
         let results: ChatMessage[] = [];
         let cacheState = 'uncached';
-        
-        
+        let cachedCount = results.length;
+
         if (this.canUseCache) {
-            results = this.chat.getCachedMessages(this.topicId, this.parentMessage?.id).map(x => this.prepareMessage(x));
+            let cached = this.chat.getCachedMessages(this.topicId, this.parentMessage?.id).map(x => this.prepareMessage(x));
+            cachedCount = cached.length;
+            results.push(...cached);
         }
+
+        // Find messages by sort
 
         if (results.length < limit) {
             if (this.canUseCache) {
                 cacheState = results.length > 0 ? 'partial' : `miss`;
                 this.logger.info(`[Existing Messages] Cache: Need to fetch ${limit - results.length} additional messages (state: ${cacheState})`);
             }
-
-            let cachedCount = results.length;
 
             results.push(...await this.chat.getMessages({
                 topicId: this.topicId,
@@ -470,38 +500,126 @@ export class ChatConnection extends SocketRPC {
                 sort: this.sortOrder,
                 userId: this.user?.id,
                 limit: limit - results.length,
-                offset: results.length
+                offset: results.length,
+                pinned: false
             }));
-
-            // Backfill these messages from MongoDB into the local cache. 
-            // This feature is disabled by default as there are race conditions 
-            // which may cause ordering problems, and existing message fetches 
-            // on MongoDB are mainly slow when there are a large amount of writes
-            // (at least that's the theory).
-
-            if (process.env.BANTA_BACKFILL_CACHES === '1') {
-                if (results.length > cachedCount && this.canUseCache) {
-                    await this.chat.cacheMessages(this.topicId, results);
-                    cacheState = `filled`;
-                }
-            }
-
         } else if (results.length > limit) {
             results.splice(limit);
             cacheState = 'hit';
         }
         
+        // Backfill these messages from MongoDB into the local cache. 
+        // This feature is disabled by default as there are race conditions 
+        // which may cause ordering problems, and existing message fetches 
+        // on MongoDB are mainly slow when there are a large amount of writes
+        // (at least that's the theory).
+
+        if (process.env.BANTA_BACKFILL_CACHES === '1') {
+            if (results.length > cachedCount && this.canUseCache) {
+                await this.chat.cacheMessages(this.topicId, results);
+                cacheState = `filled`;
+            }
+        }
+
         this.logInfo(`... Sending ${results.length} existing messages (took ${Date.now() - startedAt} ms, cache: ${cacheState})`);
 
         return results;
     }
 
     private getFilter(): mongodb.Filter<ChatMessage> {
-        return this.chat.createMongoMessagesFilter(this.topicId, this.parentMessage?.id, this.filterMode, this.user?.id);
+        return this.chat.createMongoMessagesFilter(this.topicId, this.parentMessage?.id, this.filterMode, this.user?.id, false);
     }
 
     private getSortOrder(): any {
         return this.chat.createMongoSortFromOrder(this.sortOrder);
+    }
+
+    @RpcCallable()
+    async pinMessage(messageId: string, options?: PinOptions): Promise<ChatMessage> {
+        this.logger.info(`User ${this.user?.id ?? '<none>'} is pinning message ${messageId} on topic ${this.topicId} [${this.topic?.url ?? '<no url>'}]`);
+
+        if (!messageId) {
+            throw new Error(`You must provide a message ID to pin`);
+        }
+
+        if (options?.until && typeof options?.until !== 'number') {
+            throw new Error(`options.until must be a number`);
+        }
+
+        if (!this.user) {
+            this.logError(`Attempted to pin message without signing in.`);
+            throw new Error(`You must be signed in to pin messages.`);
+        }
+
+        let message = await this.chat.getUnpreparedMessage(messageId);
+        if (!message) {
+            this.logError(`Attempted to pin message '${messageId}' which does not exist.`);
+            throw new Error(`No such message with ID '${messageId}'`);
+        }
+
+        try {
+            await this.chat.doAuthorizeAction(this.user, this.userToken, {
+                action: 'pinMessage',
+                message,
+                parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null,
+                topic: await this.chat.getTopic(message.topicId),
+                connectionMetadata: this.metadata
+            });
+        } catch (e) {
+            this.logError(`Error authenticating while attemping to pin message: ${e.message}`);
+            throw e;
+        }
+
+        let finalMessage = await this.chat.pinMessage(message, options);
+        
+        // TODO: we need to send the message back for backwards compatibility.
+        // In the future we should change the expectation so that only one copy of 
+        // the message is sent, in the response to this API call (instead of using sendChatMessage).
+        // This should hold true for all other interaction events such as like/unlike/edit etc.
+        this.sendChatMessage(finalMessage);
+
+        return this.prepareMessage(finalMessage);
+    }
+
+    @RpcCallable()
+    async unpinMessage(messageId: string): Promise<ChatMessage> {
+        if (!messageId) {
+            throw new Error(`You must provide a message ID to unpin`);
+        }
+
+        if (!this.user) {
+            this.logError(`Attempted to unpin message without signing in.`);
+            throw new Error(`You must be signed in to pin messages.`);
+        }
+
+        let message = await this.chat.getUnpreparedMessage(messageId);
+        if (!message) {
+            this.logError(`Attempted to unpin message '${messageId}' which does not exist.`);
+            throw new Error(`No such message with ID '${messageId}'`);
+        }
+
+        try {
+            await this.chat.doAuthorizeAction(this.user, this.userToken, {
+                action: 'unpinMessage',
+                message,
+                parentMessage: message.parentMessageId ? await this.chat.getUnpreparedMessage(message.parentMessageId) : null,
+                topic: await this.chat.getTopic(message.topicId),
+                connectionMetadata: this.metadata
+            });
+        } catch (e) {
+            this.logError(`Error authenticating while attemping to pin message: ${e.message}`);
+            throw e;
+        }
+
+        let finalMessage = await this.chat.unpinMessage(message);
+        
+        // TODO: we need to send the message back for backwards compatibility.
+        // In the future we should change the expectation so that only one copy of 
+        // the message is sent, in the response to this API call (instead of using sendChatMessage).
+        // This should hold true for all other interaction events such as like/unlike/edit etc.
+        this.sendChatMessage(finalMessage);
+
+        return this.prepareMessage(finalMessage);
     }
 
     @RpcCallable()

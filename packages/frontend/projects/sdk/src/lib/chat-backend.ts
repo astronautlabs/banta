@@ -169,10 +169,11 @@ export class ChatBackend extends ChatBackendBase {
         sort?: CommentsOrder, 
         filter?: FilterMode, 
         offset?: number, 
-        limit?: number
+        limit?: number,
+        pinned?: boolean
     ): Promise<ChatMessage[]> {
         let response = await fetch(
-            `${this.serviceUrl}/topics/${topicId}/messages?${ buildQuery({ sort, filter, offset, limit }) }`
+            `${this.serviceUrl}/topics/${topicId}/messages?${ buildQuery({ sort, filter, offset, limit, pinned }) }`
         );
 
         if (response.status >= 400)
@@ -191,10 +192,11 @@ export class ChatBackend extends ChatBackendBase {
         sort?: CommentsOrder, 
         filter?: FilterMode, 
         offset?: number, 
-        limit?: number
+        limit?: number,
+        pinned?: boolean
     ): Promise<ChatMessage[]> {
         let response = await fetch(
-            `${this.serviceUrl}/messages/${parentMessageId}/replies?${ buildQuery({ sort, filter, offset, limit }) }`
+            `${this.serviceUrl}/messages/${parentMessageId}/replies?${ buildQuery({ sort, filter, offset, limit, pinned }) }`
         );
 
         if (response.status >= 400)

@@ -16,7 +16,7 @@ import * as ioredis from 'ioredis';
 import * as mongodb from 'mongodb';
 
 export interface ChatEvent {
-    type: 'post' | 'edit' | 'like' | 'unlike' | 'delete';
+    type: 'post' | 'edit' | 'like' | 'unlike' | 'delete' | 'pin' | 'unpin';
 }
 
 export interface PostMessageEvent extends ChatEvent {
@@ -27,6 +27,20 @@ export interface PostMessageEvent extends ChatEvent {
 export interface EditMessageEvent extends ChatEvent {
     type: 'edit';
     message: ChatMessage;
+}
+
+export interface PinMessageEvent extends ChatEvent {
+    type: 'pin';
+    message: ChatMessage;
+}
+
+export interface UnpinMessageEvent extends ChatEvent {
+    type: 'unpin';
+    message: ChatMessage;
+}
+
+export interface PinOptions {
+    until?: number;
 }
 
 interface RecentMessagesCache {
@@ -42,6 +56,7 @@ export interface MessageQuery {
     offset?: number;
     limit?: number;
     userId?: string;
+    pinned?: boolean;
 }
 
 const DEFAULT_COOLOFF_PERIOD = 10 * 1000;
@@ -79,7 +94,7 @@ export interface PersistedUrlCard {
 }
 
 export interface AuthorizableAction {
-    action: 'viewTopic' | 'postMessage' | 'reply' | 'editMessage' | 'likeMessage' | 'unlikeMessage' | 'deleteMessage';
+    action: 'viewTopic' | 'postMessage' | 'reply' | 'editMessage' | 'likeMessage' | 'unlikeMessage' | 'deleteMessage' | 'pinMessage' | 'unpinMessage';
 
     /**
      * If true, this is a precheck: the user has not yet asked to perform the action.
@@ -102,7 +117,7 @@ export interface AuthorizableAction {
 export type ValidateToken = (token: string) => Promise<User>;
 
 /**
- * Should throw if user is not allowed to do something. The error will be shown to the user.
+ * Should throw UnauthorizedError if user is not allowed to do something. The error will be shown to the user.
  */
 export type AuthorizeAction = (user: User, token: string, action: AuthorizableAction) => void;
 
@@ -634,6 +649,56 @@ export class ChatService {
         })
     }
 
+    async pinMessage(messageOrId: string | ChatMessage, options?: PinOptions) {
+        let pinnedUntil = options?.until;
+
+        if (pinnedUntil && typeof pinnedUntil !== 'number') {
+            throw new Error(`options.until must be a number`);
+        }
+
+        this.guardRunning(); 
+
+        let message = await this.getUnpreparedMessage(messageOrId, true);
+        message.pinned = true;
+        message.pinnedUntil = pinnedUntil;
+
+        await this.updateOne(this.messages, { id: message.id }, {
+            $set: {
+                pinned: true,
+                pinnedUntil
+            }
+        });
+
+        this.isc.send({ type: 'update', originId: this.originId, topicId: message.topicId, message });
+        this._events.next(<PinMessageEvent>{
+            type: 'pin',
+            message
+        });
+
+        return this.prepareMessage(message);
+    }
+
+    async unpinMessage(messageOrId: string | ChatMessage) {
+        this.guardRunning(); 
+
+        let message = await this.getUnpreparedMessage(messageOrId, true);
+        message.pinned = false;
+
+        await this.updateOne(this.messages, { id: message.id }, {
+            $set: {
+                pinned: false
+            }
+        });
+
+        this.isc.send({ type: 'update', originId: this.originId, topicId: message.topicId, message });
+        this._events.next(<UnpinMessageEvent>{
+            type: 'unpin',
+            message
+        });
+
+        return this.prepareMessage(message);
+    }
+
     /**
      * Edit the content of the message. No permissioning is applied here.
      * @param message 
@@ -891,7 +956,7 @@ export class ChatService {
      * @returns 
      */
     createMongoMessagesFilterForQuery(query: MessageQuery) {
-        return this.createMongoMessagesFilter(query.topicId, query.parentMessageId, query.filter, query.userId);
+        return this.createMongoMessagesFilter(query.topicId, query.parentMessageId, query.filter, query.userId, query.pinned);
     }
 
     /**
@@ -903,7 +968,13 @@ export class ChatService {
      * @param userId The viewing user. Can be undefined.
      * @returns 
      */
-    createMongoMessagesFilter(topicId: string, parentMessageId: string, filterMode: FilterMode, userId: string): mongodb.Filter<ChatMessage> {
+    createMongoMessagesFilter(
+        topicId: string, 
+        parentMessageId: string, 
+        filterMode: FilterMode, 
+        userId: string,
+        pinned: boolean
+    ): mongodb.Filter<ChatMessage> {
         let filter = <mongodb.Filter<ChatMessage>>{
             topicId: topicId,
             parentMessageId: parentMessageId,
@@ -912,6 +983,37 @@ export class ChatService {
                 { hidden: false }
             ]
         }
+
+        // Pinning
+
+        if (pinned === true) {
+            filter = {
+                $and: [
+                    filter,
+                    { 
+                        pinned: true,
+                        $or: [
+                            { pinnedUntil: undefined },
+                            { pinnedUntil: { $gt: Date.now() } }
+                        ]
+                    }
+                ]
+            }
+        } else if (pinned === false) {
+            filter = {
+                $and: [
+                    filter,
+                    {
+                        $or: [
+                            { pinned: false },
+                            { pinned: undefined }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        // Filter modes
 
         if (filterMode === FilterMode.MINE && userId) {
             filter['user.id'] = userId;

@@ -59,7 +59,8 @@ export abstract class ChatBackendBase {
         sort?: CommentsOrder, 
         filter?: FilterMode, 
         offset?: number, 
-        limit?: number
+        limit?: number,
+        pinned?: boolean
     ): Promise<ChatMessage[]>;
 
     /**

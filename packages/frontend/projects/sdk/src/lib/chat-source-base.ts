@@ -27,11 +27,14 @@ export interface ChatSourceBase {
     getCount(): Promise<number>;
     loadSince(id: string): Promise<ChatMessage[]>;
     getExistingMessages(): Promise<ChatMessage[]>;
+    getPinnedMessages(): Promise<ChatMessage[]>;
     loadAfter(message: ChatMessage, count: number): Promise<ChatMessage[]>;
     get(id: string): Promise<ChatMessage>;
     getServerInfo(): Promise<ServerInfo>;
     likeMessage(messageId: string): Promise<void>;
     unlikeMessage(messageId: string): Promise<void>;
+    pinMessage(messageId: string, options?: { until?: number }): Promise<void>;
+    unpinMessage(messageId: string): Promise<void>;
     editMessage(messageId: string, text: string): Promise<void>;
     deleteMessage(messageId: string): Promise<void>;
 

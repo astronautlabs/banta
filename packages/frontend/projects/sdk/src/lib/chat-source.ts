@@ -8,6 +8,10 @@ import { ChatSourceOptions } from "./chat-backend-base";
 
 export type SignInState = 'signed-out' | 'signed-in' | 'signing-in';
 
+export interface PinOptions {
+    until?: number;
+}
+
 export class ChatSource extends SocketRPC implements ChatSourceBase {
     constructor(
         readonly backend: ChatBackend,
@@ -141,6 +145,18 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
             return [];
         }
     }
+    
+    async getPinnedMessages(): Promise<ChatMessage[]> {
+        try {
+            let messages = await this.idempotentPeer.getPinnedMessages();
+            messages = this.mapOrUpdateMessages(messages);
+            return messages;
+        } catch (e) {
+            console.error(`[Banta/${this.identifier}] Error occurred while trying to get pinned messages:`);
+            console.error(e);
+            return [];
+        }
+    }
 
     private async ensureConnection(errorMessage?: string) {
         // let reason = `Connection to chat services is not currently available.`;
@@ -237,7 +253,8 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
     @RpcEvent()
     onChatMessage(message: ChatMessage) {
         if (this.messageMap.has(message.id)) {
-            return this.mapOrUpdateMessage(message);
+            message = this.mapOrUpdateMessage(message);
+            this._messageUpdated.next(message);
         } else if (!message.hidden) {
             // Only process non-hidden messages through here. 
             // Hidden messages may be sent to us when they become hidden (ie moderation is occurring).
@@ -311,6 +328,17 @@ export class ChatSource extends SocketRPC implements ChatSourceBase {
         await this.ensureConnection();
         return await this.idempotentPeer.likeMessage(messageId);
     }
+
+    async pinMessage(messageId: string, options?: PinOptions): Promise<void> {
+        await this.ensureConnection();
+        return await this.idempotentPeer.pinMessage(messageId, options);
+    }
+
+    async unpinMessage(messageId: string): Promise<void> {
+        await this.ensureConnection();
+        return await this.idempotentPeer.unpinMessage(messageId);
+    }
+
 
     async unlikeMessage(messageId: string): Promise<void> {
         await this.ensureConnection();

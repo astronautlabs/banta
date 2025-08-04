@@ -9,9 +9,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from "@angular/material/select";
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { BantaCommonModule } from '../common';
 import { EmojiModule } from '../emoji';
 import { AttachmentButtonComponent } from './attachment-button/attachment-button.component';
@@ -47,11 +50,14 @@ const COMPONENTS = [
     MatInputModule,
     MatButtonModule,
     MatMenuModule,
+    MatDividerModule,
     MatProgressSpinnerModule,
     BantaCommonModule,
     EmojiModule,
     MatTooltipModule,
+    MatDatepickerModule,
     MatSelectModule,
+    MatRadioModule,
     OverlayModule,
     PortalModule
   ],

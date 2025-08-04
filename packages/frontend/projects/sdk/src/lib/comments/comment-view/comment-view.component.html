@@ -1,6 +1,43 @@
 <div class="banta-message-container" #messageContainer>
     <ng-content select="[data-before]"></ng-content>
 
+    @if (!collapsePins) {
+        @for (message of pinnedMessages; track message.id) {
+            @if (!message.hidden) {
+                <banta-comment
+                    class="abbreviated"
+                    
+                    [customMenuItems]="customMenuItems"
+                    [message]="message"
+                    [mine]="currentUser?.id === message.user?.id"
+                    [permissions]="source?.permissions"
+                    [showReplyAction]="allowReplies"
+                    [editing]="message.transientState.editing"
+                    [genericAvatarUrl]="genericAvatarUrl"
+                    [readonly]="source?.readonly"
+                    (click)="messageClicked = true"
+                    (editStarted)="startEditing(message)"
+                    (deleted)="deleteMessage(message)"
+                    (editEnded)="message.transientState.editing = false"
+                    (edited)="saveEdit(message, $event)"
+                    (userSelected)="selectMessageUser(message)"
+                    (avatarSelected)="selectAvatar($event)"
+                    (usernameSelected)="selectUsername($event)"
+                    (liked)="likeMessage(message)"
+                    (pinned)="pinMessage(message, $event.options)"
+                    (unpinned)="unpinMessage(message)"
+                    (unliked)="unlikeMessage(message)"
+                    (reported)="reportMessage(message)"
+                    (selected)="selectMessage(message)"
+                    (shared)="sharedMessage($event)"
+                    />
+                <div class="banta-inline-replies-container" *ngIf="selectedMessage === message">
+                    <ng-content select=".inline-replies"></ng-content>
+                </div>
+            }
+        }
+    }
+
     <div class="banta-top-sticky">
         @if (!newestLast) {
             <button 
@@ -46,6 +83,8 @@
                 (avatarSelected)="selectAvatar($event)"
                 (usernameSelected)="selectUsername($event)"
                 (liked)="likeMessage(message)"
+                (pinned)="pinMessage(message, $event.options)"
+                (unpinned)="unpinMessage(message)"
                 (unliked)="unlikeMessage(message)"
                 (reported)="reportMessage(message)"
                 (selected)="selectMessage(message)"

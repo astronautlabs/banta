@@ -82,6 +82,14 @@ export class StaticChatSource implements ChatSourceBase {
         }
     }
 
+    async getPinnedMessages(): Promise<ChatMessage[]> {
+        if (this.parentIdentifier) {
+            return await this.backend.getReplies(this.parentIdentifier, this.sortOrder, this.filterMode, 0, this.initialMessageCount, true);
+        } else {
+            return await this.backend.getMessages(this.identifier, this.sortOrder, this.filterMode, 0, this.initialMessageCount, true);
+        }
+    }
+
     async loadAfter(message: ChatMessage, count: number): Promise<ChatMessage[]> {
         return []; // no op
     }
@@ -95,6 +103,14 @@ export class StaticChatSource implements ChatSourceBase {
     }
 
     async unlikeMessage(messageId: string): Promise<void> {
+        throw new Error(`Cannot perform this action in this state.`);
+    }
+
+    pinMessage(messageId: string, options?: { until?: number; }): Promise<void> {
+        throw new Error(`Cannot perform this action in this state.`);
+    }
+
+    unpinMessage(messageId: string): Promise<void> {
         throw new Error(`Cannot perform this action in this state.`);
     }
 

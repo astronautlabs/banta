@@ -183,11 +183,17 @@ export class MockSource implements ChatSourceBase {
         return this.messages.slice(0, this.options.initialMessageCount);
     }
 
+    async getPinnedMessages(): Promise<ChatMessage[]> {
+        const now = Date.now();
+        return this.messages.filter(x => x.pinned && (!x.pinnedUntil || x.pinnedUntil > now));
+    }
+
     permissions: ChatPermissions = {
         canEdit: true,
         canLike: true,
         canPost: true,
-        canDelete: true
+        canDelete: true,
+        canPin: true
     }
     async getCount() {
         return 0; // TODO
@@ -220,6 +226,27 @@ export class MockSource implements ChatSourceBase {
         message['$likes'] += 1;
         message.likes = message['$likes'];
     }
+
+    async pinMessage(messageId: string, options: { until?: number }): Promise<void> {
+        let message = this.backend.messages.get(messageId);
+        if (!message) {
+            throw new Error(`No such message`);
+        }
+
+        message.pinned = true;
+        message.pinnedUntil = options?.until;
+    }
+
+    async unpinMessage(messageId: string): Promise<void> {
+        let message = this.backend.messages.get(messageId);
+        if (!message) {
+            throw new Error(`No such message`);
+        }
+
+        message.pinned = false;
+        message.pinnedUntil = undefined;
+    }
+
 
     async loadAfter(message: ChatMessage, count: number) {
         return [];

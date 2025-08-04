@@ -53,6 +53,16 @@ export interface ChatMessage {
     sentAt: number;
 
     /**
+     * When set, indicates this message is pinned
+     */
+    pinned?: boolean;
+    
+    /**
+     * Expiration time for pinning. If unset, the message is pinned indefinitely.
+     */
+    pinnedUntil?: number;
+
+    /**
      * When this message was last updated.
      */
     updatedAt?: number;
