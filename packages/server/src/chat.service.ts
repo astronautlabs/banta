@@ -295,9 +295,48 @@ export class ChatService {
     /**
      * Check if a user is allowed to perform a specific action or a class of actions.
      * Should be provided by the site integrating Banta. If the user is not allowed,
-     * then an error should be thrown.
+     * then an error should be thrown. 
+     * 
+     * IMPORTANT: This function MUST throw UnauthorizedError when passed an action name that is not supported.
+     * This will be tested when the server starts!
      */
-    authorizeAction: AuthorizeAction = () => { };
+    get authorizeAction() { return this._authorizeAction; }
+    set authorizeAction(value) {
+        this._authorizeAction = value;
+        this.shouldNeverAuthorize(undefined, undefined, `${Math.random() * 10000 | 0}` as any);
+        this.shouldNeverAuthorize(undefined, `invalid token`, `${Math.random() * 10000 | 0}` as any);
+        this.shouldNeverAuthorize(
+            { displayName: 'Not a real user', username: '[not_a_real_user]', id: 'invalid_id' }, 
+            `invalid token`, 
+            `${Math.random() * 10000 | 0}` as any
+        );
+    }
+    private _authorizeAction: AuthorizeAction = () => { };
+
+    private _testedAuthorizeAction = false;
+
+    private shouldNeverAuthorize(user: User, token: string, action: AuthorizableAction) {
+        let passedNegativeCheck = false;
+        try {
+            this.authorizeAction(user, token, action);
+        } catch (e) {
+            if (e instanceof UnauthorizedError) {
+                passedNegativeCheck = true;
+            } else {
+                this.logger.error(`While testing authorizeAction for correct implementation, received error: ${e.stack}`);
+            }
+        }
+
+        if (!passedNegativeCheck) {
+            this.logger.error(
+                `Error: Your authorizeAction() implementation must return UnauthorizedError if the passed ` 
+                + `action is not recognized. This ensures that future Banta features will remain unavailable ` 
+                + `until your implementation is updated. **As a safety precaution, Banta will now exit. ` 
+                + `Please update your implementation!**`
+            );
+            process.exit(1);
+        }
+    }
 
     /**
      * @internal
