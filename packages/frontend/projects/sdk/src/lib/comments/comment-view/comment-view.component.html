@@ -31,7 +31,7 @@
                     (shared)="sharedMessage($event)"
                     />
                 <div class="banta-inline-replies-container" *ngIf="selectedMessage === message">
-                    <ng-content select=".inline-replies"></ng-content>
+                    <ng-container *ngTemplateOutlet="inlineRepliesTemplate" />
                 </div>
             }
         }
