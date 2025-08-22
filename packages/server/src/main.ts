@@ -89,6 +89,13 @@ class BantaService {
         };
 
         this.chat.extractMentions = simpleMentionExtractor(un => `/@${un}`);
+
+        // /WARNING>///////////////////////////////////////////////////////////////////////////////////////////////////
+        // DO NOT DO THIS IN YOUR OWN CODE, THIS IS NOT FOR PRODUCTION APPS
+        // We literally want all users to do everything, so the forward compatibility check isn't helpful in doing that.
+        this.chat.ensureForwardCompatibility = false;
+        // /WARNING>///////////////////////////////////////////////////////////////////////////////////////////////////
+
         this.chat.authorizeAction = (user: User, token: string, action: AuthorizableAction) => {
             // if (action.action === 'likeMessage') {
             //     if (action.precheck)

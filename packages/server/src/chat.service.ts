@@ -293,6 +293,15 @@ export class ChatService {
     };
 
     /**
+     * When true, Banta will make sure the implementation for authorizeCheck() is rejecting unknown operations, to 
+     * prevent situations where new Banta features are inadvertently always allowed.
+     * 
+     * If you set this to false, it's not our fault if you update and allow newer features to unprivileged users by 
+     * accident!
+     */
+    ensureForwardCompatibility = true;
+
+    /**
      * Check if a user is allowed to perform a specific action or a class of actions.
      * Should be provided by the site integrating Banta. If the user is not allowed,
      * then an error should be thrown. 
@@ -303,15 +312,17 @@ export class ChatService {
     get authorizeAction() { return this._authorizeAction; }
     set authorizeAction(value) {
         this._authorizeAction = value;
-        setTimeout(async () => {
-            await this.shouldNeverAuthorize(undefined, undefined, { action: `${Math.random() * 10000 | 0}` as any });
-            await this.shouldNeverAuthorize(undefined, `invalid token`, { action: `${Math.random() * 10000 | 0}` as any });
-            await this.shouldNeverAuthorize(
-                { displayName: 'Not a real user', username: '[not_a_real_user]', id: 'invalid_id' }, 
-                `invalid token`, 
-                { action: `${Math.random() * 10000 | 0}` as any }
-            );
-        });
+        if (this.ensureForwardCompatibility) {
+            setTimeout(async () => {
+                await this.shouldNeverAuthorize(undefined, undefined, { action: `${Math.random() * 10000 | 0}` as any });
+                await this.shouldNeverAuthorize(undefined, `invalid token`, { action: `${Math.random() * 10000 | 0}` as any });
+                await this.shouldNeverAuthorize(
+                    { displayName: 'Not a real user', username: '[not_a_real_user]', id: 'invalid_id' }, 
+                    `invalid token`, 
+                    { action: `${Math.random() * 10000 | 0}` as any }
+                );
+            });
+        }
     }
     private _authorizeAction: AuthorizeAction = () => { };
 
