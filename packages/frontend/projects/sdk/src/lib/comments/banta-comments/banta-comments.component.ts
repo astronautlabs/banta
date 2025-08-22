@@ -74,7 +74,7 @@ export class BantaCommentsComponent {
         } catch (e) {
             console.log(`[Banta/Comments] Showed user error (via alert): '${e.message}'`);
             console.error(e);
-            
+
             alert(e.message);
         }
     }
@@ -85,7 +85,7 @@ export class BantaCommentsComponent {
         } catch (e) {
             console.log(`[Banta/Comments] Showed user error (via snack): '${e.message}'`);
             console.error(e);
-            
+
             this.matSnackBar.open(e.message, undefined, { duration: 3000 });
             //alert(e.message);
         }
@@ -98,7 +98,7 @@ export class BantaCommentsComponent {
             errorMessage = errorMessage.replace(/^permission-denied\|/, '');
 
             if (errorMessage.startsWith(`app-handle|`)) {
-                // If this is an error during authorizeAction on the backend, pass control to the user-provided 
+                // If this is an error during authorizeAction on the backend, pass control to the user-provided
                 // permission-denied handler.
 
                 this.sendPermissionDenied(errorMessage.replace(/^app-handle\|/, ''));
@@ -136,7 +136,7 @@ export class BantaCommentsComponent {
     @HostBinding('class.banta-mobile')
     isMobileSized: boolean = false;
 
-    @ContentChild(BantaReplySendOptionsDirective, {read: TemplateRef}) 
+    @ContentChild(BantaReplySendOptionsDirective, {read: TemplateRef})
     sendReplyOptionsTemplate: any;
 
     markViewReady: () => void;
@@ -194,8 +194,8 @@ export class BantaCommentsComponent {
                 this._filterMode = FilterMode.ALL;
             }
 
-            this.source = await this.backend.getSourceForTopic(topicID, { 
-                sortOrder: this.sortOrder, 
+            this.source = await this.backend.getSourceForTopic(topicID, {
+                sortOrder: this.sortOrder,
                 filterMode: this.filterMode,
                 metadata: this.metadata,
                 initialMessageCount: this.initialMessageCount
@@ -253,7 +253,7 @@ export class BantaCommentsComponent {
                 this.loadingTitle = `Connecting to Live Comments service...`;
             }, 1000);
     }
-    
+
     private _loadingTimer;
     private _loadingMessageIndex = 0;
 
@@ -267,7 +267,7 @@ export class BantaCommentsComponent {
         `Just a second...`,
         `It's definitely worth the wait!`,
         `This has never happened before.`,
-        `We'll keep trying, but it's not looking great. 
+        `We'll keep trying, but it's not looking great.
             Commenting & chat services may be down or degraded. Try reloading the page.
             If you keep experiencing issues or reloading the page works for you, please let us know by contacting support.
         `
@@ -276,13 +276,13 @@ export class BantaCommentsComponent {
     @Input() useInlineReplies = true;
 
     /**
-     * Access the CommentViewComponent for this BantaCommentsComponent. 
-     * CommentViewComponent is responsible for interacting with the ChatSource 
-     * object and rendering comments as CommentComponents. It is the source of 
-     * truth for which CommentComponent corresponds to which ChatMessage. 
-     * 
+     * Access the CommentViewComponent for this BantaCommentsComponent.
+     * CommentViewComponent is responsible for interacting with the ChatSource
+     * object and rendering comments as CommentComponents. It is the source of
+     * truth for which CommentComponent corresponds to which ChatMessage.
+     *
      * Note that this CommentViewComponent is only for the top level comments.
-     * Replies are handled by a separate CommentViewComponent which can be 
+     * Replies are handled by a separate CommentViewComponent which can be
      * retrieved using the threadView property.
      */
     @ViewChild('commentView')
@@ -293,8 +293,8 @@ export class BantaCommentsComponent {
 
     /**
      * Attempts to find the CommentComponent that corresponds to the given ChatMessage.
-     * The ChatMessage could be a top-level message in this conversation, or a reply, 
-     * but note that a CommentComponent will only exist for a reply if the user has 
+     * The ChatMessage could be a top-level message in this conversation, or a reply,
+     * but note that a CommentComponent will only exist for a reply if the user has
      * the relevant reply thread open.
      * @param message The message to look for
      */
@@ -307,9 +307,9 @@ export class BantaCommentsComponent {
 
     /**
      * Access the CommentViewComponent corresponding to the currently open reply thread.
-     * This is not the top level comments, but instead the reply thread that the user has 
+     * This is not the top level comments, but instead the reply thread that the user has
      * opened (only one set of replies can be open at a time).
-     * 
+     *
      * For details about what CommentViewComponent affords you, see the commentView property.
      */
     get threadView() {
@@ -319,7 +319,7 @@ export class BantaCommentsComponent {
     async waitForThreadView() {
         if (this.threadView)
             return this.threadView;
-        
+
         await this.threadViewQuery.changes.pipe(take(1)).toPromise();
         return this.threadView;
     }
@@ -374,13 +374,13 @@ export class BantaCommentsComponent {
 
     /**
      * Track whether we created this source. If we did not (ie it was passed in from the caller),
-     * then we are not responsible for calling close(). If we do own it though, we will call close() 
+     * then we are not responsible for calling close(). If we do own it though, we will call close()
      * when we are done with it.
      */
     private _sourceIsOwned = false;
     private _subs = new Subscription();
     private _topicID: string;
-    
+
     user: User;
     selectedMessage: ChatMessage;
     selectedMessageThread: ChatSourceBase;
@@ -419,7 +419,7 @@ export class BantaCommentsComponent {
 
     @Input()
     get source(): ChatSourceBase { return this._source; }
-    set source(value) { 
+    set source(value) {
         if (this._source && this._sourceIsOwned) {
             this._source.close();
             this._sourceSubscription?.unsubscribe();
@@ -430,7 +430,7 @@ export class BantaCommentsComponent {
         this._source = value;
         this._sourceIsOwned = false; // Assume we don't own this source.
         this._sourceSubscription = new Subscription();
-        
+
         if (value) {
             if (this.sharedCommentID) {
                 this.navigateToSharedComment(this.sharedCommentID);
@@ -442,7 +442,7 @@ export class BantaCommentsComponent {
 
             if (this._source.connectionStateChanged)
                 this._sourceSubscription.add(this._source.connectionStateChanged.subscribe(state => this.connectionState = state));
-            else 
+            else
                 this.connectionState = 'connected';
 
             this._sourceSubscription.add(this._source.messageReceived.subscribe(m => this.addParticipant(m)));
@@ -466,7 +466,7 @@ export class BantaCommentsComponent {
 
         }
     }
-    @Input() 
+    @Input()
     hashtags: HashTag[] = [
         {hashtag: 'error', description: 'Cause an error'},
         {hashtag: 'timeout', description: 'Cause a slow timeout error'},
@@ -526,7 +526,7 @@ export class BantaCommentsComponent {
 
     private _filterMode: FilterMode = FilterMode.ALL;
     @Input() get filterMode() { return this._filterMode; }
-    set filterMode(value) { 
+    set filterMode(value) {
         if (this._filterMode !== value) {
             this._filterMode = value;
             this.reloadSource();
@@ -549,7 +549,7 @@ export class BantaCommentsComponent {
         }
     }
 
-    get filterModes() { 
+    get filterModes() {
         return FilterMode.options;
     }
 
@@ -562,7 +562,7 @@ export class BantaCommentsComponent {
         }
     }
 
-    get sortOrders() { 
+    get sortOrders() {
         return CommentsOrder.options;
     }
 
@@ -582,7 +582,7 @@ export class BantaCommentsComponent {
     async scrollToComment(commentId: ChatMessage['id']) {
         if (typeof window === 'undefined')
             return;
-        
+
         await this.commentView.waitForAllCommentsToLoad();
 
         const comment = document.querySelector(`[data-comment-id="${commentId}"]`);
@@ -617,10 +617,10 @@ export class BantaCommentsComponent {
         await source.ready;
         await this.viewReady;
         await this.loaded;
-        
+
         console.log(`Navigating to shared comment with ID '${id}'...`);
         let message: ChatMessage;
-        
+
         try {
             message = await this.source.get(id);
         } catch (e) {
@@ -642,23 +642,23 @@ export class BantaCommentsComponent {
 
         message.transientState ??= {};
 
-        // If there is a parent message, we should instead focus that and let the 
+        // If there is a parent message, we should instead focus that and let the
         // scrollToComment and highlight do the work.
 
         if (message.parentMessageId) {
 
             let parentMessage = await this.source.get(message.parentMessageId);
             parentMessage.transientState ??= {};
-            
+
             // Make sure that this message is loaded and visible to the user
             await this.commentView.loadMessageInContext(parentMessage);
-            
-            let thread = await this.selectMessage(parentMessage); 
+
+            let thread = await this.selectMessage(parentMessage);
 
             // Need to re-retrieve the message within the new chat source to affect its
             // transient state.
             await thread.ready;
-            
+
             // Make sure that this message is loaded and visible to the user
             await this.waitForThreadView();
             await this.threadView.loadMessageInContext(message);
@@ -688,9 +688,9 @@ export class BantaCommentsComponent {
 
     handlePermissionDenied(errorMessage: string) {
         // This is what other components call when handling permission errors
-        
+
         if (errorMessage.startsWith(`app-handle|`)) {
-            // If this is an error during authorizeAction on the backend, pass control to the user-provided 
+            // If this is an error during authorizeAction on the backend, pass control to the user-provided
             // permission-denied handler.
 
             this.sendPermissionDenied(errorMessage.replace(/^app-handle\|/, ''));
@@ -731,7 +731,7 @@ export class BantaCommentsComponent {
 
         this._upvoted.next(message);
         message.transientState.liking = true;
-        
+
         try {
             await source.likeMessage(message.id);
         } catch (e) {
@@ -816,6 +816,7 @@ export class BantaCommentsComponent {
         }
 
         this._selected.next(message);
+        this.selectedMessage = message;
 
         console.log(`[Banta] Opening thread for ${this.topicID}/${message.id}...`);
         let selectedMessageThread = await this.backend.getSourceForThread(this.topicID, message.id, {
@@ -831,7 +832,6 @@ export class BantaCommentsComponent {
 
         setTimeout(() => this.selectedMessageVisible = true);
         setTimeout(async () => {
-            this.selectedMessage = message;
             this.selectedMessageThread = selectedMessageThread;
         }, 250);
 
@@ -909,7 +909,7 @@ export class BantaCommentsComponent {
             await this.showSignIn();
             return;
         }
-        
+
         try {
             await this.source.editMessage(message.id, text);
             message.transientState.editing = false;

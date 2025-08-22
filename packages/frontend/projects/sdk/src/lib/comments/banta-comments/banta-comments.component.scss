@@ -17,7 +17,7 @@
     animation-name: select-comment;
     animation-duration: 400ms;
     animation-fill-mode: both;
-    
+
     .replies {
         margin-top: 1em;
         margin-left: 2em;
@@ -69,7 +69,7 @@ banta-comment-view {
         width: 500px;
         max-width: 100%;
         margin: 0 auto;
-        
+
         &.visible {
             opacity: 1;
         }
@@ -101,7 +101,7 @@ banta-comment-sort {
     .focused .replies {
         padding-left: 0.5em;
     }
-    
+
     banta-comment-sort {
         margin: 0;
         width: 100%;

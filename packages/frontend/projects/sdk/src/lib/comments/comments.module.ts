@@ -26,6 +26,7 @@ import { CommentViewComponent } from './comment-view/comment-view.component';
 import { CommentComponent } from './comment/comment.component';
 import { LiveCommentComponent } from './live-comment.component';
 import { BantaReplySendOptionsDirective } from './reply-send-options.directive';
+import { BantaInlineRepliesDirective } from './inline-replies.directive';
 
 const COMPONENTS = [
     CommentComponent,
@@ -36,6 +37,7 @@ const COMPONENTS = [
     CommentSortComponent,
     AttachmentButtonComponent,
     BantaReplySendOptionsDirective,
+    BantaInlineRepliesDirective,
     AttachmentScraperDirective
 ];
 

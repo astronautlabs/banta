@@ -6,7 +6,6 @@
             @if (!message.hidden) {
                 <banta-comment
                     class="abbreviated"
-                    
                     [customMenuItems]="customMenuItems"
                     [message]="message"
                     [mine]="currentUser?.id === message.user?.id"
@@ -40,11 +39,11 @@
 
     <div class="banta-top-sticky">
         @if (!newestLast) {
-            <button 
-                mat-button 
-                class="banta-nav" 
-                [class.visible]="shouldShowNewMessageIndicator" 
-                href="javascript:;" 
+            <button
+                mat-button
+                class="banta-nav"
+                [class.visible]="shouldShowNewMessageIndicator"
+                href="javascript:;"
                 (click)="showNewest($event)"
                 >
                 <mat-icon>file_upload</mat-icon>
@@ -65,7 +64,6 @@
         @if (!message.hidden) {
             <banta-comment
                 class="abbreviated"
-                
                 [customMenuItems]="customMenuItems"
                 [message]="message"
                 [mine]="currentUser?.id === message.user?.id"
@@ -91,12 +89,12 @@
                 (shared)="sharedMessage($event)"
                 />
             <div class="banta-inline-replies-container" *ngIf="selectedMessage === message">
-                <ng-content select=".inline-replies"></ng-content>
+                <ng-container *ngTemplateOutlet="inlineRepliesTemplate" />
             </div>
         }
     } @empty {
         <div class="banta-empty-state" *ngIf="showEmptyState">
-            Be the first to comment!
+            {{ emptyStateMessage }}
         </div>
     }
 
@@ -107,13 +105,13 @@
 
     <div class="banta-nav-point banta-bottom-sticky">
         @if (newestLast) {
-            <button 
+            <button
                 [matBadge]="10" matBadgeOverlap="false"
-                matBadgePosition="after" matBadgeSize="large" 
-                mat-button 
-                class="banta-nav" 
-                [class.visible]="shouldShowNewMessageIndicator" 
-                href="javascript:;" 
+                matBadgePosition="after" matBadgeSize="large"
+                mat-button
+                class="banta-nav"
+                [class.visible]="shouldShowNewMessageIndicator"
+                href="javascript:;"
                 (click)="showNewest($event)"
                 >
                 <mat-icon>file_download</mat-icon>

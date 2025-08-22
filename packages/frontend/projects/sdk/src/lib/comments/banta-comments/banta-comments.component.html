@@ -59,7 +59,8 @@
                     [source]="selectedMessageThread"
                     [allowReplies]="false"
                     [fixedHeight]="false"
-                    [showEmptyState]="false"
+                    [showEmptyState]="true"
+                    emptyStateMessage="Be the first to reply!"
                     [newestLast]="true"
                     [genericAvatarUrl]="genericAvatarUrl"
                     (liked)="likeMessage(selectedMessageThread, $event)"
@@ -133,7 +134,6 @@
             (signInSelected)="showSignIn()"
             (permissionDeniedError)="handlePermissionDenied($event)"
             >
-        
         </banta-comment-field>
 
         @if (serverInfoVisible) {
@@ -234,68 +234,69 @@
             [selectedMessage]="selectedMessage"
             (deleted)="deleteMessage($event)"
             >
-            <div class="inline-replies">
-                <div class="focused" [class.visible]="selectedMessageVisible" *ngIf="selectedMessage">
-                    <div class="replies">
-            
-                        <ng-container *ngIf="!selectedMessageThread">
-                            <div class="loading">
-                                <mat-spinner></mat-spinner>
-                            </div>
-                        </ng-container>
-            
-                        <ng-container *ngIf="selectedMessageThread">
-                            <banta-comment-view
-                                [source]="selectedMessageThread"
-                                [allowReplies]="false"
-                                [fixedHeight]="false"
-                                [showEmptyState]="false"
-                                [newestLast]="true"
-                                [enableHoldOnClick]="false"
-                                [holdNewMessages]="replyFieldFocused"
-                                [genericAvatarUrl]="genericAvatarUrl"
-                                (liked)="likeMessage(selectedMessageThread, $event)"
-                                (unliked)="unlikeMessage(selectedMessageThread, $event)"
-                                (pinned)="pinMessage(selectedMessageThread, $event.message, $event.options)"
-                                (unpinned)="unpinMessage(selectedMessageThread, $event)"
-                                (messageEdited)="editMessage(selectedMessageThread, $event.message, $event.newMessage)"
-                                (reported)="reportMessage($event)"
-                                (usernameSelected)="selectUsername($event)"
-                                (avatarSelected)="selectAvatar($event)"
-                                (shared)="shareMessage($event)"
-                                (deleted)="deleteMessage($event)"
-                                ></banta-comment-view>
-            
-                            <banta-comment-field
-                                [url]="url"
-                                [sendLabel]="replyLabel"
-                                [sendingLabel]="sendingLabel"
-                                [signingInLabel]="signingInLabel"
-                                [hashtags]="hashtags"
-                                [participants]="participants"
-                                (signInSelected)="showSignIn()"
-                                [maxLength]="maxCommentLength"
-                                [source]="selectedMessageThread"
-                                [signInState]="source?.signInState"
-                                [canComment]="source?.permissions?.canPost"
-                                [signInLabel]="signInLabel"
-                                [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
-                                [readonly]="source?.readonly"
-                                [shouldInterceptMessageSend]="shouldInterceptMessageSend"
-                                [user]="user"
-                                [label]="postReplyLabel"
-                                [submit]="sendReply"
-                                [allowAttachments]="allowAttachments"
-                                [genericAvatarUrl]="genericAvatarUrl"
-                                (permissionDeniedError)="handlePermissionDenied($event)"
-                                (editAvatarSelected)="showEditAvatar()"
-                                (focusChange)="replyFieldFocused = $event"
-                                >
-                                <ng-container *ngTemplateOutlet="sendReplyOptionsTemplate"></ng-container>
-                            </banta-comment-field>
-                        </ng-container>
-                    </div>
-                </div>
+            <div class="inline-replies" *bantaInlineReplies>
+              <div class="focused" [class.visible]="selectedMessageVisible" *ngIf="selectedMessage">
+                  <div class="replies">
+
+                      <ng-container *ngIf="!selectedMessageThread">
+                          <div class="loading">
+                              <mat-spinner></mat-spinner>
+                          </div>
+                      </ng-container>
+
+                      <ng-container *ngIf="selectedMessageThread">
+                          <banta-comment-view
+                              [source]="selectedMessageThread"
+                              [allowReplies]="false"
+                              [fixedHeight]="false"
+                              [showEmptyState]="true"
+                              emptyStateMessage="Be the first to reply!"
+                              [newestLast]="true"
+                              [enableHoldOnClick]="false"
+                              [holdNewMessages]="replyFieldFocused"
+                              [genericAvatarUrl]="genericAvatarUrl"
+                              (liked)="likeMessage(selectedMessageThread, $event)"
+                              (unliked)="unlikeMessage(selectedMessageThread, $event)"
+                              (pinned)="pinMessage(selectedMessageThread, $event.message, $event.options)"
+                              (unpinned)="unpinMessage(selectedMessageThread, $event)"
+                              (messageEdited)="editMessage(selectedMessageThread, $event.message, $event.newMessage)"
+                              (reported)="reportMessage($event)"
+                              (usernameSelected)="selectUsername($event)"
+                              (avatarSelected)="selectAvatar($event)"
+                              (shared)="shareMessage($event)"
+                              (deleted)="deleteMessage($event)"
+                              />
+
+                          <banta-comment-field
+                              [url]="url"
+                              [sendLabel]="replyLabel"
+                              [sendingLabel]="sendingLabel"
+                              [signingInLabel]="signingInLabel"
+                              [hashtags]="hashtags"
+                              [participants]="participants"
+                              (signInSelected)="showSignIn()"
+                              [maxLength]="maxCommentLength"
+                              [source]="selectedMessageThread"
+                              [signInState]="source?.signInState"
+                              [canComment]="source?.permissions?.canPost"
+                              [signInLabel]="signInLabel"
+                              [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
+                              [readonly]="source?.readonly"
+                              [shouldInterceptMessageSend]="shouldInterceptMessageSend"
+                              [user]="user"
+                              [label]="postReplyLabel"
+                              [submit]="sendReply"
+                              [allowAttachments]="allowAttachments"
+                              [genericAvatarUrl]="genericAvatarUrl"
+                              (permissionDeniedError)="handlePermissionDenied($event)"
+                              (editAvatarSelected)="showEditAvatar()"
+                              (focusChange)="replyFieldFocused = $event"
+                              >
+                              <ng-container *ngTemplateOutlet="sendReplyOptionsTemplate"></ng-container>
+                          </banta-comment-field>
+                      </ng-container>
+                  </div>
+              </div>
             </div>
         </banta-comment-view>
     </div>

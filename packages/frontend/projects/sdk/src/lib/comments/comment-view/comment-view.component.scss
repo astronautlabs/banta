@@ -1,4 +1,4 @@
-:host {    
+:host {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -11,11 +11,11 @@
     //overflow-x: hidden;
     color: #111111;
     background: white;
-    
-    // large bottom padding needed for the "Show more" 
-    // button to not cause a scroll bar (because its 
+
+    // large bottom padding needed for the "Show more"
+    // button to not cause a scroll bar (because its
     // pos absolute, see .nav)
-    
+
     padding: 0.5em 1em 3em 0.5em;
     opacity: 1;
     transition: 500ms opacity ease-in-out;
@@ -47,13 +47,13 @@
 }
 
 :host-context(.mat-dark-theme) {
-    .banta-message-container {   
+    .banta-message-container {
         color: white;
         background: #111111;
     }
 }
 
-.banta-empty-state {
+::ng-deep .banta-empty-state {
     text-align: center;
     margin: 3em;
     color: #666;
@@ -74,7 +74,7 @@ button.banta-nav {
     transition: 400ms opacity ease-in-out;
     pointer-events: none;
     border-radius: 2em;
-    
+
     background-color: #ddd;
 
     :host-context(.mat-dark-theme) & {
@@ -90,7 +90,7 @@ button.banta-nav {
         margin-left: 0.25em;
         font-size: 90%;
     }
-    
+
     &.visible {
         opacity: 1;
         pointer-events: initial;

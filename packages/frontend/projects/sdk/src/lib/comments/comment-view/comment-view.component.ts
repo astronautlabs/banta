@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, Output, HostBinding, ViewChildren, QueryList } from "@angular/core";
+import { Component, Input, ViewChild, ElementRef, Output, HostBinding, ViewChildren, QueryList, TemplateRef, ContentChild } from "@angular/core";
 import { User, ChatMessage, CommentsOrder, FilterMode } from '@banta/common';
 import { Subject, Subscription } from 'rxjs';
 import { ChatBackendBase } from "../../chat-backend-base";
@@ -6,6 +6,7 @@ import { ChatSourceBase } from "../../chat-source-base";
 import { MessageMenuItem } from "../../message-menu-item";
 import { CommentComponent } from "../comment/comment.component";
 import { PinOptions } from "../../chat-source";
+import { BantaInlineRepliesDirective } from "../inline-replies.directive";
 
 export interface EditEvent {
     message: ChatMessage;
@@ -53,24 +54,24 @@ export class CommentViewComponent {
     get nextMessages() { return this.newestLast ? this.newMessages : this.olderMessages; }
 
     /**
-     * While this is called "new" messages, it really represents the messages that would be visible *at the beginning 
-     * of the sort order*, which can be flipped by the newestLast feature (used for replies mode). 
-     * 
-     * So, when newestLast is false (top-level comments), regardless of the current sortOrder, newMessages are conceptually 
+     * While this is called "new" messages, it really represents the messages that would be visible *at the beginning
+     * of the sort order*, which can be flipped by the newestLast feature (used for replies mode).
+     *
+     * So, when newestLast is false (top-level comments), regardless of the current sortOrder, newMessages are conceptually
      * *above* the visible set of messages.
-     * 
-     * When newestLast is true (as in replies mode), regardless of the current sortOrder, newMessages are conceptually 
+     *
+     * When newestLast is true (as in replies mode), regardless of the current sortOrder, newMessages are conceptually
      * *below* the visible set of messages.
      */
     newMessages: ChatMessage[] = [];
 
     /**
-     * While this is called "older" messages, it really represents the messages that would be visible *at the end of the 
+     * While this is called "older" messages, it really represents the messages that would be visible *at the end of the
      * sort order*, which can be flipped by the newestLast feature (useds for replies mode).
-     * 
+     *
      * So, when newestLast is false, regardless of the current sortOrder, olderMessages are conceptually *below*
      * the visible set of messages.
-     * 
+     *
      * When newestLast is true (as in replies mode), regardless of the current sortOrder, olderMessages are conceptually
      * *above* the visible set of messages.
      */
@@ -85,7 +86,7 @@ export class CommentViewComponent {
     get maxMessages() { return this._maxMessages ?? DEFAULT_MAX_MESSAGES; }
 
     private _maxVisibleMessages: number;
-    @Input() 
+    @Input()
     set maxVisibleMessages(value) { this._maxVisibleMessages = value; }
     get maxVisibleMessages() { return this._maxVisibleMessages ?? DEFAULT_MAX_VISIBLE_MESSAGES; }
 
@@ -93,6 +94,7 @@ export class CommentViewComponent {
     @Input() newestLast = false;
     @Input() holdNewMessages = false;
     @Input() showEmptyState = true;
+    @Input() emptyStateMessage = 'Be the first to comment!';
     @Input() allowReplies = true;
     @Input() enableHoldOnClick = false;
     @Input() enableHoldOnScroll = true;
@@ -100,7 +102,10 @@ export class CommentViewComponent {
     @Input() @HostBinding('class.fixed-height') fixedHeight: boolean;
     @Input() selectedMessage: ChatMessage;
     @Input() genericAvatarUrl: string;
-    
+
+    @ContentChild(BantaInlineRepliesDirective, { read: TemplateRef })
+    inlineRepliesTemplate: TemplateRef<any>;
+
     //#endregion
     //#region Outputs
 
@@ -134,7 +139,7 @@ export class CommentViewComponent {
     @Output() readonly sortOrderChanged = this._sortOrderChanged.asObservable();
     @Output() readonly filterModeChanged = this._filterModeChanged.asObservable();
 
-    //#endregion 
+    //#endregion
     //#region UI Bindings
 
     @ViewChildren(CommentComponent) commentsQuery: QueryList<CommentComponent>;
@@ -145,7 +150,7 @@ export class CommentViewComponent {
 
     /**
      * Returns true if this message can be found within one of the message buffers (older, current, newer)
-     * @param message 
+     * @param message
      */
     isMessageLoadedInContext(message: ChatMessage) {
         return this.olderMessages.find(x => x.id === message.id)
@@ -155,7 +160,7 @@ export class CommentViewComponent {
 
     async loadMessageInContext(message: ChatMessage) {
         await this.sourceLoaded;
-        
+
         console.log(`Loading message ${message.id} in context...`);
         while (this.hasMore && !this.isMessageLoadedInContext(message)) {
             console.log(`...Need to load more comments to find ${message.id}`);
@@ -183,8 +188,8 @@ export class CommentViewComponent {
     }
 
     get shouldShowNewMessageIndicator() {
-        return this.isViewingMore 
-            || this.customSortEnabled 
+        return this.isViewingMore
+            || this.customSortEnabled
             || this.sourceFilterMode !== FilterMode.ALL
             || this.heldMessages.length > 0;
     }
@@ -207,7 +212,7 @@ export class CommentViewComponent {
                 keyMessage = this.messages[this.messages.length - 1];
             else
                 keyMessage = this.messages[0];
-            
+
             if (keyMessage) {
                 const messageElement = this.getElementForComment(keyMessage.id);
                 if (messageElement) {
@@ -230,7 +235,7 @@ export class CommentViewComponent {
 
     private isElementVisible(element: Element) {
         const elementRect = element.getBoundingClientRect();
-        return !!elementRect 
+        return !!elementRect
             && elementRect.bottom >= 0
             && elementRect.right >= 0
             && elementRect.left <= document.documentElement.clientWidth
@@ -239,10 +244,10 @@ export class CommentViewComponent {
 
     /**
      * Get the CommentComponent instantiated for the given ChatMessage,
-     * if it exists in the current view. Note that messages which are not 
+     * if it exists in the current view. Note that messages which are not
      * currently shown to the user will not return a CommentComponent.
-     * @param message 
-     * @returns 
+     * @param message
+     * @returns
      */
     getCommentComponentForMessage(message: ChatMessage) {
         if (!message)
@@ -328,7 +333,7 @@ export class CommentViewComponent {
             this._sourceSubs.add(this._source.messageSent.subscribe(msg => this.messageSent(msg)));
             this._sourceSubs.add(this._source.messageUpdated.subscribe(msg => this.messageUpdated(msg)));
 
-            this._sourceSubs.add( 
+            this._sourceSubs.add(
                 this.backend.userChanged.subscribe(user => this.currentUser = user)
             );
 
@@ -365,36 +370,36 @@ export class CommentViewComponent {
     debugMessages() {
         if (!this.showDebug)
             return;
-        
-        // console.log([ 
-        //     ...this.previousMessages.map(x => x.message), 
+
+        // console.log([
+        //     ...this.previousMessages.map(x => x.message),
         //     '[[',
         //     ...this.messages.map(x => x.message),
         //     ']]',
-        //     ...this.nextMessages.map(x => x.message) 
+        //     ...this.nextMessages.map(x => x.message)
         // ].map(x => /\d+/.test(x) ? this.zeroPad(x, 2) : x).join(" "));
     }
 
     zeroPad(number: number | string, count: number = 2) {
         let str: string;
-    
+
         if (typeof number === 'number')
             str = String(number);
         else
             str = number;
-    
+
         while (str.length < count)
             str = '0' + str;
-    
+
         return str;
     }
     leftPad(str: string, count: number = 2) {
         while (str.length < count)
             str = ' ' + str;
-    
+
         return str;
     }
-    
+
     messageIdentity(index: number, chatMessage: ChatMessage) {
         return chatMessage.id;
     }
@@ -410,11 +415,11 @@ export class CommentViewComponent {
     /**
      * Show the newest content.
      * - If an unnatural sort order is active (ie Oldest or Likes), it will be changed to Newest.
-     * - The new content will be placed where new content goes based on newestLast (replies mode), so if it is true, the content is 
+     * - The new content will be placed where new content goes based on newestLast (replies mode), so if it is true, the content is
      *   placed at the end, otherwise it is placed at the beginning.
-     * 
-     * @param event 
-     * @returns 
+     *
+     * @param event
+     * @returns
      */
     async showNewest(event: MouseEvent) {
 
@@ -435,7 +440,7 @@ export class CommentViewComponent {
             return;
         }
 
-        // On this path, we are already on Newest, but there is newer content available (such as when new content is 
+        // On this path, we are already on Newest, but there is newer content available (such as when new content is
         // being buffered due to user engagement on a comment)
 
         this.isViewingMore = false;
@@ -453,7 +458,7 @@ export class CommentViewComponent {
         this.hasMore = this.olderMessages.length > 0;
 
         // Scroll to the newest comment.
-        
+
         if (this.messages.length > 0) {
             if (this.newestLast) {
                 this.scrollToComment(this.messages[this.messages.length - 1].id);
@@ -530,7 +535,7 @@ export class CommentViewComponent {
 
             this.isLoadingMore = false;
         }
-        
+
         // Extract the messages that do not fit in the maxVisibleMessages buffer.
 
         if (this.messages.length > this.maxVisibleMessages) {
@@ -575,8 +580,8 @@ export class CommentViewComponent {
      * - When in replies mode (newestLast), the content is added at the top
      * - When in normal mode, the content is added at the bottom
      * - The current sort order does *not* factor in here, which is why it is showMore() not showEarlier().
-     * 
-     * @returns 
+     *
+     * @returns
      */
     async showNext() {
         this.isViewingMore = true;
@@ -615,13 +620,13 @@ export class CommentViewComponent {
 
         // Extract the messages that do not fit in the maxVisibleMessages buffer.
 
-        
+
         if (this.messages.length > this.maxVisibleMessages) {
             let overflow = this.messages.splice(0, this.messages.length - this.maxVisibleMessages);
 
             // Regardless of the order (newestLast), newMessages represents the direction that is being pushed, since it's definition
             // depends on that order. Move overflowing messages into newMessages.
-            
+
             this.previousMessages.push(...overflow);
             if (this.previousMessages.length > this.maxMessages)
                 this.previousMessages.splice(0, this.previousMessages.length - this.maxMessages);
@@ -635,8 +640,8 @@ export class CommentViewComponent {
      * - When in replies mode (newestLast), the content is added at the top
      * - When in normal mode, the content is added at the bottom
      * - The current sort order does *not* factor in here, which is why it is showMore() not showEarlier().
-     * 
-     * @returns 
+     *
+     * @returns
      */
     async showMore() {
         this.isViewingMore = true;
@@ -679,7 +684,7 @@ export class CommentViewComponent {
 
             if (this.newestLast)
                 messages = messages.slice().reverse();
-            
+
             messages.forEach(m => m.transientState ??= {});
 
             // In replies mode (newestLast), we want to put these new messages onto the *top* of the set of visible messages.
@@ -704,10 +709,10 @@ export class CommentViewComponent {
 
         if (this.messages.length > this.maxVisibleMessages) {
             let overflow: ChatMessage[] = [];
-            
+
             // Move overflowing messages into newMessages.
-            // Regardless of the order (newestLast), newMessages represents the direction that is being loaded, 
-            // since it's definition depends on that order. 
+            // Regardless of the order (newestLast), newMessages represents the direction that is being loaded,
+            // since it's definition depends on that order.
 
             if (this.newestLast) {
                 overflow = this.messages.splice(this.maxVisibleMessages, this.messages.length);
@@ -719,7 +724,7 @@ export class CommentViewComponent {
                 if (this.newMessages.length > this.maxMessages - this.maxVisibleMessages)
                     this.newMessages.splice(0, this.newMessages.length - (this.maxMessages - this.maxVisibleMessages));
             }
-            
+
         }
     }
 
@@ -729,7 +734,7 @@ export class CommentViewComponent {
 
         if (!message.transientState)
             message.transientState ??= {};
-        
+
         let destination = this.messages;
         let bucket = this.olderMessages;
         let newestLast = this.newestLast;
@@ -744,7 +749,7 @@ export class CommentViewComponent {
         if (this.sourceSortOrder !== CommentsOrder.NEWEST)
             return;
 
-        
+
         if (newestLast) {
             destination.push(message);
 
@@ -754,7 +759,7 @@ export class CommentViewComponent {
             }
         } else {
             destination.unshift(message);
-            
+
             if (this.maxVisibleMessages > 0) {
                 let overflow = destination.splice(this.maxVisibleMessages, destination.length);
                 bucket?.unshift(...overflow);
@@ -771,7 +776,7 @@ export class CommentViewComponent {
     private incrementPagingCursors() {
         if (this.source.sortOrder !== CommentsOrder.NEWEST)
             return;
-        
+
         let maxPagingCursor = 0;
         for (let group of [this.messages, this.olderMessages, this.newMessages]) {
             for (let message of group) {
@@ -800,7 +805,7 @@ export class CommentViewComponent {
     private sortMessages() {
         if (!this.source)
             return;
-        
+
         let sorter: (a: ChatMessage, b: ChatMessage) => number;
 
         if (this.source.sortOrder === CommentsOrder.LIKES)
@@ -882,7 +887,7 @@ export class CommentViewComponent {
     async scrollToComment(commentId: ChatMessage['id']) {
         if (typeof window === 'undefined')
             return;
-        
+
         await this.waitForAllCommentsToLoad();
 
         const comment = this.getElementForComment(commentId);
