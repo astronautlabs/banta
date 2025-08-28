@@ -1058,7 +1058,8 @@ export class ChatService {
                     {
                         $or: [
                             { pinned: false },
-                            { pinned: undefined }
+                            { pinned: undefined },
+                            { pinnedUntil: { $lt: Date.now() } }
                         ]
                     }
                 ]
