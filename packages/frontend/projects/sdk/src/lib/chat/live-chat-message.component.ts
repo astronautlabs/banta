@@ -14,7 +14,8 @@ import { ChatBackendBase } from '../chat-backend-base';
             (selected)="select()"
             ></banta-chat-message>
     `,
-    styles: [``]
+    styles: [``],
+    standalone: false
 })
 export class LiveChatMessageComponent {
     constructor(

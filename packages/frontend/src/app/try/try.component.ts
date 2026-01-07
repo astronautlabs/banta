@@ -30,7 +30,8 @@ const DEFAULT_CUSTOM_THEME = `
 
 @Component({
     templateUrl: './try.component.html',
-    styleUrls: ['./try.component.scss']
+    styleUrls: ['./try.component.scss'],
+    standalone: false
 })
 export class TryComponent {
     private chatBackend = inject(ChatBackendBase);

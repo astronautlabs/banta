@@ -8,7 +8,8 @@ import { PinOptions } from "../../chat-source";
 @Component({
     selector: 'banta-comment',
     templateUrl: './comment.component.html',
-    styleUrls: ['./comment.component.scss']
+    styleUrls: ['./comment.component.scss'],
+    standalone: false
 })
 export class CommentComponent {
     constructor(

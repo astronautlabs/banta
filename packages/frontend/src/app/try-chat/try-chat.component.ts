@@ -3,7 +3,8 @@ import {ChatMessage} from "@banta/common";
 
 @Component({
     templateUrl: './try-chat.component.html',
-    styleUrls: ['./try-chat.component.scss']
+    styleUrls: ['./try-chat.component.scss'],
+    standalone: false
 })
 export class TryChatComponent {
     topicID : string;

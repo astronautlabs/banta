@@ -5,7 +5,8 @@ import { Subject } from 'rxjs';
 @Component({
     selector: 'banta-attachment-button',
     templateUrl: './attachment-button.component.html',
-    styleUrls: ['./attachment-button.component.scss']
+    styleUrls: ['./attachment-button.component.scss'],
+    standalone: false
 })
 export class AttachmentButtonComponent {
     constructor(

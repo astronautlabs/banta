@@ -13,7 +13,8 @@ import { ChatSourceBase } from "../chat-source-base";
 @Component({
     selector: `banta`,
     templateUrl: './banta.component.html',
-    styleUrls: [ './banta.component.scss' ]
+    styleUrls: ['./banta.component.scss'],
+    standalone: false
 })
 export class BantaComponent {
     constructor(

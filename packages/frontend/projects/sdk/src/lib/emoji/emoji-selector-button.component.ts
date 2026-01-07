@@ -28,7 +28,8 @@ import { EmojiSelectorPanelComponent } from './emoji-selector-panel/emoji-select
         button {
             color: #666
         }
-    `]
+    `],
+    standalone: false
 })
 export class EmojiSelectorButtonComponent {
     constructor(

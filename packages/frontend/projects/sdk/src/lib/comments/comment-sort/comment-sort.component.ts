@@ -3,9 +3,10 @@ import { CommentsOrder } from "@banta/common";
 import { Subject } from "rxjs";
 
 @Component({
-  selector: 'banta-comment-sort',
-  templateUrl: './comment-sort.component.html',
-  styleUrls: ['./comment-sort.component.scss']
+    selector: 'banta-comment-sort',
+    templateUrl: './comment-sort.component.html',
+    styleUrls: ['./comment-sort.component.scss'],
+    standalone: false
 })
 export class CommentSortComponent {
 

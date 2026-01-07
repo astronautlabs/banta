@@ -1,6 +1,7 @@
 import { Directive } from "@angular/core";
 
 @Directive({
-    selector: `[bantaInlineReplies]`
+    selector: `[bantaInlineReplies]`,
+    standalone: false
 })
 export class BantaInlineRepliesDirective {}

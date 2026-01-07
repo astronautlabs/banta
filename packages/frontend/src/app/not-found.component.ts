@@ -41,7 +41,8 @@ import { Component } from '@angular/core';
         p {
             color: #aaa;
         }
-    `]
+    `],
+    standalone: false
 })
 export class NotFoundComponent {
 }

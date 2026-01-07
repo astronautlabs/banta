@@ -19,7 +19,8 @@ const DEFAULT_MAX_VISIBLE_MESSAGES = 200;
 @Component({
     selector: 'banta-comment-view',
     templateUrl: './comment-view.component.html',
-    styleUrls: ['./comment-view.component.scss']
+    styleUrls: ['./comment-view.component.scss'],
+    standalone: false
 })
 export class CommentViewComponent {
     constructor(

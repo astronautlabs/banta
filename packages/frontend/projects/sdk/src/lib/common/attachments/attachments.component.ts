@@ -6,7 +6,8 @@ import { LightboxComponent } from "../lightbox/lightbox.component";
 @Component({
     selector: 'banta-attachments',
     templateUrl: './attachments.component.html',
-    styleUrls: ['./attachments.component.scss']
+    styleUrls: ['./attachments.component.scss'],
+    standalone: false
 })
 export class BantaAttachmentsComponent {
     @Input() attachments: ChatMessageAttachment[];

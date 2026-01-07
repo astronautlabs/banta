@@ -2,9 +2,10 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Feature, Sku } from '../feature';
 
 @Component({
-  selector: 'saas-pricing-grid',
-  templateUrl: './pricing-grid.component.html',
-  styleUrls: ['./pricing-grid.component.scss']
+    selector: 'saas-pricing-grid',
+    templateUrl: './pricing-grid.component.html',
+    styleUrls: ['./pricing-grid.component.scss'],
+    standalone: false
 })
 export class PricingGridComponent {
 

@@ -22,7 +22,8 @@ import { PinOptions } from '../../chat-source';
 @Component({
     selector: 'banta-comments',
     templateUrl: './banta-comments.component.html',
-    styleUrls: ['./banta-comments.component.scss']
+    styleUrls: ['./banta-comments.component.scss'],
+    standalone: false
 })
 export class BantaCommentsComponent {
     constructor(

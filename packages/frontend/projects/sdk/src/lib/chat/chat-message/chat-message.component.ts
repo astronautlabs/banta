@@ -5,7 +5,8 @@ import { Subject } from 'rxjs';
 @Component({
     selector: 'banta-chat-message',
     templateUrl: './chat-message.component.html',
-    styleUrls: ['./chat-message.component.scss']
+    styleUrls: ['./chat-message.component.scss'],
+    standalone: false
 })
 export class ChatMessageComponent {
     private _selected = new Subject<void>();

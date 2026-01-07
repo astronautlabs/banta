@@ -23,7 +23,8 @@ import { Subject, Observable } from 'rxjs';
             </banta-live-comment>
         </ng-container>
     `,
-    styles: [``]
+    styles: [``],
+    standalone: false
 })
 export class LiveMessageComponent {
     constructor() {

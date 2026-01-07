@@ -27,7 +27,8 @@ export interface AugmentedEmoji extends Emoji {
 @Component({
     selector: 'emoji-selector-panel',
     templateUrl: './emoji-selector-panel.component.html',
-    styleUrls: ['./emoji-selector-panel.component.scss']
+    styleUrls: ['./emoji-selector-panel.component.scss'],
+    standalone: false
 })
 export class EmojiSelectorPanelComponent implements OnInit {
 

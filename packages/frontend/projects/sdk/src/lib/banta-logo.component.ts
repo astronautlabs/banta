@@ -14,7 +14,8 @@ import { Component } from "@angular/core";
             font-size: 30pt;
         }
         `
-    ]
+    ],
+    standalone: false
 })
 export class BantaLogoComponent {
 

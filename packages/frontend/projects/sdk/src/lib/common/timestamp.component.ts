@@ -11,7 +11,8 @@ import { TimerPool } from "../../lib/common/timer-pool.service";
             {{relative}}
         </span>
     `,
-    styles: [``]
+    styles: [``],
+    standalone: false
 })
 export class TimestampComponent {
     constructor(

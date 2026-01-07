@@ -1,6 +1,7 @@
 import { Directive } from "@angular/core";
 
 @Directive({
-    selector: `[bantaReplySendOptions]`
+    selector: `[bantaReplySendOptions]`,
+    standalone: false
 })
 export class BantaReplySendOptionsDirective {}

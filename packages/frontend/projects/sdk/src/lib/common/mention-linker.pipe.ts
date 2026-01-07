@@ -3,7 +3,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { ChatMessageMention } from '@banta/common';
 
 @Pipe({
-    name: 'mentionLinker'
+    name: 'mentionLinker',
+    standalone: false
 })
 export class BantaMentionLinkerPipe implements PipeTransform {
     transform(value: string, links?: ChatMessageMention[]) {

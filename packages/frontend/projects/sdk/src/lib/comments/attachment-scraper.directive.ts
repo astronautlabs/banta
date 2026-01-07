@@ -10,7 +10,8 @@ interface AttachmentFragmentState {
 }
 
 @Directive({
-    selector: '[attachmentScraper]'
+    selector: '[attachmentScraper]',
+    standalone: false
 })
 export class AttachmentScraperDirective {
     constructor(

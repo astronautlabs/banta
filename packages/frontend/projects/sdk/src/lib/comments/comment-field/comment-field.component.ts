@@ -26,7 +26,8 @@ interface AttachmentFragmentState {
 @Component({
     selector: 'banta-comment-field',
     templateUrl: './comment-field.component.html',
-    styleUrls: ['./comment-field.component.scss']
+    styleUrls: ['./comment-field.component.scss'],
+    standalone: false
 })
 export class CommentFieldComponent {
     ngAfterViewInit() {

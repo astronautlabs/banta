@@ -32,7 +32,8 @@ marked.marked.use({
 });
 
 @Pipe({
-    name: 'bantaMarkdownToHtml'
+    name: 'bantaMarkdownToHtml',
+    standalone: false
 })
 export class BantaMarkdownToHtmlPipe implements PipeTransform {
     private sanitizer = inject(DomSanitizer);

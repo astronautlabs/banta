@@ -3,7 +3,8 @@ import { Component, ElementRef, ViewChild } from "@angular/core";
 @Component({
     selector: 'banta-lightbox',
     templateUrl: './lightbox.component.html',
-    styleUrls: ['./lightbox.component.scss']
+    styleUrls: ['./lightbox.component.scss'],
+    standalone: false
 })
 export class LightboxComponent {
     @ViewChild('container') 

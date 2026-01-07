@@ -7,7 +7,8 @@ let TWITTER_LOADED = false;
 @Component({
     selector: 'banta-attachment',
     templateUrl: './attachment.component.html',
-    styleUrls: ['./attachment.component.scss']
+    styleUrls: ['./attachment.component.scss'],
+    standalone: false
 })
 export class BantaAttachmentComponent {
     constructor(

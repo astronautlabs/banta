@@ -2,7 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Pipe({
-    name: 'trustResourceUrl'
+    name: 'trustResourceUrl',
+    standalone: false
 })
 export class BantaTrustResourceUrlPipe implements PipeTransform {
     constructor(
