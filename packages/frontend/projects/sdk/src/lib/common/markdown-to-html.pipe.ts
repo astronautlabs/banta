@@ -3,9 +3,9 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { BANTA_SDK_OPTIONS } from '../sdk-options';
 
 import createDOMPurify from 'dompurify';
-import twemoji from 'twemoji';
 
 import * as marked from 'marked';
+import { EmojiDecorator } from '@astronautlabs/emoji';
 
 const underline = {
     name: 'underline',
@@ -48,7 +48,7 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
     }
 
 	private get emojiUrl() {
-		return this.sdkOptions?.emojiUrl ?? 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/';
+		return this.sdkOptions?.emojiUrl ?? 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@17.0.2/assets/';
 	}
 
     renderer: marked.Renderer;
@@ -57,7 +57,7 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
             return '';
 
         let purifier = createDOMPurify(window);
-        
+
         // https://github.com/cure53/DOMPurify/blob/e1c19cf6407d782b666cb1d02a6af191f9cbc09e/demos/hooks-target-blank-demo.html
         // Add a hook to make all links open a new window
         purifier.addHook('afterSanitizeAttributes', function(node: HTMLElement & { target?: string }) {
@@ -79,7 +79,7 @@ export class BantaMarkdownToHtmlPipe implements PipeTransform {
             renderer: this.renderer
         }) as string;
 
-        value = twemoji.parse(value, { base: this.emojiUrl });
+        value = EmojiDecorator.parse(value, { baseUrl: this.emojiUrl });
 
         return this.sanitizer.bypassSecurityTrustHtml(
             purifier.sanitize(value,

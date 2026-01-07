@@ -3,8 +3,10 @@ import { ChatMessage, ChatMessageAttachment, User } from "@banta/common";
 import { Subject, Subscription } from "rxjs";
 import { ChatSourceBase } from "../../chat-source-base";
 import { AttachmentFragment } from "../../attachment-scraper";
-import { EMOJIS } from "../../emoji";
+import { EMOJI } from "@astronautlabs/emoji";
 import { SignInState } from "../../chat-source";
+
+const ALL_EMOJI_WITH_SHORTCUTS = EMOJI.categories.flatMap(c => c.items).filter(x => x.shortcut);
 
 export interface AutoCompleteOption {
     label : string;
@@ -92,7 +94,7 @@ export class CommentFieldComponent {
     @Output() serverInfoRequested = new Subject<void>();
     @Output() reconnectRequested = new Subject<void>();
     @Output() get permissionDeniedError() { return this._permissionDeniedError; }
-    
+
     //#endregion
     //#region UI Bindings
 
@@ -126,15 +128,15 @@ export class CommentFieldComponent {
     get sendButtonEnabled() {
         if (this.readonly)
             return false;
-        
+
         if (this.signInState === 'signing-in')
             return false;
-        
+
         if (!['connected', 'restored'].includes(this.source?.state ?? 'connected'))
             return false;
-            
+
         if (!this.canComment) {
-            // In this case, we want to enable the button because we want to be able to 
+            // In this case, we want to enable the button because we want to be able to
             // send the permissionDenied message up to the host.
             return true;
         }
@@ -194,7 +196,7 @@ export class CommentFieldComponent {
     showAutoComplete(options : AutoCompleteOption[]) {
         if (typeof window === 'undefined')
             return;
-        
+
         this.autoCompleteSelected = 0;
         this.autocompleteOptions = options;
         let pos = this.autocompleteContainerEl.nativeElement.getBoundingClientRect();
@@ -300,15 +302,16 @@ export class CommentFieldComponent {
                 this.startAutoComplete(event, prefix => {
                     prefix = prefix.slice(1);
 
+                    // TODO
                     // makes :-), :-( etc work (as they are ":)" etc in the db)
                     if (prefix.startsWith('-'))
                         prefix = prefix.slice(1);
 
-                    return Object.keys(EMOJIS)
-                        .filter(k => k.includes(prefix) || EMOJIS[k].keywords.some(kw => kw.includes(prefix)))
-                        .map(k => ({
-                            label: `${EMOJIS[k].char} ${k}`,
-                            action: () => this.autocomplete(EMOJIS[k].char)
+                    return ALL_EMOJI_WITH_SHORTCUTS
+                        .filter(emoji => emoji.shortcut.includes(prefix) || emoji.keywords.some(kw => kw.includes(prefix)))
+                        .map(emoji => ({
+                            label: `${emoji.string} ${emoji.shortcut}`,
+                            action: () => this.autocomplete(emoji.string)
                         }))
                         .slice(0, 5)
                     ;

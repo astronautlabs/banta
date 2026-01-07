@@ -1,117 +1,104 @@
-declare var twemoji: {
-    parse(str: string, options?: { folder?: string, ext?: string, base?: string }): string;
-}
-
 import { Component, inject, OnInit, Output } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { BANTA_SDK_OPTIONS } from '../../sdk-options';
+import { EmojiDecorator, EMOJI, EmojiCategory, Emoji } from '@astronautlabs/emoji';
 
-interface Emoji {
-	keywords : string[];
-	char : string;
-	html? : SafeHtml;
-	category : string;
+const CATEGORY_ICONS = {
+    symbols: 'warning',
+    people: 'people',
+    animals_and_nature: 'nature',
+    travel_and_places: 'location_on',
+    activity: 'local_activity',
+    food_and_drink: 'restaurant',
+    objects: 'computer',
+    flags: 'flag'
+};
+
+export interface AugmentedCategory extends EmojiCategory {
+    icon: string,
+    items: AugmentedEmoji[];
 }
 
-import { EMOJIS } from '../emojis';
+export interface AugmentedEmoji extends Emoji {
+    html: SafeHtml;
+}
 
 @Component({
-	selector: 'emoji-selector-panel',
-	templateUrl: './emoji-selector-panel.component.html',
-	styleUrls: ['./emoji-selector-panel.component.scss']
+    selector: 'emoji-selector-panel',
+    templateUrl: './emoji-selector-panel.component.html',
+    styleUrls: ['./emoji-selector-panel.component.scss']
 })
 export class EmojiSelectorPanelComponent implements OnInit {
 
-	private sanitizer = inject(DomSanitizer);
-	private sdkOptions = inject(BANTA_SDK_OPTIONS, { optional: true });
+    private sanitizer = inject(DomSanitizer);
+    private sdkOptions = inject(BANTA_SDK_OPTIONS, { optional: true });
 
-	categories : any[];
-	activeCategory : string = 'people';
-	searchResults : any[] = [];
+    categories: AugmentedCategory[];
+    allEmoji: AugmentedEmoji[];
+    activeCategory: string = 'people';
+    searchResults: any[] = [];
     searchVisible = false;
-	
-	@Output()
-	private selected : Subject<string> = new Subject();
 
-	private _searchQuery : string;
+    @Output()
+    private selected: Subject<string> = new Subject();
 
-	get searchQuery() {
-		return this._searchQuery;
-	}
+    private _searchQuery: string;
 
-	set searchQuery(value) {
-		this._searchQuery = value;
-		setTimeout(() => {
-			this.searchResults = Object.keys(EMOJIS).filter(k => k.includes(value)).map(k => EMOJIS[k]);
-			this.searchResults.splice(50, this.searchResults.length);
-			console.log(`looking for '${value}' => ${this.searchResults.length} results`);
-		});
-	}
+    get searchQuery() {
+        return this._searchQuery;
+    }
 
-	humanize(str : string) {
-		return str.replace(/(^| )[a-z]/g, k => k.toUpperCase()).replace(/_/g, ' ');
-	}
+    set searchQuery(value) {
+        this._searchQuery = value;
+        setTimeout(() => {
+            this.searchResults = this.allEmoji.filter(k => k.description.includes(value));
+            this.searchResults.splice(50, this.searchResults.length);
+        });
+    }
 
-	select(char : string) {
-		this.selected.next(char);
-	}
+    humanize(str: string) {
+        return str.replace(/(^| )[a-z]/g, k => k.toUpperCase()).replace(/_/g, ' ');
+    }
 
-	pairs(object) {
-		return Object.keys(object).map(key => [key, object[key]]);
-	}
+    select(char: string) {
+        this.selected.next(char);
+    }
 
-	hideSearch() {
-		// because of the "outside click detection"
+    hideSearch() {
+        // because of the "outside click detection"
         setTimeout(() => {
             this.searchVisible = false;
         });
-	}
-	
+    }
+
     showSearch() {
-		// because of the "outside click detection"
+        // because of the "outside click detection"
         setTimeout(() => {
             this.searchVisible = true;
         });
     }
 
-	private get emojiUrl() {
-		return this.sdkOptions?.emojiUrl ?? 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/';
-	}
+    private get emojiUrl() {
+        return this.sdkOptions?.emojiUrl ?? 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@17.0.2/assets/';
+    }
 
-	ngOnInit() {
+    ngOnInit() {
+        for (let category of EMOJI.categories) {
+            this.categories.push({
+                ...category,
+                icon: CATEGORY_ICONS[category.id] ?? 'code',
+                items: category.items.map(emoji => ({
+                    ...emoji,
+                    html: this.sanitizer.bypassSecurityTrustHtml(
+                        EmojiDecorator.parse(emoji.string, { baseUrl: this.emojiUrl })
+                    )
+                }))
+            });
+        }
 
-		let cats = {};
-		let categoryIcons = {
-			symbols: 'warning',
-			people: 'people',
-			animals_and_nature: 'nature',
-			travel_and_places: 'location_on',
-			activity: 'local_activity',
-			food_and_drink: 'restaurant',
-			objects: 'computer',
-			flags: 'flag'
-		};
-		for (let pair of this.pairs(EMOJIS)) {
-			let name = pair[0];
-			let emoji : Emoji = pair[1];
+        this.allEmoji = this.categories.flatMap(cat => cat.items);
 
-			if (!cats[emoji.category]) {
-				cats[emoji.category] = {
-					name: emoji.category,
-					icon: categoryIcons[emoji.category] || 'code',
-					emojis: []
-				}
-			}
-
-			emoji.html = this.sanitizer.bypassSecurityTrustHtml(
-				twemoji.parse(emoji.char || '', { base: this.emojiUrl })
-			);
-
-			cats[emoji.category].emojis.push(emoji);
-		}
-
-		this.categories = this.pairs(cats).map(pair => pair[1]);
-	}
+    }
 
 }
