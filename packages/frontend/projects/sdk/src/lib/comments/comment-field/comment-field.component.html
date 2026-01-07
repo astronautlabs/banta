@@ -31,13 +31,13 @@
                 <div class="banta-options-line">
                     <ng-container *ngIf="indicatorState === 'transient'">
                         <div class="transient-message" [class.expanded]="true" [matTooltip]="transientMessage" (click)="alertError()">
-                            <mat-spinner [inline]="true" [diameter]="15"></mat-spinner>
+                            <mat-spinner [diameter]="15"></mat-spinner>
                             {{transientMessage}}
                         </div>
                     </ng-container>
                     <ng-container *ngIf="indicatorState === 'sending'">
                         <div class="banta-transient-message" [class.expanded]="true" (click)="alertError()">
-                            <mat-spinner [inline]="true" [diameter]="15"></mat-spinner>
+                            <mat-spinner [diameter]="15"></mat-spinner>
                             {{sendingLabel}}...
                         </div>
                     </ng-container>
@@ -53,7 +53,7 @@
                     <div class="custom">
                         <ng-content></ng-content>
                     </div>
-                    <banta-attachment-button 
+                    <banta-attachment-button
                         *ngIf="allowAttachments"
                         [disabled]="readonly"
                         (addedAttachment)="addedAttachment($event)"
@@ -76,7 +76,7 @@
                         <mat-icon>more_vert</mat-icon>
                     </button>
                 </div>
-                
+
             </div>
             <div #autocompleteContainer class="autocomplete-container">
                 <div #autocomplete class="autocomplete" [class.visible]="autocompleteVisible">
@@ -95,7 +95,7 @@
                 </div>
             </div>
 
-            <banta-attachments 
+            <banta-attachments
                 [attachments]="chatMessageAttachments"
                 [editing]="true"
                 (remove)="removeAttachment($event)"

@@ -79,7 +79,7 @@ export class BantaChatComponent {
         if (this._source && this._source.close)
             this._source.close();
         this._source = null;
-        this._source = await this.backend.getSourceForTopic(topicID, { 
+        this._source = await this.backend.getSourceForTopic(topicID, {
             metadata: this.metadata
         });
     }
@@ -123,7 +123,7 @@ export class BantaChatComponent {
         this._signInSelected.next();
     }
 
-    sendPermissionError(message: string) {
+    sendPermissionError(message?: string) {
         this._permissionDeniedError.next(message);
     }
 
@@ -174,7 +174,7 @@ export class BantaChatComponent {
         //     return true;
 
         // return this.user.permissions?.canChat(this.source);
-        
+
         return true;
     }
 

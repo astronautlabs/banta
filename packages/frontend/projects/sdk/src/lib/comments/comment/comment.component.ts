@@ -30,13 +30,14 @@ export class CommentComponent {
 
     //#region Message
 
+    @Input() busy = false;
     @Input() get message() { return this._message; }
     set message(value) { this.setMessage(value); }
     private _message : ChatMessage;
 
     //#endregion
     //#region Properties
-    
+
     private isLoaded = false;
     editedMessage: string;
     pinFormVisible = false;
@@ -47,7 +48,7 @@ export class CommentComponent {
 
     //#endregion
     //#region Inputs
-    
+
     @Input() customMenuItems: MessageMenuItem[];
     @Input() showReplyAction = true;
     @Input() maxLength: number = 1500;
@@ -75,7 +76,7 @@ export class CommentComponent {
     private _loaded = new Subject<void>();
     private _pinned = new Subject<{ message: ChatMessage, options: PinOptions }>();
     private _unpinned = new Subject<ChatMessage>();
-    
+
     @Output() readonly liked = this._liked.asObservable();
     @Output() readonly unliked = this._unliked.asObservable();
     @Output() readonly selected = this._selected.asObservable();
@@ -102,8 +103,8 @@ export class CommentComponent {
 
     get replyCount() { return this.message.submessages?.length || this.message.submessageCount || 0; }
     get element() { return this.elementRef.nativeElement; }
-    @HostBinding('class.pinned') 
-    get isPinned() { 
+    @HostBinding('class.pinned')
+    get isPinned() {
         return this.message.pinned && (!this.message.pinnedUntil || this.message.pinnedUntil > Date.now());
     }
 
@@ -129,7 +130,7 @@ export class CommentComponent {
 
     //#endregion
     //#region Private API
-    
+
     private setMessage(value: ChatMessage) {
         this._message = value;
         if (this._message.attachments?.length > 0) {
@@ -157,7 +158,7 @@ export class CommentComponent {
     startEdit() { this._editStarted.next(); this.editedMessage = this.message.message;  }
     selectUsername(user: User) { this._usernameSelected.next(user); this.selectUser(); }
 	selectAvatar(user: User) { this._avatarSelected.next(user); this.selectUser(); }
-    
+
     showPinForm() {
         this.pinFormVisible = true;
         this.pinUntilTime = '08:00';
@@ -172,7 +173,7 @@ export class CommentComponent {
             date.setMinutes(Number(minute));
             pinUntil = date.getTime();
         }
-        
+
         this.pinFormVisible = false;
         this._pinned.next({
             message: this.message,

@@ -20,7 +20,7 @@
 
         <banta-comment
             [message]="selectedMessage"
-            [liking]="selectedMessage.transientState.liking"
+            [busy]="selectedMessage.transientState.liking"
             [mine]="user?.id === selectedMessage.user?.id"
             [permissions]="source?.permissions"
             [showReplyAction]="false"

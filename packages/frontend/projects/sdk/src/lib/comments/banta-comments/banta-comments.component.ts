@@ -417,6 +417,8 @@ export class BantaCommentsComponent {
         }
     }
 
+    replyFieldFocused = false;
+
     @Input()
     get source(): ChatSourceBase { return this._source; }
     set source(value) {

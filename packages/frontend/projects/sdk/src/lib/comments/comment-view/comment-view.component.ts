@@ -728,7 +728,7 @@ export class CommentViewComponent {
         }
     }
 
-    private heldMessages: ChatMessage[] = [];
+    heldMessages: ChatMessage[] = [];
 
     private addMessage(message: ChatMessage) {
 

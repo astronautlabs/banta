@@ -2,7 +2,6 @@
 <mat-menu #userMenu="matMenu">
     <ng-container *ngIf="currentUser">
         <button [disabled]="true" mat-menu-item>{{currentUser.displayName}} (&#64;{{currentUser.username}})</button>
-        <button mat-menu-item (click)="signOut()">Sign Out</button>
     </ng-container>
     <ng-container *ngIf="!currentUser">
         <button mat-menu-item>Sign In</button>
@@ -25,7 +24,7 @@
                 <mat-icon>notification_important</mat-icon>
             </button>
         </ng-container>
-        
+
         <button mat-button *ngIf="!currentUser" (click)="showSignIn()">
             Sign In
         </button>
@@ -46,13 +45,13 @@
                     <mat-icon>notification_important</mat-icon>
                 </button>
             </ng-container>
-            
+
             <button mat-button *ngIf="!currentUser" (click)="showSignIn()">
                 Sign In
             </button>
         </div>
     </header>
-    <banta-chat 
+    <banta-chat
         #firehose
         [source]="firehoseSource"
         (signInSelected)="showSignIn()"
@@ -117,30 +116,27 @@
             <div *ngIf="!notifications || notifications.length === 0">
                 <em>You do not have any notifications yet</em>
             </div>
-            
+
             <div class="notifications">
                 <div class="notification" *ngFor="let notif of notifications">
                     <div>
-                        <ng-container *ngIf="notif.type === 'upvote'">
+                        @if (notifIsUpvote(notif)) {
                             &#64;{{notif.message?.user?.username}} upvoted your post
-                            
+
                             <banta-live-message
                                 [message]="notif.message"
                                 (upvoted)="upvoteMessage(notif.message)"
                                 (reported)="reportMessage(notif.message)"
                                 (selected)="goToMessage(notif.message)">
                             </banta-live-message>
-
-                        </ng-container>
-                        <ng-container *ngIf="notif.type === 'notice'">
+                        } @else if (notifIsNotice(notif)) {
                             <div>
                                 {{notif.message}}
                             </div>
                             <a mat-button target="_blank" href="{{notif.actionUrl}}">
                                 {{notif.actionLabel}}
                             </a>
-                        </ng-container>
-                        <ng-container *ngIf="notif.type === 'mention'">
+                        } @else if (notifIsMention(notif)) {
                             You were mentioned by &#64;{{notif.message?.user?.username}}
 
                             <banta-live-message
@@ -149,18 +145,16 @@
                                 (reported)="reportMessage(notif.message)"
                                 (selected)="goToMessage(notif.message)">
                             </banta-live-message>
-
-                        </ng-container>
-                        <ng-container *ngIf="notif.type === 'reply'">
+                        } @else if (notifIsReply(notif)) {
                             &#64;{{notif.replyMessage?.user?.username}} replied to your post
-                            
+
                             <banta-live-message
                                 [message]="notif.replyMessage"
                                 (upvoted)="upvoteMessage(notif.replyMessage)"
                                 (reported)="reportMessage(notif.replyMessage)"
                                 (selected)="goToMessage(notif.replyMessage)">
                             </banta-live-message>
-                        </ng-container>
+                        }
                     </div>
 
                     <banta-timestamp [value]="notif.sentAt"></banta-timestamp>
@@ -183,10 +177,10 @@
             </button>
 
             <div class="spacer"></div>
-            
+
             <ng-container *ngIf="pointOpen">
                 <div class="counted-action">
-                    <div class="count-indicator">  
+                    <div class="count-indicator">
                         {{pointOpen.likes}}
                     </div>
                     <button mat-icon-button>
@@ -200,18 +194,17 @@
         <div *ngIf="!pointSubChat">
             Error: No subchat
         </div>
-        
+
         <banta-comment-view
             class="subcomments"
             *ngIf="pointSubChat"
             [newestLast]="true"
             [allowReplies]="false"
             [source]="pointSubChat"
-            (upvoted)="upvoteMessage($event)"
             (reported)="reportMessage($event)"
             (userSelected)="showProfile($event.user)"
             >
-            
+
             <banta-comment
                 class="focused-comment"
                 data-before
@@ -223,17 +216,16 @@
                 (userSelected)="showProfile(pointOpen.user)"
                 (reported)="reportMessage(pointOpen)"
                 ></banta-comment>
-        
+
             <div class="message reply">
                 Reply:
                 <form class="new-message" (submit)="sendPointSubMessage()">
-                    <textarea 
-                        name="message" 
-                        (keydown)="newPointSubMessageKeyDown($event)"
+                    <textarea
+                        name="message"
                         [(ngModel)]="newPointSubMessage.message"></textarea>
-                
+
                     <div class="actions">
-                        <button [disabled]="!newPointSubMessage.message" 
+                        <button [disabled]="!newPointSubMessage.message"
                             mat-raised-button color="primary">Send</button>
                     </div>
                 </form>

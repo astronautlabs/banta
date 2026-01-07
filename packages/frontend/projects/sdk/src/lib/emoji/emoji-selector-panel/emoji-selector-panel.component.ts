@@ -7,10 +7,10 @@ import { EmojiDecorator, EMOJI, EmojiCategory, Emoji } from '@astronautlabs/emoj
 const CATEGORY_ICONS = {
     symbols: 'warning',
     people: 'people',
-    animals_and_nature: 'nature',
-    travel_and_places: 'location_on',
+    nature: 'nature',
+    travel: 'location_on',
     activity: 'local_activity',
-    food_and_drink: 'restaurant',
+    food: 'restaurant',
     objects: 'computer',
     flags: 'flag'
 };
@@ -34,7 +34,7 @@ export class EmojiSelectorPanelComponent implements OnInit {
     private sanitizer = inject(DomSanitizer);
     private sdkOptions = inject(BANTA_SDK_OPTIONS, { optional: true });
 
-    categories: AugmentedCategory[];
+    categories: AugmentedCategory[] = [];
     allEmoji: AugmentedEmoji[];
     activeCategory: string = 'people';
     searchResults: any[] = [];
@@ -52,12 +52,20 @@ export class EmojiSelectorPanelComponent implements OnInit {
     set searchQuery(value) {
         this._searchQuery = value;
         setTimeout(() => {
-            this.searchResults = this.allEmoji.filter(k => k.description.includes(value));
+            this.searchResults = this.allEmoji
+                .filter(k =>
+                    k.description?.includes(value)
+                    || k.shortcut?.includes(value)
+                    || k.keywords?.some(x => x.includes(value))
+                )
+            ;
             this.searchResults.splice(50, this.searchResults.length);
         });
     }
 
     humanize(str: string) {
+        if (!str)
+            return undefined;
         return str.replace(/(^| )[a-z]/g, k => k.toUpperCase()).replace(/_/g, ' ');
     }
 
@@ -85,6 +93,8 @@ export class EmojiSelectorPanelComponent implements OnInit {
 
     ngOnInit() {
         for (let category of EMOJI.categories) {
+            if (!CATEGORY_ICONS[category.id])
+                console.error(`Missing icon for category '${category.id}'`);
             this.categories.push({
                 ...category,
                 icon: CATEGORY_ICONS[category.id] ?? 'code',

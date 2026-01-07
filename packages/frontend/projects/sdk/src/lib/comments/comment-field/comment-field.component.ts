@@ -81,7 +81,7 @@ export class CommentFieldComponent {
     @Input() participants : User[] = [];
     @Input() genericAvatarUrl: string;
     @Input() url: string;
-    @Input() submit: (message: ChatMessage) => boolean;
+    @Input() submit: (message: ChatMessage) => void;
     @Input() readonly = false;
     @Input() allowServerInfoRequest = false;
     //#endregion
@@ -276,12 +276,55 @@ export class CommentFieldComponent {
             }
         }
 
-        if (event.key === 'Enter' && event.ctrlKey) {
-            await this.sendMessage();
-            return;
+        if (event.key === ' ' || event.key === 'Enter') {
+            let textarea = this.textareaEl.nativeElement;
+            let cursorPos = textarea.selectionStart;
+            let substr = this.text.slice(0, cursorPos);
+            let following = this.text.slice(cursorPos);
+            let match = /(:-\)|:-\(|:-S|:-\/|:-\\)$/.exec(substr);
+            console.log(`checking in '${substr}|${following}'`);
+
+            if (event.key === ' ')
+                following = ` ${following}`;
+
+            if (match) {
+                console.log('found emoticon');
+                let emoticonStr = match[1];
+                let emoticons = {
+                    ':-)': '🙂',
+                    ':-(': '🙁',
+                    ':-S': '😖',
+                    ':-/': '🫤',
+                    ':-\\': '🫤'
+                }
+                let emoji = emoticons[emoticonStr];
+                if (emoji) {
+                    textarea.value = substr.slice(0, -match[0].length) + emoji + following;
+                    this.text = textarea.value;
+                    textarea.selectionStart = (substr.length - match[0].length) + emoji.length;
+                    if (event.key === ' ')
+                        textarea.selectionStart += 1;
+                    textarea.selectionEnd = textarea.selectionStart;
+                } else {
+                    console.log(`no emoji for ${emoticonStr}`);
+                }
+
+
+                if (event.key !== 'Enter') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+            }
+
+            if (event.key === 'Enter' && event.ctrlKey) {
+                await this.sendMessage();
+                return;
+            }
         }
 
         if (this.completionFunc) {
+            console.log('completionfunc');
             if (event.key === 'Backspace') {
                 this.completionPrefix = this.completionPrefix.slice(0, this.completionPrefix.length - 1);
 

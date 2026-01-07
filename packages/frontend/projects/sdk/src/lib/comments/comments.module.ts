@@ -13,6 +13,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from "@angular/material/select";
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { BantaCommonModule } from '../common';
@@ -59,6 +60,7 @@ const COMPONENTS = [
     MatTooltipModule,
     MatDatepickerModule,
     MatSelectModule,
+    MatBadgeModule,
     MatRadioModule,
     OverlayModule,
     PortalModule

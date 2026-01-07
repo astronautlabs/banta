@@ -9,17 +9,17 @@ import { Subject, Observable } from 'rxjs';
             <banta-live-chat-message
                 *ngIf="viewType === 'chat'"
                 [message]="message"
-                (upvoted)="upvote(message)"
-                (reported)="report(message)"
-                (selected)="select(message)">
+                (upvoted)="upvote()"
+                (reported)="report()"
+                (selected)="select()">
             </banta-live-chat-message>
 
-            <banta-live-comment 
+            <banta-live-comment
                 *ngIf="viewType === 'comment'"
                 [message]="message"
-                (upvoted)="upvote(message)"
-                (reported)="report(message)"
-                (selected)="select(message)">
+                (upvoted)="upvote()"
+                (reported)="report()"
+                (selected)="select()">
             </banta-live-comment>
         </ng-container>
     `,
@@ -37,17 +37,17 @@ export class LiveMessageComponent {
 
     viewType : string;
 
-    @Output() 
+    @Output()
     get upvoted(): Observable<void> {
         return this._upvoted;
     }
 
-    @Output() 
+    @Output()
     get reported(): Observable<void> {
         return this._reported;
     }
-    
-    @Output() 
+
+    @Output()
     get selected(): Observable<void> {
         return this._selected;
     }

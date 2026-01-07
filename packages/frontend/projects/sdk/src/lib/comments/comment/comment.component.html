@@ -60,7 +60,7 @@
     </div>
     <div class="banta-content" *ngIf="!editing">
         <span class="banta-message-content" [innerHTML]="message.message | mentionLinker: message.mentionLinks | bantaMarkdownToHtml"></span>
-        <banta-attachments 
+        <banta-attachments
             [attachments]="message.attachments"
             (loaded)="markAttachmentsLoaded()"
             ></banta-attachments>
@@ -98,27 +98,27 @@
                     <div class="banta-pin-form-until" [class.banta-pin-form-until-disabled]="pinMode !== 'until'">
                         <mat-form-field appearance="outline" floatLabel="always">
                             <mat-label>Date</mat-label>
-                            <input 
-                                matInput 
+                            <input
+                                matInput
                                 [min]="today"
-                                [matDatepicker]="datepicker" 
+                                [matDatepicker]="datepicker"
                                 [(ngModel)]="pinUntilDate"
-                                [disabled]="pinMode !== 'until'" 
+                                [disabled]="pinMode !== 'until'"
                                 />
                             <mat-datepicker #datepicker/>
                             <mat-datepicker-toggle [for]="datepicker" matSuffix/>
                         </mat-form-field>
-                        
+
                         <mat-form-field appearance="outline" floatLabel="always">
                             <mat-label>Time</mat-label>
                             <input matInput
                                 type="time"
                                 [(ngModel)]="pinUntilTime"
                                 [ngModelOptions]="{updateOn: 'blur'}"
-                                [disabled]="pinMode !== 'until'" 
+                                [disabled]="pinMode !== 'until'"
                                 />
-                            <mat-timepicker #timepicker/>
-                            <mat-timepicker-toggle [for]="timepicker" matSuffix/>
+                            <!-- <mat-timepicker #timepicker/>
+                            <mat-timepicker-toggle [for]="timepicker" matSuffix/> -->
                         </mat-form-field>
                     </div>
                 </mat-radio-group>
@@ -152,7 +152,7 @@
             <div class="pin-indicator">
                 <mat-icon>push_pin</mat-icon> Pinned
                 @if (message.pinnedUntil) {
-                    until <time [datetime]="message.pinnedUntil | date: 'full'">{{ message.pinnedUntil | date: 'short' }}</time>
+                    until <time [attr.datetime]="message.pinnedUntil | date: 'full'">{{ message.pinnedUntil | date: 'short' }}</time>
                 }
             </div>
         }
@@ -167,22 +167,22 @@
             </button>
         </div>
         <div class="banta-counted-action" [class.active]="message.userState?.liked">
-            <button 
+            <button
                 *ngIf="message.transientState?.liking"
-                mat-icon-button 
-                [disabled]="true" 
-                [matTooltip]="upvoting ? 'Please wait...' : message.userState?.liked ? 'Unlike' : 'Like'" 
-                matTooltipPosition="below" 
+                mat-icon-button
+                [disabled]="true"
+                [matTooltip]="busy ? 'Please wait...' : message.userState?.liked ? 'Unlike' : 'Like'"
+                matTooltipPosition="below"
                 >
                 <mat-spinner [diameter]="15" style="margin-left: 1em;"></mat-spinner>
             </button>
-            <button 
+            <button
                 *ngIf="!message.transientState?.liking"
-                mat-button 
+                mat-button
                 [disabled]="readonly"
-                [matTooltip]="permissions?.canLike ? upvoting ? 'Please wait...' : 'Like' : permissions?.canLikeErrorMessage" 
-                matTooltipPosition="below" 
-                (click)="message.userState?.liked ? unlike() : like()" 
+                [matTooltip]="permissions?.canLike ? busy ? 'Please wait...' : 'Like' : permissions?.canLikeErrorMessage"
+                matTooltipPosition="below"
+                (click)="message.userState?.liked ? unlike() : like()"
                 >
                 <mat-icon>thumb_up</mat-icon>
                 <span class="banta-count-indicator" *ngIf="message.likes > 0">

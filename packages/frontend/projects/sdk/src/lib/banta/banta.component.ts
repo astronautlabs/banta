@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild, HostBinding } from "@angular/core";
-import { NewMessageForm, ChatMessage, User, Notification } from '@banta/common';
+import { NewMessageForm, ChatMessage, User, Notification, UpvoteNotification, NoticeNotification, MentionNotification, ReplyNotification } from '@banta/common';
 import { Subject, Observable, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { BantaChatComponent } from '../chat';
@@ -39,7 +39,7 @@ export class BantaComponent {
                 this.newNotifications = true;
         }));
     }
-    
+
     mobileFocus : string = null;
 
     async sendPointSubMessage() {
@@ -48,7 +48,7 @@ export class BantaComponent {
 
         if (text === '')
             return;
-        
+
         let message : ChatMessage = {
             user: null,
             sentAt: Date.now(),
@@ -75,7 +75,7 @@ export class BantaComponent {
             // jump to the parent message thread...
 
             let parentMessage: ChatMessage;
-            
+
             try {
                 parentMessage = await this.backend.getMessage(message.topicId, message.parentMessageId);
             } catch (e) {
@@ -114,7 +114,7 @@ export class BantaComponent {
 
     notifications : Notification[];
     newNotifications = false;
-    
+
     pointUnfocus() {
         this.pointOpen = null;
         if (this.pointSubChat) {
@@ -218,7 +218,7 @@ export class BantaComponent {
     }
 
     profileUser : User;
-    
+
     reportedMessage : ChatMessage;
 
     sendReport(message : ChatMessage) {
@@ -236,4 +236,9 @@ export class BantaComponent {
     newPointSubMessage : NewMessageForm = {};
 
     genericAvatarUrl = 'https://gravatar.com/avatar/915c804e0be607a4ad766ddadea5c48a?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png';
+
+    notifIsUpvote(notif: Notification): notif is UpvoteNotification { return notif.type === 'upvote'; }
+    notifIsNotice(notif: Notification): notif is NoticeNotification { return notif.type === 'notice'; }
+    notifIsMention(notif: Notification): notif is MentionNotification { return notif.type === 'mention'; }
+    notifIsReply(notif: Notification): notif is ReplyNotification { return notif.type === 'reply'; }
 }

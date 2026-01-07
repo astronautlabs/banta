@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 import { ChatMessage, CommentsOrder, ChatPermissions, FilterMode, ServerInfo } from '@banta/common';
+import { SignInState } from './chat-source';
 
 export interface ChatSourceBase {
     /**
@@ -20,6 +21,10 @@ export interface ChatSourceBase {
     messageReceived: Observable<ChatMessage>;
     messageObserved: Observable<ChatMessage>;
     messageUpdated: Observable<ChatMessage>;
+
+    signInState?: SignInState;
+    signInStateChanged?: Observable<SignInState>;
+
     messageSent: Observable<ChatMessage>;
     messages: ChatMessage[];
     send(message: ChatMessage): Promise<ChatMessage>;

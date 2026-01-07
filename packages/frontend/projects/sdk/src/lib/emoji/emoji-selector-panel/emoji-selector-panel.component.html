@@ -11,29 +11,39 @@
 <div class="selector">
 	<ng-container *ngIf="searchVisible">
 		<div class="emoji-list">
-			<a href="javascript:;" (click)="select(emoji.char)" 
-				*ngFor="let emoji of searchResults" [innerHtml]="emoji.html || ''">
-			</a>
+            @for (emoji of searchResults; track emoji.unicode) {
+                <a href="javascript:;" (click)="select(emoji.char)" [innerHtml]="emoji.html || ''"></a>
+            }
 		</div>
 	</ng-container>
 	<ng-container *ngIf="!searchVisible">
 		<div class="categories">
 			<ng-container *ngIf="!searchVisible">
-				<a [title]="humanize(category.name)" [class.active]="activeCategory === category.name" mat-icon-button *ngFor="let category of categories" (click)="activeCategory = category.name">
-					<mat-icon>{{category.icon}}</mat-icon>
-				</a>
+                @for (category of categories; track category.id) {
+                    <a  [title]="humanize(category.title)"
+                        [class.active]="activeCategory === category.id"
+                        mat-icon-button
+                        (click)="activeCategory = category.id">
+                            <mat-icon>{{category.icon}}</mat-icon>
+                    </a>
+                }
+
 
 				<a title="Search" [class.active] mat-icon-button (click)="showSearch()">
 					<mat-icon>search</mat-icon>
 				</a>
 			</ng-container>
 		</div>
-		<ng-container *ngFor="let category of categories">
-			<div class="emoji-list" *ngIf="activeCategory && activeCategory == category.name">
-				<a href="javascript:;" (click)="select(emoji.char)" 
-					*ngFor="let emoji of category.emojis" [innerHtml]="emoji.html || ''">
-				</a>
-			</div>
-		</ng-container>
+        @for (category of categories; track category.id) {
+            @if (activeCategory && activeCategory == category.id) {
+                <div class="emoji-list">
+                    @for (emoji of category.items; track emoji.unicode) {
+                        <a  href="javascript:;"
+                            (click)="select(emoji.string)"
+                            [innerHtml]="emoji.html || ''"></a>
+                    }
+                </div>
+            }
+        }
 	</ng-container>
 </div>
