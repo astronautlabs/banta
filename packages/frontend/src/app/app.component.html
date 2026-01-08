@@ -17,18 +17,18 @@
   <div>
     <a href="javascript:;" (click)="showAbout()">About</a>
     | <a href="javascript:;" (click)="darkTheme = !darkTheme">
-      <ng-container *ngIf="darkTheme">
-        Light Mode
-      </ng-container>
-      <ng-container *ngIf="!darkTheme">
-        Dark Mode
-      </ng-container>
-    </a>
-  </div>
-  <a href="https://astronautlabs.com/" target="_blank">
-    Astronaut Labs, LLC
+    @if (darkTheme) {
+      Light Mode
+    }
+    @if (!darkTheme) {
+      Dark Mode
+    }
   </a>
-  <div class="copyright">
-    &copy; 2019-{{year}}
-  </div>
+</div>
+<a href="https://astronautlabs.com/" target="_blank">
+  Astronaut Labs, LLC
+</a>
+<div class="copyright">
+  &copy; 2019-{{year}}
+</div>
 </footer>

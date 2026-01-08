@@ -1,153 +1,160 @@
 <form class="new-message" (submit)="sendMessage()">
-    <div class="banta-avatar-container">
-        <a  href="javascript:;"
-            class="banta-avatar"
-            (click)="showEditAvatar()"
-            [style.background-image]="'url(' + userAvatarUrl + ')'"
-            ></a>
-    </div>
-    <div class="banta-text-container">
-        <div class="banta-field-container">
-            <div class="banta-field-row">
-                <mat-form-field class="message-field" appearance="outline" floatLabel="always">
-                    <mat-label>{{label}}</mat-label>
-                    <textarea
-                        #textarea
-                        name="message"
-                        attachmentScraper
-                        [(attachments)]="chatMessageAttachments"
-                        [placeholder]="placeholder"
-                        matInput
-                        cdkTextareaAutosize
-                        [maxlength]="maxLength"
-                        (keydown)="onKeyDown($event)"
-                        (focus)="onFocus()"
-                        (blur)="onBlur()"
-                        [disabled]="sending || readonly"
-                        [(ngModel)]="text"
-                        autocomplete="off"
-                        ></textarea>
-                </mat-form-field>
-                <div class="banta-options-line">
-                    <ng-container *ngIf="indicatorState === 'transient'">
-                        <div class="transient-message" [class.expanded]="true" [matTooltip]="transientMessage" (click)="alertError()">
-                            <mat-spinner [diameter]="15"></mat-spinner>
-                            {{transientMessage}}
-                        </div>
-                    </ng-container>
-                    <ng-container *ngIf="indicatorState === 'sending'">
-                        <div class="banta-transient-message" [class.expanded]="true" (click)="alertError()">
-                            <mat-spinner [diameter]="15"></mat-spinner>
-                            {{sendingLabel}}...
-                        </div>
-                    </ng-container>
-                    <ng-container *ngIf="indicatorState === 'error'">
-                        <div class="banta-error-message" [class.expanded]="expandError" [matTooltip]="sendError.message" (click)="alertError()">
-                            <mat-icon *ngIf="sendError">error</mat-icon>
-                            {{sendError.message}}
-                        </div>
-                    </ng-container>
-
-
-                    <div class="spacer"></div>
-                    <div class="custom">
-                        <ng-content></ng-content>
-                    </div>
-                    <banta-attachment-button
-                        *ngIf="allowAttachments"
-                        [disabled]="readonly"
-                        (addedAttachment)="addedAttachment($event)"
-                        (attachmentError)="attachmentError($event)"
-                        ></banta-attachment-button>
-                    <emoji-selector-button [disabled]="readonly" (selected)="insertEmoji($event)"></emoji-selector-button>
-                    <mat-menu #overflowMenu>
-                        <button mat-menu-item (click)="reconnectRequested.next()">
-                            <mat-icon>refresh</mat-icon>
-                            Reconnect
-                        </button>
-                        @if (allowServerInfoRequest) {
-                            <button mat-menu-item (click)="serverInfoRequested.next()">
-                                <mat-icon>code</mat-icon>
-                                Server Information
-                            </button>
-                        }
-                    </mat-menu>
-                    <button mat-icon-button [mat-menu-trigger-for]="overflowMenu">
-                        <mat-icon>more_vert</mat-icon>
-                    </button>
-                </div>
-
+  <div class="banta-avatar-container">
+    <a  href="javascript:;"
+      class="banta-avatar"
+      (click)="showEditAvatar()"
+      [style.background-image]="'url(' + userAvatarUrl + ')'"
+    ></a>
+  </div>
+  <div class="banta-text-container">
+    <div class="banta-field-container">
+      <div class="banta-field-row">
+        <mat-form-field class="message-field" appearance="outline" floatLabel="always">
+          <mat-label>{{label}}</mat-label>
+          <textarea
+            #textarea
+            name="message"
+            attachmentScraper
+            [(attachments)]="chatMessageAttachments"
+            [placeholder]="placeholder"
+            matInput
+            cdkTextareaAutosize
+            [maxlength]="maxLength"
+            (keydown)="onKeyDown($event)"
+            (focus)="onFocus()"
+            (blur)="onBlur()"
+            [disabled]="sending || readonly"
+            [(ngModel)]="text"
+            autocomplete="off"
+          ></textarea>
+        </mat-form-field>
+        <div class="banta-options-line">
+          @if (indicatorState === 'transient') {
+            <div class="transient-message" [class.expanded]="true" [matTooltip]="transientMessage" (click)="alertError()">
+              <mat-spinner [diameter]="15"></mat-spinner>
+              {{transientMessage}}
             </div>
-            <div #autocompleteContainer class="autocomplete-container">
-                <div #autocomplete class="autocomplete" [class.visible]="autocompleteVisible">
-
-                    <div>
-                        <strong>{{completionPrefix}}</strong>...
-                    </div>
-                    <a
-                        mat-button
-                        *ngFor="let option of autocompleteOptions; index as index"
-                        (click)="activateAutoComplete(option)"
-                        [class.active]="autoCompleteSelected === index"
-                        >
-                        {{option.label}}
-                    </a>
-                </div>
+          }
+          @if (indicatorState === 'sending') {
+            <div class="banta-transient-message" [class.expanded]="true" (click)="alertError()">
+              <mat-spinner [diameter]="15"></mat-spinner>
+              {{sendingLabel}}...
             </div>
+          }
+          @if (indicatorState === 'error') {
+            <div class="banta-error-message" [class.expanded]="expandError" [matTooltip]="sendError.message" (click)="alertError()">
+              @if (sendError) {
+                <mat-icon>error</mat-icon>
+              }
+              {{sendError.message}}
+            </div>
+          }
 
-            <banta-attachments
-                [attachments]="chatMessageAttachments"
-                [editing]="true"
-                (remove)="removeAttachment($event)"
-                ></banta-attachments>
+
+          <div class="spacer"></div>
+          <div class="custom">
+            <ng-content></ng-content>
+          </div>
+          @if (allowAttachments) {
+            <banta-attachment-button
+              [disabled]="readonly"
+              (addedAttachment)="addedAttachment($event)"
+              (attachmentError)="attachmentError($event)"
+            ></banta-attachment-button>
+          }
+          <emoji-selector-button [disabled]="readonly" (selected)="insertEmoji($event)"></emoji-selector-button>
+          <mat-menu #overflowMenu>
+            <button mat-menu-item (click)="reconnectRequested.next()">
+              <mat-icon>refresh</mat-icon>
+              Reconnect
+            </button>
+            @if (allowServerInfoRequest) {
+              <button mat-menu-item (click)="serverInfoRequested.next()">
+                <mat-icon>code</mat-icon>
+                Server Information
+              </button>
+            }
+          </mat-menu>
+          <button mat-icon-button [mat-menu-trigger-for]="overflowMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
         </div>
+
+      </div>
+      <div #autocompleteContainer class="autocomplete-container">
+        <div #autocomplete class="autocomplete" [class.visible]="autocompleteVisible">
+
+          <div>
+            <strong>{{completionPrefix}}</strong>...
+          </div>
+          @for (option of autocompleteOptions; track option; let index = $index) {
+            <a
+              mat-button
+              (click)="activateAutoComplete(option)"
+              [class.active]="autoCompleteSelected === index"
+              >
+              {{option.label}}
+            </a>
+          }
+        </div>
+      </div>
+
+      <banta-attachments
+        [attachments]="chatMessageAttachments"
+        [editing]="true"
+        (remove)="removeAttachment($event)"
+      ></banta-attachments>
     </div>
-    <div class="banta-actions">
-        <ng-container *ngIf="!user">
-            <button
-                mat-raised-button
-                color="primary"
-                type="button"
-                (click)="showSignIn()"
-                >{{signInLabel}}</button>
-        </ng-container>
-        <ng-container *ngIf="user">
-            <button
-                *ngIf="buttonState === 'send'"
-                mat-raised-button
-                class="send"
-                color="primary"
-                [disabled]="!sendButtonEnabled"
-                >
-                <mat-icon>chevron_right</mat-icon>
-                <span class="label">{{sendLabel}}</span>
-            </button>
-            <button
-                *ngIf="buttonState === 'sending' || buttonState === 'signing-in'"
-                mat-raised-button
-                class="send"
-                color="primary"
-                [disabled]="!sendButtonEnabled"
-                >
-                <mat-spinner class="icon" diameter="18" strokeWidth="2"></mat-spinner>
-                <span class="label">
-                    <ng-container *ngIf="buttonState === 'sending'">
-                        {{sendingLabel}}
-                    </ng-container>
-                    <ng-container *ngIf="buttonState === 'signing-in'">
-                        {{signingInLabel}}
-                    </ng-container>
-                </span>
-            </button>
-            <button
-                *ngIf="buttonState === 'permission-denied'"
-                mat-raised-button
-                class="send"
-                color="primary"
-                [disabled]="!sendButtonEnabled"
-                >
-                {{permissionDeniedLabel}}
-            </button>
-        </ng-container>
-    </div>
+  </div>
+  <div class="banta-actions">
+    @if (!user) {
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="showSignIn()"
+      >{{signInLabel}}</button>
+    }
+    @if (user) {
+      @if (buttonState === 'send') {
+        <button
+          mat-raised-button
+          class="send"
+          color="primary"
+          [disabled]="!sendButtonEnabled"
+          >
+          <mat-icon>chevron_right</mat-icon>
+          <span class="label">{{sendLabel}}</span>
+        </button>
+      }
+      @if (buttonState === 'sending' || buttonState === 'signing-in') {
+        <button
+          mat-raised-button
+          class="send"
+          color="primary"
+          [disabled]="!sendButtonEnabled"
+          >
+          <mat-spinner class="icon" diameter="18" strokeWidth="2"></mat-spinner>
+          <span class="label">
+            @if (buttonState === 'sending') {
+              {{sendingLabel}}
+            }
+            @if (buttonState === 'signing-in') {
+              {{signingInLabel}}
+            }
+          </span>
+        </button>
+      }
+      @if (buttonState === 'permission-denied') {
+        <button
+          mat-raised-button
+          class="send"
+          color="primary"
+          [disabled]="!sendButtonEnabled"
+          >
+          {{permissionDeniedLabel}}
+        </button>
+      }
+    }
+  </div>
 </form>

@@ -1,198 +1,213 @@
 
 <mat-menu #pointItemMenu="matMenu">
-    @if (permissions.canPin) {
-        @if (isPinned) {
-            <button mat-menu-item (click)="unpin()">
-                <mat-icon>push_pin</mat-icon>
-                Unpin
-            </button>
-        } @else {
-            <button mat-menu-item (click)="showPinForm()">
-                <mat-icon>push_pin</mat-icon>
-                Pin
-            </button>
-        }
-        <mat-divider />
+  @if (permissions.canPin) {
+    @if (isPinned) {
+      <button mat-menu-item (click)="unpin()">
+        <mat-icon>push_pin</mat-icon>
+        Unpin
+      </button>
+    } @else {
+      <button mat-menu-item (click)="showPinForm()">
+        <mat-icon>push_pin</mat-icon>
+        Pin
+      </button>
     }
-    <button mat-menu-item (click)="share()">
-        <mat-icon>share</mat-icon>
-        Share
+    <mat-divider />
+  }
+  <button mat-menu-item (click)="share()">
+    <mat-icon>share</mat-icon>
+    Share
+  </button>
+  @if (!mine) {
+    <button mat-menu-item (click)="report()">
+      <mat-icon>warning</mat-icon>
+      Report
     </button>
-    <button *ngIf="!mine" mat-menu-item (click)="report()">
-        <mat-icon>warning</mat-icon>
-        Report
+  }
+  @if (mine) {
+    <button [disabled]="!permissions?.canEdit || readonly" mat-menu-item (click)="startEdit()">
+      <mat-icon>edit</mat-icon>
+      Edit
     </button>
-    <button *ngIf="mine" [disabled]="!permissions?.canEdit || readonly" mat-menu-item (click)="startEdit()">
-        <mat-icon>edit</mat-icon>
-        Edit
+  }
+  @if (mine) {
+    <button [disabled]="!permissions?.canDelete || readonly" mat-menu-item (click)="delete()">
+      <mat-icon>delete</mat-icon>
+      Delete
     </button>
-    <button *ngIf="mine" [disabled]="!permissions?.canDelete || readonly" mat-menu-item (click)="delete()">
-        <mat-icon>delete</mat-icon>
-        Delete
-    </button>
+  }
 
-    <button *ngFor="let menuItem of customMenuItems" mat-menu-item (click)="menuItem.action(message)">
-        <mat-icon>{{menuItem.icon}}</mat-icon>
-        {{menuItem.label}}
+  @for (menuItem of customMenuItems; track menuItem) {
+    <button mat-menu-item (click)="menuItem.action(message)">
+      <mat-icon>{{menuItem.icon}}</mat-icon>
+      {{menuItem.label}}
     </button>
+  }
 
 </mat-menu>
 
 <div class="banta-message-content-container">
-    <div class="banta-user">
-        <div class="banta-user-1">
-            <a
-                href="javascript:;"
-                class="banta-avatar"
-                (click)="selectAvatar(message.user)"
-                [style.background-image]="avatarForUser(message.user)"></a>
-            <div class="banta-user-identity">
-                <a href="javascript:;" class="banta-display-name" (click)="selectUser()">{{message.user.displayName}}</a>
-                <a href="javascript:;" class="banta-username" (click)="selectUsername(message.user)">&#64;{{message.user.username}}</a>
-            </div>
-        </div>
-        <div class="banta-user-2">
-            <span class="banta-user-tag" *ngIf="message.user.tag">{{message.user.tag}}</span>
-            <banta-timestamp [value]="message.sentAt"></banta-timestamp>
-            <span class="spacer"></span>
-        </div>
-        <div class="spacer"></div>
+  <div class="banta-user">
+    <div class="banta-user-1">
+      <a
+        href="javascript:;"
+        class="banta-avatar"
+        (click)="selectAvatar(message.user)"
+      [style.background-image]="avatarForUser(message.user)"></a>
+      <div class="banta-user-identity">
+        <a href="javascript:;" class="banta-display-name" (click)="selectUser()">{{message.user.displayName}}</a>
+        <a href="javascript:;" class="banta-username" (click)="selectUsername(message.user)">&#64;{{message.user.username}}</a>
+      </div>
     </div>
-    <div class="banta-content" *ngIf="!editing">
-        <span class="banta-message-content" [innerHTML]="message.message | mentionLinker: message.mentionLinks | bantaMarkdownToHtml"></span>
-        <banta-attachments
-            [attachments]="message.attachments"
-            (loaded)="markAttachmentsLoaded()"
-            ></banta-attachments>
-        <ul class="message-facts">
-            <li *ngIf="message.edits?.length > 0">(Edited)</li>
-        </ul>
-
-        @if (pinFormVisible) {
-            <div class="banta-pin-form">
-                <div class="banta-pin-form-header">
-                    <div class="banta-pin-form-header-title">
-                        Pin message?
-                    </div>
-                    <div class="spacer"></div>
-                    <!-- <div class="banta-pin-form-auth-explanation">
-                        <mat-icon>lock</mat-icon> Only available to authorized users.
-                    </div> -->
-                    <button mat-icon-button (click)="pinFormVisible = false">
-                        <mat-icon>close</mat-icon>
-                    </button>
-                </div>
-
-                <p>
-                    Pinning this message will cause it to appear at the top of the discussion for all users.
-                </p>
-
-
-                <mat-radio-group [(ngModel)]="pinMode">
-                    <div>
-                        <mat-radio-button value="forever">Pin indefinitely</mat-radio-button>
-                    </div>
-                    <div>
-                        <mat-radio-button value="until">Pin until a specific time:</mat-radio-button>
-                    </div>
-                    <div class="banta-pin-form-until" [class.banta-pin-form-until-disabled]="pinMode !== 'until'">
-                        <mat-form-field appearance="outline" floatLabel="always">
-                            <mat-label>Date</mat-label>
-                            <input
-                                matInput
-                                [min]="today"
-                                [matDatepicker]="datepicker"
-                                [(ngModel)]="pinUntilDate"
-                                [disabled]="pinMode !== 'until'"
-                                />
-                            <mat-datepicker #datepicker/>
-                            <mat-datepicker-toggle [for]="datepicker" matSuffix/>
-                        </mat-form-field>
-
-                        <mat-form-field appearance="outline" floatLabel="always">
-                            <mat-label>Time</mat-label>
-                            <input matInput
-                                type="time"
-                                [(ngModel)]="pinUntilTime"
-                                [ngModelOptions]="{updateOn: 'blur'}"
-                                [disabled]="pinMode !== 'until'"
-                                />
-                            <!-- <mat-timepicker #timepicker/>
-                            <mat-timepicker-toggle [for]="timepicker" matSuffix/> -->
-                        </mat-form-field>
-                    </div>
-                </mat-radio-group>
-
-                <div class="banta-pin-form-actions">
-                    <button mat-button (click)="pinFormVisible = false">
-                        Cancel
-                    </button>
-                    <button mat-raised-button color="primary" (click)="submitPin()" [disabled]="!pinFormValid">
-                        Pin
-                    </button>
-                </div>
-
-            </div>
+    <div class="banta-user-2">
+      @if (message.user.tag) {
+        <span class="banta-user-tag">{{message.user.tag}}</span>
+      }
+      <banta-timestamp [value]="message.sentAt"></banta-timestamp>
+      <span class="spacer"></span>
+    </div>
+    <div class="spacer"></div>
+  </div>
+  @if (!editing) {
+    <div class="banta-content">
+      <span class="banta-message-content" [innerHTML]="message.message | mentionLinker: message.mentionLinks | bantaMarkdownToHtml"></span>
+      <banta-attachments
+        [attachments]="message.attachments"
+        (loaded)="markAttachmentsLoaded()"
+      ></banta-attachments>
+      <ul class="message-facts">
+        @if (message.edits?.length > 0) {
+          <li>(Edited)</li>
         }
-    </div>
-    <div class="banta-content" *ngIf="editing" style="padding-bottom: 2em;">
+      </ul>
+      @if (pinFormVisible) {
+        <div class="banta-pin-form">
+          <div class="banta-pin-form-header">
+            <div class="banta-pin-form-header-title">
+              Pin message?
+            </div>
+            <div class="spacer"></div>
+            <!-- <div class="banta-pin-form-auth-explanation">
+            <mat-icon>lock</mat-icon> Only available to authorized users.
+          </div> -->
+          <button mat-icon-button (click)="pinFormVisible = false">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <p>
+          Pinning this message will cause it to appear at the top of the discussion for all users.
+        </p>
+        <mat-radio-group [(ngModel)]="pinMode">
+          <div>
+            <mat-radio-button value="forever">Pin indefinitely</mat-radio-button>
+          </div>
+          <div>
+            <mat-radio-button value="until">Pin until a specific time:</mat-radio-button>
+          </div>
+          <div class="banta-pin-form-until" [class.banta-pin-form-until-disabled]="pinMode !== 'until'">
+            <mat-form-field appearance="outline" floatLabel="always">
+              <mat-label>Date</mat-label>
+              <input
+                matInput
+                [min]="today"
+                [matDatepicker]="datepicker"
+                [(ngModel)]="pinUntilDate"
+                [disabled]="pinMode !== 'until'"
+                />
+                <mat-datepicker #datepicker/>
+                <mat-datepicker-toggle [for]="datepicker" matSuffix/>
+              </mat-form-field>
+              <mat-form-field appearance="outline" floatLabel="always">
+                <mat-label>Time</mat-label>
+                <input matInput
+                  type="time"
+                  [(ngModel)]="pinUntilTime"
+                  [ngModelOptions]="{updateOn: 'blur'}"
+                  [disabled]="pinMode !== 'until'"
+                  />
+                  <!-- <mat-timepicker #timepicker/>
+                  <mat-timepicker-toggle [for]="timepicker" matSuffix/> -->
+                </mat-form-field>
+              </div>
+            </mat-radio-group>
+            <div class="banta-pin-form-actions">
+              <button mat-button (click)="pinFormVisible = false">
+                Cancel
+              </button>
+              <button mat-raised-button color="primary" (click)="submitPin()" [disabled]="!pinFormValid">
+                Pin
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+    @if (editing) {
+      <div class="banta-content" style="padding-bottom: 2em;">
         <div>
-            <mat-form-field floatLabel="always" appearance="outline" style="width: 100%;">
-                <mat-label>Edit Message</mat-label>
-                <textarea matInput [(ngModel)]="editedMessage" [maxlength]="maxLength"></textarea>
-            </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" style="width: 100%;">
+            <mat-label>Edit Message</mat-label>
+            <textarea matInput [(ngModel)]="editedMessage" [maxlength]="maxLength"></textarea>
+          </mat-form-field>
         </div>
         <button mat-raised-button (click)="saveEdit()">Save</button> &nbsp;
         <button mat-button (click)="endEditing()">Cancel</button>
-    </div>
+      </div>
+    }
 
 
     <div class="banta-actions">
-        @if (isPinned) {
-            <div class="pin-indicator">
-                <mat-icon>push_pin</mat-icon> Pinned
-                @if (message.pinnedUntil) {
-                    until <time [attr.datetime]="message.pinnedUntil | date: 'full'">{{ message.pinnedUntil | date: 'short' }}</time>
-                }
-            </div>
+      @if (isPinned) {
+        <div class="pin-indicator">
+          <mat-icon>push_pin</mat-icon> Pinned
+          @if (message.pinnedUntil) {
+            until <time [attr.datetime]="message.pinnedUntil | date: 'full'">{{ message.pinnedUntil | date: 'short' }}</time>
+          }
+        </div>
+      }
+      <div class="spacer"></div>
+      @if (showReplyAction) {
+        <div class="banta-counted-action">
+          <button mat-button [matTooltip]="replyCount > 0 ? 'Replies' : 'Reply'" matTooltipPosition="below" (click)="select()">
+            <mat-icon>comment</mat-icon>
+            <span class="banta-count-indicator">
+              {{replyCount > 0 ? 'Replies' : 'Reply'}}
+              {{replyCount > 0 ? '(' + replyCount + ')' : ''}}
+            </span>
+          </button>
+        </div>
+      }
+      <div class="banta-counted-action" [class.active]="message.userState?.liked">
+        @if (message.transientState?.liking) {
+          <button
+            mat-icon-button
+            [disabled]="true"
+            [matTooltip]="busy ? 'Please wait...' : message.userState?.liked ? 'Unlike' : 'Like'"
+            matTooltipPosition="below"
+            >
+            <mat-spinner [diameter]="15" style="margin-left: 1em;"></mat-spinner>
+          </button>
         }
-        <div class="spacer"></div>
-        <div class="banta-counted-action" *ngIf="showReplyAction">
-            <button mat-button [matTooltip]="replyCount > 0 ? 'Replies' : 'Reply'" matTooltipPosition="below" (click)="select()">
-                <mat-icon>comment</mat-icon>
-                <span class="banta-count-indicator">
-                    {{replyCount > 0 ? 'Replies' : 'Reply'}}
-                    {{replyCount > 0 ? '(' + replyCount + ')' : ''}}
-                </span>
-            </button>
-        </div>
-        <div class="banta-counted-action" [class.active]="message.userState?.liked">
-            <button
-                *ngIf="message.transientState?.liking"
-                mat-icon-button
-                [disabled]="true"
-                [matTooltip]="busy ? 'Please wait...' : message.userState?.liked ? 'Unlike' : 'Like'"
-                matTooltipPosition="below"
-                >
-                <mat-spinner [diameter]="15" style="margin-left: 1em;"></mat-spinner>
-            </button>
-            <button
-                *ngIf="!message.transientState?.liking"
-                mat-button
-                [disabled]="readonly"
-                [matTooltip]="permissions?.canLike ? busy ? 'Please wait...' : 'Like' : permissions?.canLikeErrorMessage"
-                matTooltipPosition="below"
-                (click)="message.userState?.liked ? unlike() : like()"
-                >
-                <mat-icon>thumb_up</mat-icon>
-                <span class="banta-count-indicator" *ngIf="message.likes > 0">
-                    {{message.likes}}
-                </span>
-            </button>
-        </div>
+        @if (!message.transientState?.liking) {
+          <button
+            mat-button
+            [disabled]="readonly"
+            [matTooltip]="permissions?.canLike ? busy ? 'Please wait...' : 'Like' : permissions?.canLikeErrorMessage"
+            matTooltipPosition="below"
+            (click)="message.userState?.liked ? unlike() : like()"
+            >
+            <mat-icon>thumb_up</mat-icon>
+            @if (message.likes > 0) {
+              <span class="banta-count-indicator">
+                {{message.likes}}
+              </span>
+            }
+          </button>
+        }
+      </div>
 
-        <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
-            <mat-icon>more_vert</mat-icon>
-        </button>
+      <button mat-icon-button [matMenuTriggerFor]="pointItemMenu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
     </div>
-</div>
+  </div>

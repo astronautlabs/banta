@@ -1,49 +1,49 @@
-<div class="search-box" *ngIf="searchVisible">
-	<a mat-icon-button href="javascript:;" (click)="hideSearch()">
-		<mat-icon>arrow_back</mat-icon>
-	</a>
-	<mat-form-field appearance="outline" floatLabel="always">
-		<mat-label>Search for emoji</mat-label>
-		<input name="search" type="text" matInput placeholder="Start typing" [(ngModel)]="searchQuery" />
-	</mat-form-field>
-</div>
+@if (searchVisible) {
+  <div class="search-box">
+    <a mat-icon-button href="javascript:;" (click)="hideSearch()">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <mat-form-field appearance="outline" floatLabel="always">
+      <mat-label>Search for emoji</mat-label>
+      <input name="search" type="text" matInput placeholder="Start typing" [(ngModel)]="searchQuery" />
+    </mat-form-field>
+  </div>
+}
 
 <div class="selector">
-	<ng-container *ngIf="searchVisible">
-		<div class="emoji-list">
-            @for (emoji of searchResults; track emoji.unicode) {
-                <a href="javascript:;" (click)="select(emoji.char)" [innerHtml]="emoji.html || ''"></a>
-            }
-		</div>
-	</ng-container>
-	<ng-container *ngIf="!searchVisible">
-		<div class="categories">
-			<ng-container *ngIf="!searchVisible">
-                @for (category of categories; track category.id) {
-                    <a  [title]="humanize(category.title)"
-                        [class.active]="activeCategory === category.id"
-                        mat-icon-button
-                        (click)="activeCategory = category.id">
-                            <mat-icon>{{category.icon}}</mat-icon>
-                    </a>
-                }
-
-
-				<a title="Search" [class.active] mat-icon-button (click)="showSearch()">
-					<mat-icon>search</mat-icon>
-				</a>
-			</ng-container>
-		</div>
+  @if (searchVisible) {
+    <div class="emoji-list">
+      @for (emoji of searchResults; track emoji.unicode) {
+        <a href="javascript:;" (click)="select(emoji.char)" [innerHtml]="emoji.html || ''"></a>
+      }
+    </div>
+  }
+  @if (!searchVisible) {
+    <div class="categories">
+      @if (!searchVisible) {
         @for (category of categories; track category.id) {
-            @if (activeCategory && activeCategory == category.id) {
-                <div class="emoji-list">
-                    @for (emoji of category.items; track emoji.unicode) {
-                        <a  href="javascript:;"
-                            (click)="select(emoji.string)"
-                            [innerHtml]="emoji.html || ''"></a>
-                    }
-                </div>
-            }
+          <a  [title]="humanize(category.title)"
+            [class.active]="activeCategory === category.id"
+            mat-icon-button
+            (click)="activeCategory = category.id">
+            <mat-icon>{{category.icon}}</mat-icon>
+          </a>
         }
-	</ng-container>
+        <a title="Search" [class.active] mat-icon-button (click)="showSearch()">
+          <mat-icon>search</mat-icon>
+        </a>
+      }
+    </div>
+    @for (category of categories; track category.id) {
+      @if (activeCategory && activeCategory == category.id) {
+        <div class="emoji-list">
+          @for (emoji of category.items; track emoji.unicode) {
+            <a  href="javascript:;"
+              (click)="select(emoji.string)"
+            [innerHtml]="emoji.html || ''"></a>
+          }
+        </div>
+      }
+    }
+  }
 </div>

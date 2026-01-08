@@ -6,14 +6,15 @@ import { ChatBackendBase } from '../chat-backend-base';
 @Component({
     selector: 'banta-live-comment',
     template: `
-        <banta-comment 
-            *ngIf="message"
+        @if (message) {
+          <banta-comment
             [message]="message"
             (upvoted)="upvote()"
             (reported)="report()"
             (selected)="select()"
-            ></banta-comment>
-    `,
+          ></banta-comment>
+        }
+        `,
     styles: [``],
     standalone: false
 })

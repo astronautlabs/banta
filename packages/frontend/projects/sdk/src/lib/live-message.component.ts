@@ -5,24 +5,25 @@ import { Subject, Observable } from 'rxjs';
 @Component({
     selector: 'banta-live-message',
     template: `
-        <ng-container *ngIf="message">
+        @if (message) {
+          @if (viewType === 'chat') {
             <banta-live-chat-message
-                *ngIf="viewType === 'chat'"
-                [message]="message"
-                (upvoted)="upvote()"
-                (reported)="report()"
-                (selected)="select()">
+              [message]="message"
+              (upvoted)="upvote()"
+              (reported)="report()"
+              (selected)="select()">
             </banta-live-chat-message>
-
+          }
+          @if (viewType === 'comment') {
             <banta-live-comment
-                *ngIf="viewType === 'comment'"
-                [message]="message"
-                (upvoted)="upvote()"
-                (reported)="report()"
-                (selected)="select()">
+              [message]="message"
+              (upvoted)="upvote()"
+              (reported)="report()"
+              (selected)="select()">
             </banta-live-comment>
-        </ng-container>
-    `,
+          }
+        }
+        `,
     styles: [``],
     standalone: false
 })

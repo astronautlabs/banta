@@ -1,55 +1,68 @@
 <div class="document">
   <div class="mobile-features">
     <div></div>
-    <div class="sku-header" *ngFor="let sku of skus">
-      {{sku.name}}
-    </div>
+    @for (sku of skus; track sku) {
+      <div class="sku-header">
+        {{sku.name}}
+      </div>
+    }
 
-    <ng-container *ngFor="let feature of features; index as i">
+    @for (feature of features; track feature; let i = $index) {
       <div class="feature" [class.even]="i % 2 === 0">
         <strong class="feature-name">
           {{feature.name}}
-          <span *ngIf="feature.finePrint" class="asterisk">*</span>
+          @if (feature.finePrint) {
+            <span class="asterisk">*</span>
+          }
         </strong><br/><br/>
         <div [innerHTML]="feature.summary"></div>
-        <em *ngIf="feature.finePrint" class="fine-print">
-          <span class="asterisk">*</span>
-          {{feature.finePrint}}
-        </em>
+        @if (feature.finePrint) {
+          <em class="fine-print">
+            <span class="asterisk">*</span>
+            {{feature.finePrint}}
+          </em>
+        }
       </div>
-      
-      <ng-container *ngIf="feature.skus">
-        <span class="sku" *ngFor="let sku of skus" 
-          [class.supported]="skuSupportsFeature(feature, sku.id)"
-          [class.even]="i % 2 === 0">
-          <mat-icon>check_circle</mat-icon> 
-          <label>{{sku.name}}</label>
-        </span>
-      </ng-container>
-      <ng-container *ngIf="!feature.skus && feature.skuContent">
-          <span class="sku" *ngFor="let sku of skus" [class.even]="i % 2 === 0">
+      @if (feature.skus) {
+        @for (sku of skus; track sku) {
+          <span class="sku"
+            [class.supported]="skuSupportsFeature(feature, sku.id)"
+            [class.even]="i % 2 === 0">
+            <mat-icon>check_circle</mat-icon>
+            <label>{{sku.name}}</label>
+          </span>
+        }
+      }
+      @if (!feature.skus && feature.skuContent) {
+        @for (sku of skus; track sku) {
+          <span class="sku" [class.even]="i % 2 === 0">
             {{feature.skuContent[sku.id]}}
-        </span>
-      </ng-container>
-    </ng-container>
+          </span>
+        }
+      }
+    }
 
     <div class="feature pricing" [class.even]="features.length % 2 === 1">
       <strong>Price</strong>
     </div>
 
-    <span class="sku pricing" *ngFor="let sku of skus">
-      <div>
-        <ng-container *ngFor="let option of sku.priceOptions; index as i">
-          <div>
-            {{option}}
-          </div>
-          <ng-container *ngIf="i + 1 < sku.priceOptions.length">- or -</ng-container>
-        </ng-container>
-      </div>
-    </span>
+    @for (sku of skus; track sku) {
+      <span class="sku pricing">
+        <div>
+          @for (option of sku.priceOptions; track option; let i = $index) {
+            <div>
+              {{option}}
+            </div>
+            @if (i + 1 < sku.priceOptions.length) {
+              - or -
+            }
+          }
+        </div>
+      </span>
+    }
 
 
-    <!-- 
+    <!--
     <div class="feature">
       <strong class="feature-name">Support</strong><br/><br/>
       We want you to be successful. Overview provides support options
@@ -89,7 +102,7 @@
           <strong class="price-edition-name">Pro</strong><br/><br/>
           $40/mo<br/>
           <small>-or-</small><br/>
-          $400/yr &nbsp; 
+          $400/yr &nbsp;
         </span>
         <span class="sku supported" style="flex-shrink: 0;">
           <mat-icon>check_circle</mat-icon>
@@ -97,13 +110,13 @@
           Contact Us
         </span>
       </div>
-    </div> 
+    </div>
     -->
   </div>
 
   <br/>
 
   <small>
-      † Available 9AM-5PM PST Monday through Friday
+    † Available 9AM-5PM PST Monday through Friday
   </small>
 </div>

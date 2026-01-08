@@ -1,14 +1,19 @@
 <div class="document">
-  <div class="feature" *ngFor="let feature of features">
-    <div class="image">
-      <img *ngIf="feature.iconUrl" src="{{feature.iconUrl}}" />
-      <mat-icon *ngIf="feature.iconName">{{feature.iconName}}</mat-icon>
+  @for (feature of features; track feature) {
+    <div class="feature">
+      <div class="image">
+        @if (feature.iconUrl) {
+          <img src="{{feature.iconUrl}}" />
+        }
+        @if (feature.iconName) {
+          <mat-icon>{{feature.iconName}}</mat-icon>
+        }
+      </div>
+      <div class="text">
+        <h2>{{feature.name}}</h2>
+        <div class="summary" [innerHTML]="feature.summary"></div>
+        <div class="description" [innerHTML]="feature.description"></div>
+      </div>
     </div>
-    <div class="text">
-      <h2>{{feature.name}}</h2>
-      <div class="summary" [innerHTML]="feature.summary"></div>
-
-      <div class="description" [innerHTML]="feature.description"></div>
-    </div>
-  </div>
+  }
 </div>

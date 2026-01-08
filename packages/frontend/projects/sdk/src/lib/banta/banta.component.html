@@ -1,246 +1,240 @@
 
 <mat-menu #userMenu="matMenu">
-    <ng-container *ngIf="currentUser">
-        <button [disabled]="true" mat-menu-item>{{currentUser.displayName}} (&#64;{{currentUser.username}})</button>
-    </ng-container>
-    <ng-container *ngIf="!currentUser">
-        <button mat-menu-item>Sign In</button>
-    </ng-container>
-    <button mat-menu-item>Help</button>
+  @if (currentUser) {
+    <button [disabled]="true" mat-menu-item>{{currentUser.displayName}} (&#64;{{currentUser.username}})</button>
+  }
+  @if (!currentUser) {
+    <button mat-menu-item>Sign In</button>
+  }
+  <button mat-menu-item>Help</button>
 </mat-menu>
 
 <div class="tabs">
-    <div>
-        <a mat-button (click)="mobileFocus = 'chat'">{{chatLabel}}</a>
-        <a mat-button (click)="mobileFocus = 'comments'">{{commentsLabel}}</a>
-    </div>
-    <div class="spacer"></div>
-    <div>
-        <ng-container *ngIf="currentUser">
-            <button mat-button [matMenuTriggerFor]="userMenu">
-                &#64;{{currentUser.username}}
-            </button>
-            <button mat-icon-button (click)="showNotifications()">
-                <mat-icon>notification_important</mat-icon>
-            </button>
-        </ng-container>
+  <div>
+    <a mat-button (click)="mobileFocus = 'chat'">{{chatLabel}}</a>
+    <a mat-button (click)="mobileFocus = 'comments'">{{commentsLabel}}</a>
+  </div>
+  <div class="spacer"></div>
+  <div>
+    @if (currentUser) {
+      <button mat-button [matMenuTriggerFor]="userMenu">
+        &#64;{{currentUser.username}}
+      </button>
+      <button mat-icon-button (click)="showNotifications()">
+        <mat-icon>notification_important</mat-icon>
+      </button>
+    }
 
-        <button mat-button *ngIf="!currentUser" (click)="showSignIn()">
-            Sign In
-        </button>
-    </div>
+    @if (!currentUser) {
+      <button mat-button (click)="showSignIn()">
+        Sign In
+      </button>
+    }
+  </div>
 </div>
 
 <div class="firehose" [class.focus]="mobileFocus === 'chat'">
-    <header>
-        <div>
-            <label (click)="mobileFocus = 'chat'">{{chatLabel}}</label>
-            <div class="spacer"></div>
+  <header>
+    <div>
+      <label (click)="mobileFocus = 'chat'">{{chatLabel}}</label>
+      <div class="spacer"></div>
 
-            <ng-container *ngIf="currentUser">
-                <button mat-button [matMenuTriggerFor]="userMenu">
-                    &#64;{{currentUser.username}}
-                </button>
-                <button mat-icon-button (click)="showNotifications()">
-                    <mat-icon>notification_important</mat-icon>
-                </button>
-            </ng-container>
+      @if (currentUser) {
+        <button mat-button [matMenuTriggerFor]="userMenu">
+          &#64;{{currentUser.username}}
+        </button>
+        <button mat-icon-button (click)="showNotifications()">
+          <mat-icon>notification_important</mat-icon>
+        </button>
+      }
 
-            <button mat-button *ngIf="!currentUser" (click)="showSignIn()">
-                Sign In
-            </button>
-        </div>
-    </header>
-    <banta-chat
-        #firehose
-        [source]="firehoseSource"
-        (signInSelected)="showSignIn()"
-        (upvoted)="upvoteMessage($event)"
-        (userSelected)="showProfile($event.user)"
-        (reported)="reportMessage($event)"
-        ></banta-chat>
+      @if (!currentUser) {
+        <button mat-button (click)="showSignIn()">
+          Sign In
+        </button>
+      }
+    </div>
+  </header>
+  <banta-chat
+    #firehose
+    [source]="firehoseSource"
+    (signInSelected)="showSignIn()"
+    (upvoted)="upvoteMessage($event)"
+    (userSelected)="showProfile($event.user)"
+    (reported)="reportMessage($event)"
+  ></banta-chat>
 </div>
 
 <div class="aux" [class.focus]="mobileFocus === 'aux'" [class.open]="auxOpen">
-    <header>
-        <div>
-            <label>{{auxTitle}}</label>
-            <div class="spacer"></div>
-            <button mat-icon-button (click)="auxOpen = false">
-                <mat-icon>close</mat-icon>
-            </button>
-        </div>
-    </header>
-    <div class="aux-contents">
-        <ng-container *ngIf="auxMode === 'profile'">
-            <ng-container *ngIf="profileUser">
-
-                <div>
-                    <strong style="font-size: 125%;">
-                        {{profileUser.displayName}}
-                    </strong>
-                    &#64;{{profileUser.username}}
-                </div>
-
-                <br/>
-                <strong>Top Messages</strong>
-
-                <div>
-                    <em>Not yet available</em>
-                </div>
-
-                <br/>
-                <strong>Recent Messages</strong>
-
-                <div>
-                    <em>Not yet available</em>
-                </div>
-            </ng-container>
-        </ng-container>
-
-        <ng-container *ngIf="auxMode === 'report'">
-            <p>Are you sure you want to report this message?</p>
-
-            <banta-live-message [message]="reportedMessage"></banta-live-message>
-
-            <div style="text-align: center;">
-                <button mat-raised-button color="primary" (click)="sendReport(reportedMessage)">Yes, Report</button>
-                &nbsp;
-                <button mat-raised-button color="secondary" (click)="auxOpen = false">No, Cancel</button>
-            </div>
-
-        </ng-container>
-
-        <ng-container *ngIf="auxMode === 'notifications'">
-
-            <div *ngIf="!notifications || notifications.length === 0">
-                <em>You do not have any notifications yet</em>
-            </div>
-
-            <div class="notifications">
-                <div class="notification" *ngFor="let notif of notifications">
-                    <div>
-                        @if (notifIsUpvote(notif)) {
-                            &#64;{{notif.message?.user?.username}} upvoted your post
-
-                            <banta-live-message
-                                [message]="notif.message"
-                                (upvoted)="upvoteMessage(notif.message)"
-                                (reported)="reportMessage(notif.message)"
-                                (selected)="goToMessage(notif.message)">
-                            </banta-live-message>
-                        } @else if (notifIsNotice(notif)) {
-                            <div>
-                                {{notif.message}}
-                            </div>
-                            <a mat-button target="_blank" href="{{notif.actionUrl}}">
-                                {{notif.actionLabel}}
-                            </a>
-                        } @else if (notifIsMention(notif)) {
-                            You were mentioned by &#64;{{notif.message?.user?.username}}
-
-                            <banta-live-message
-                                [message]="notif.message"
-                                (upvoted)="upvoteMessage(notif.message)"
-                                (reported)="reportMessage(notif.message)"
-                                (selected)="goToMessage(notif.message)">
-                            </banta-live-message>
-                        } @else if (notifIsReply(notif)) {
-                            &#64;{{notif.replyMessage?.user?.username}} replied to your post
-
-                            <banta-live-message
-                                [message]="notif.replyMessage"
-                                (upvoted)="upvoteMessage(notif.replyMessage)"
-                                (reported)="reportMessage(notif.replyMessage)"
-                                (selected)="goToMessage(notif.replyMessage)">
-                            </banta-live-message>
-                        }
-                    </div>
-
-                    <banta-timestamp [value]="notif.sentAt"></banta-timestamp>
-                </div>
-            </div>
-        </ng-container>
+  <header>
+    <div>
+      <label>{{auxTitle}}</label>
+      <div class="spacer"></div>
+      <button mat-icon-button (click)="auxOpen = false">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
+  </header>
+  <div class="aux-contents">
+    @if (auxMode === 'profile') {
+      @if (profileUser) {
+        <div>
+          <strong style="font-size: 125%;">
+            {{profileUser.displayName}}
+          </strong>
+          &#64;{{profileUser.username}}
+        </div>
+        <br/>
+        <strong>Top Messages</strong>
+        <div>
+          <em>Not yet available</em>
+        </div>
+        <br/>
+        <strong>Recent Messages</strong>
+        <div>
+          <em>Not yet available</em>
+        </div>
+      }
+    }
+
+    @if (auxMode === 'report') {
+      <p>Are you sure you want to report this message?</p>
+      <banta-live-message [message]="reportedMessage"></banta-live-message>
+      <div style="text-align: center;">
+        <button mat-raised-button color="primary" (click)="sendReport(reportedMessage)">Yes, Report</button>
+        &nbsp;
+        <button mat-raised-button color="secondary" (click)="auxOpen = false">No, Cancel</button>
+      </div>
+    }
+
+    @if (auxMode === 'notifications') {
+      @if (!notifications || notifications.length === 0) {
+        <div>
+          <em>You do not have any notifications yet</em>
+        </div>
+      }
+      <div class="notifications">
+        @for (notif of notifications; track notif) {
+          <div class="notification">
+            <div>
+              @if (notifIsUpvote(notif)) {
+                &#64;{{notif.message?.user?.username}} upvoted your post
+                <banta-live-message
+                  [message]="notif.message"
+                  (upvoted)="upvoteMessage(notif.message)"
+                  (reported)="reportMessage(notif.message)"
+                  (selected)="goToMessage(notif.message)">
+                </banta-live-message>
+              } @else if (notifIsNotice(notif)) {
+                <div>
+                  {{notif.message}}
+                </div>
+                <a mat-button target="_blank" href="{{notif.actionUrl}}">
+                  {{notif.actionLabel}}
+                </a>
+              } @else if (notifIsMention(notif)) {
+                You were mentioned by &#64;{{notif.message?.user?.username}}
+                <banta-live-message
+                  [message]="notif.message"
+                  (upvoted)="upvoteMessage(notif.message)"
+                  (reported)="reportMessage(notif.message)"
+                  (selected)="goToMessage(notif.message)">
+                </banta-live-message>
+              } @else if (notifIsReply(notif)) {
+                &#64;{{notif.replyMessage?.user?.username}} replied to your post
+                <banta-live-message
+                  [message]="notif.replyMessage"
+                  (upvoted)="upvoteMessage(notif.replyMessage)"
+                  (reported)="reportMessage(notif.replyMessage)"
+                  (selected)="goToMessage(notif.replyMessage)">
+                </banta-live-message>
+              }
+            </div>
+            <banta-timestamp [value]="notif.sentAt"></banta-timestamp>
+          </div>
+        }
+      </div>
+    }
+  </div>
 </div>
 <div class="points" [class.focus]="mobileFocus === 'points'">
-    <header>
-        <div>
-            <label>{{commentsLabel}}</label>
+  <header>
+    <div>
+      <label>{{commentsLabel}}</label>
+    </div>
+  </header>
+  <div class="point-focus">
+    <div class="actions">
+      <button mat-button (click)="pointUnfocus()">
+        <mat-icon>arrow_back</mat-icon>
+        Back
+      </button>
+
+      <div class="spacer"></div>
+
+      @if (pointOpen) {
+        <div class="counted-action">
+          <div class="count-indicator">
+            {{pointOpen.likes}}
+          </div>
+          <button mat-icon-button>
+            <mat-icon>thumb_up</mat-icon>
+          </button>
         </div>
-    </header>
-    <div class="point-focus">
-        <div class="actions">
-            <button mat-button (click)="pointUnfocus()">
-                <mat-icon>arrow_back</mat-icon>
-                Back
-            </button>
+      }
+    </div>
 
-            <div class="spacer"></div>
+    @if (!pointSubChat) {
+      <div>
+        Error: No subchat
+      </div>
+    }
 
-            <ng-container *ngIf="pointOpen">
-                <div class="counted-action">
-                    <div class="count-indicator">
-                        {{pointOpen.likes}}
-                    </div>
-                    <button mat-icon-button>
-                        <mat-icon>thumb_up</mat-icon>
-                    </button>
-                </div>
-
-            </ng-container>
-        </div>
-
-        <div *ngIf="!pointSubChat">
-            Error: No subchat
-        </div>
-
-        <banta-comment-view
-            class="subcomments"
-            *ngIf="pointSubChat"
-            [newestLast]="true"
-            [allowReplies]="false"
-            [source]="pointSubChat"
-            (reported)="reportMessage($event)"
-            (userSelected)="showProfile($event.user)"
-            >
-
-            <banta-comment
-                class="focused-comment"
-                data-before
-                *ngIf="pointOpen"
-                [showReplyAction]="false"
-                [message]="pointOpen"
-                [readonly]="pointSubChat?.readonly"
-                (upvoted)="upvoteMessage(pointOpen)"
-                (userSelected)="showProfile(pointOpen.user)"
-                (reported)="reportMessage(pointOpen)"
-                ></banta-comment>
-
-            <div class="message reply">
-                Reply:
-                <form class="new-message" (submit)="sendPointSubMessage()">
-                    <textarea
-                        name="message"
-                        [(ngModel)]="newPointSubMessage.message"></textarea>
-
-                    <div class="actions">
-                        <button [disabled]="!newPointSubMessage.message"
-                            mat-raised-button color="primary">Send</button>
-                    </div>
-                </form>
+    @if (pointSubChat) {
+      <banta-comment-view
+        class="subcomments"
+        [newestLast]="true"
+        [allowReplies]="false"
+        [source]="pointSubChat"
+        (reported)="reportMessage($event)"
+        (userSelected)="showProfile($event.user)"
+        >
+        @if (pointOpen) {
+          <banta-comment
+            class="focused-comment"
+            data-before
+            [showReplyAction]="false"
+            [message]="pointOpen"
+            [readonly]="pointSubChat?.readonly"
+            (upvoted)="upvoteMessage(pointOpen)"
+            (userSelected)="showProfile(pointOpen.user)"
+            (reported)="reportMessage(pointOpen)"
+          ></banta-comment>
+        }
+        <div class="message reply">
+          Reply:
+          <form class="new-message" (submit)="sendPointSubMessage()">
+            <textarea
+              name="message"
+            [(ngModel)]="newPointSubMessage.message"></textarea>
+            <div class="actions">
+              <button [disabled]="!newPointSubMessage.message"
+              mat-raised-button color="primary">Send</button>
             </div>
-        </banta-comment-view>
-    </div>
-    <div class="points-section">
-        <banta-comments
-            [source]="pointSource"
-            [allowServerInfoRequest]="allowServerInfoRequest"
-            (signInSelected)="showSignIn()"
-            (upvoted)="upvoteMessage($event)"
-            (reported)="reportMessage($event)"
-            (selected)="goToMessage($event)"
-            (userSelected)="showProfile($event.user)"
-            ></banta-comments>
-    </div>
+          </form>
+        </div>
+      </banta-comment-view>
+    }
+  </div>
+  <div class="points-section">
+    <banta-comments
+      [source]="pointSource"
+      [allowServerInfoRequest]="allowServerInfoRequest"
+      (signInSelected)="showSignIn()"
+      (upvoted)="upvoteMessage($event)"
+      (reported)="reportMessage($event)"
+      (selected)="goToMessage($event)"
+      (userSelected)="showProfile($event.user)"
+    ></banta-comments>
+  </div>
 </div>

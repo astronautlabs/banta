@@ -1,24 +1,26 @@
 <div class="message-content">
-    <div class="user" (click)="selectUser()">
-        <div class="avatar" [style.background-image]="avatarForUser(message.user)"></div>
-        <label>{{message.user.username}}</label>
+  <div class="user" (click)="selectUser()">
+    <div class="avatar" [style.background-image]="avatarForUser(message.user)"></div>
+    <label>{{message.user.username}}</label>
+  </div>
+  <div class="content">
+    <div (click)="select()">
+      {{message.message}}
     </div>
-    <div class="content">
-        <div (click)="select()">
-            {{message.message}}
+    <div class="status">
+      @if (message.likes > 0) {
+        <div class="count-indicator">
+          <mat-icon>star</mat-icon> {{message.likes}}
         </div>
-        <div class="status">
-            <div class="count-indicator" *ngIf="message.likes > 0">
-                <mat-icon>star</mat-icon> {{message.likes}}
-            </div>
-        </div>
+      }
     </div>
+  </div>
 </div>
 <div class="actions">
-    <button mat-icon-button matTooltip="Upvote" matTooltipPosition="below" (click)="upvote()">
-        <mat-icon>thumb_up</mat-icon>
-    </button>
-    <button mat-icon-button matTooltip="Report" matTooltipPosition="below" (click)="report()">
-        <mat-icon>report</mat-icon>
-    </button>
+  <button mat-icon-button matTooltip="Upvote" matTooltipPosition="below" (click)="upvote()">
+    <mat-icon>thumb_up</mat-icon>
+  </button>
+  <button mat-icon-button matTooltip="Report" matTooltipPosition="below" (click)="report()">
+    <mat-icon>report</mat-icon>
+  </button>
 </div>

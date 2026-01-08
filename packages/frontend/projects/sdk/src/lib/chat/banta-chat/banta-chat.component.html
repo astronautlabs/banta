@@ -1,43 +1,47 @@
-<banta-chat-view 
-    #chatView
-    [source]="source"
-    [emptyLabel]="emptyLabel"
-    (upvoted)="upvote($event)"
-    (reported)="report($event)"
-    (selected)="select($event)"
-    (received)="onReceived($event)"
-    (userSelected)="selectUser($event)"
-    ></banta-chat-view>
+<banta-chat-view
+  #chatView
+  [source]="source"
+  [emptyLabel]="emptyLabel"
+  (upvoted)="upvote($event)"
+  (reported)="report($event)"
+  (selected)="select($event)"
+  (received)="onReceived($event)"
+  (userSelected)="selectUser($event)"
+></banta-chat-view>
 
 <form class="new-message" (submit)="sendMessage()">
-    
-    <div class="entry-container">
-        <input
-            #input
-            type="text"
-            name="message" 
-            autocomplete="off"
-            enterkeyhint="send"
-            [placeholder]="messageFieldPlaceholder"
-            (keydown)="onKeyDown($event)"
-            [(ngModel)]="newMessage.message" />
-            
-        <emoji-selector-button
-            (selected)="insertEmoji($event)"
-            overlayY="bottom"
-            overlayX="end"
-            originY="top"
-            ></emoji-selector-button>
+
+  <div class="entry-container">
+    <input
+      #input
+      type="text"
+      name="message"
+      autocomplete="off"
+      enterkeyhint="send"
+      [placeholder]="messageFieldPlaceholder"
+      (keydown)="onKeyDown($event)"
+      [(ngModel)]="newMessage.message" />
+
+      <emoji-selector-button
+        (selected)="insertEmoji($event)"
+        overlayY="bottom"
+        overlayX="end"
+        originY="top"
+      ></emoji-selector-button>
     </div>
 
     <div class="actions">
 
-        <ng-container *ngIf="!user">
-            <button type="button" (click)="showSignIn()" mat-raised-button color="primary">{{signInLabel}}</button>
-        </ng-container>
-        <ng-container *ngIf="user">
-            <button *ngIf="canChat" [disabled]="!newMessage.message" mat-raised-button color="primary">{{sendLabel}}</button>
-            <button *ngIf="!canChat" type="button" (click)="sendPermissionError()" mat-raised-button color="primary">{{permissionDeniedLabel}}</button>
-        </ng-container>
+      @if (!user) {
+        <button type="button" (click)="showSignIn()" mat-raised-button color="primary">{{signInLabel}}</button>
+      }
+      @if (user) {
+        @if (canChat) {
+          <button [disabled]="!newMessage.message" mat-raised-button color="primary">{{sendLabel}}</button>
+        }
+        @if (!canChat) {
+          <button type="button" (click)="sendPermissionError()" mat-raised-button color="primary">{{permissionDeniedLabel}}</button>
+        }
+      }
     </div>
-</form>
+  </form>

@@ -1,306 +1,302 @@
-<ng-container *ngIf="loading">
-    <div class="loading-screen" [class.visible]="showLoadingScreen">
-        <h1>{{loadingTitle}}</h1>
-        <div>
-            <mat-spinner [diameter]="300" [strokeWidth]="2"></mat-spinner>
-        </div>
-
-        <p class="loading-message" [class.visible]="loadingMessageVisible">{{loadingMessage}}</p>
+@if (loading) {
+  <div class="loading-screen" [class.visible]="showLoadingScreen">
+    <h1>{{loadingTitle}}</h1>
+    <div>
+      <mat-spinner [diameter]="300" [strokeWidth]="2"></mat-spinner>
     </div>
-</ng-container>
-<ng-container *ngIf="!loading">
-    <div class="focused" [class.visible]="selectedMessageVisible" *ngIf="selectedMessage && !useInlineReplies">
-
-        <div>
-            <a mat-button href="javascript:;" (click)="unselectMessage()">
-                <mat-icon>arrow_back</mat-icon>
-                Latest Comments
-            </a>
-        </div>
-
-        <banta-comment
-            [message]="selectedMessage"
-            [busy]="selectedMessage.transientState.liking"
-            [mine]="user?.id === selectedMessage.user?.id"
-            [permissions]="source?.permissions"
-            [showReplyAction]="false"
-            [editing]="selectedMessage.transientState.editing"
-            [maxLength]="maxCommentLength"
+    <p class="loading-message" [class.visible]="loadingMessageVisible">{{loadingMessage}}</p>
+  </div>
+}
+@if (!loading) {
+  @if (selectedMessage && !useInlineReplies) {
+    <div class="focused" [class.visible]="selectedMessageVisible">
+      <div>
+        <a mat-button href="javascript:;" (click)="unselectMessage()">
+          <mat-icon>arrow_back</mat-icon>
+          Latest Comments
+        </a>
+      </div>
+      <banta-comment
+        [message]="selectedMessage"
+        [busy]="selectedMessage.transientState.liking"
+        [mine]="user?.id === selectedMessage.user?.id"
+        [permissions]="source?.permissions"
+        [showReplyAction]="false"
+        [editing]="selectedMessage.transientState.editing"
+        [maxLength]="maxCommentLength"
+        [genericAvatarUrl]="genericAvatarUrl"
+        [readonly]="source?.readonly"
+        (editStarted)="startEditing(selectedMessage)"
+        (editEnded)="selectedMessage.transientState.editing = false"
+        (edited)="saveEdit(selectedMessage, $event)"
+        (userSelected)="selectMessageUser(selectedMessage)"
+        (avatarSelected)="selectAvatar($event)"
+        (usernameSelected)="selectUsername($event)"
+        (liked)="likeMessage(source, selectedMessage)"
+        (unliked)="unlikeMessage(source, selectedMessage)"
+        (reported)="reportMessage(selectedMessage)"
+        (pinned)="pinMessage(source, selectedMessage, $event.options)"
+        (unpinned)="unpinMessage(source, selectedMessage)"
+        (selected)="toggleSelectedMessage(selectedMessage)"
+        (shared)="shareMessage($event)"
+        (deleted)="deleteMessage(selectedMessage)"
+      ></banta-comment>
+      <div class="replies">
+        @if (!selectedMessageThread) {
+          <div class="loading">
+            <mat-spinner></mat-spinner>
+          </div>
+        }
+        @if (selectedMessageThread) {
+          <banta-comment-view
+            class="replies"
+            #threadView
+            [source]="selectedMessageThread"
+            [allowReplies]="false"
+            [fixedHeight]="false"
+            [showEmptyState]="true"
+            emptyStateMessage="Be the first to reply!"
+            [newestLast]="true"
             [genericAvatarUrl]="genericAvatarUrl"
-            [readonly]="source?.readonly"
-            (editStarted)="startEditing(selectedMessage)"
-            (editEnded)="selectedMessage.transientState.editing = false"
-            (edited)="saveEdit(selectedMessage, $event)"
-            (userSelected)="selectMessageUser(selectedMessage)"
-            (avatarSelected)="selectAvatar($event)"
+            (liked)="likeMessage(selectedMessageThread, $event)"
+            (unliked)="unlikeMessage(selectedMessageThread, $event)"
+            (pinned)="pinMessage(selectedMessageThread, $event.message, $event.options)"
+            (unpinned)="unpinMessage(selectedMessageThread, $event)"
+            (messageEdited)="editMessage(selectedMessageThread, $event.message, $event.newMessage)"
+            (reported)="reportMessage($event)"
             (usernameSelected)="selectUsername($event)"
-            (liked)="likeMessage(source, selectedMessage)"
-            (unliked)="unlikeMessage(source, selectedMessage)"
-            (reported)="reportMessage(selectedMessage)"
-            (pinned)="pinMessage(source, selectedMessage, $event.options)"
-            (unpinned)="unpinMessage(source, selectedMessage)"
-            (selected)="toggleSelectedMessage(selectedMessage)"
+            (avatarSelected)="selectAvatar($event)"
             (shared)="shareMessage($event)"
-            (deleted)="deleteMessage(selectedMessage)"
-            ></banta-comment>
-
-        <div class="replies">
-
-            <ng-container *ngIf="!selectedMessageThread">
+            (deleted)="deleteMessage($event)"
+            [customMenuItems]="customMenuItems"
+          ></banta-comment-view>
+          <banta-comment-field
+            [url]="url"
+            [sendLabel]="replyLabel"
+            [sendingLabel]="sendingLabel"
+            [signingInLabel]="signingInLabel"
+            [hashtags]="hashtags"
+            [participants]="participants"
+            [readonly]="source?.readonly"
+            (signInSelected)="showSignIn()"
+            (editAvatarSelected)="showEditAvatar()"
+            [source]="selectedMessageThread"
+            [maxLength]="maxCommentLength"
+            [canComment]="source?.permissions?.canPost"
+            [signInState]="source?.signInState"
+            [signInLabel]="signInLabel"
+            [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
+            (permissionDeniedError)="handlePermissionDenied($event)"
+            [shouldInterceptMessageSend]="shouldInterceptMessageSend"
+            [user]="user"
+            [label]="postReplyLabel"
+            [submit]="sendReply"
+            [allowAttachments]="allowAttachments"
+            [genericAvatarUrl]="genericAvatarUrl"
+            >
+            <ng-container *ngTemplateOutlet="sendReplyOptionsTemplate"></ng-container>
+          </banta-comment-field>
+        }
+      </div>
+    </div>
+  }
+  <div class="main" [class.hidden]="selectedMessage && !useInlineReplies">
+    <banta-comment-field
+      [url]="url"
+      [source]="source"
+      [user]="user"
+      [sendLabel]="sendLabel"
+      [sendingLabel]="sendingLabel"
+      [signingInLabel]="signingInLabel"
+      [signInLabel]="signInLabel"
+      [signInState]="source?.signInState"
+      [canComment]="source?.permissions?.canPost"
+      [hashtags]="hashtags"
+      [participants]="participants"
+      [label]="postCommentLabel"
+      [maxLength]="maxCommentLength"
+      [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
+      [shouldInterceptMessageSend]="shouldInterceptMessageSend"
+      [submit]="sendMessage"
+      [allowAttachments]="allowAttachments"
+      [genericAvatarUrl]="genericAvatarUrl"
+      [readonly]="source?.readonly"
+      [allowServerInfoRequest]="allowServerInfoRequest"
+      (serverInfoRequested)="showServerInfo()"
+      (reconnectRequested)="reconnect()"
+      (editAvatarSelected)="showEditAvatar()"
+      (signInSelected)="showSignIn()"
+      (permissionDeniedError)="handlePermissionDenied($event)"
+      >
+    </banta-comment-field>
+    @if (serverInfoVisible) {
+      <div class="server-info">
+        <div class="server-info-header">
+          Server Info
+          <div class="spacer"></div>
+          <button mat-icon-button matTooltip="Reload" (click)="showServerInfo()">
+            <mat-icon>refresh</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Hide" (click)="serverInfoVisible = false">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        @if (serverInfoLoading) {
+          <mat-spinner />
+        } @else {
+          <pre>{{ serverInfo | json }}</pre>
+        }
+      </div>
+    }
+    <mat-menu #filterMenu="matMenu">
+      @for (filter of filterModes; track filter) {
+        <button mat-menu-item (click)="filterMode = filter">
+          {{filterModeLabels[filter]}}
+        </button>
+      }
+    </mat-menu>
+    <mat-menu #sortMenu="matMenu">
+      @for (sort of sortOrders; track sort) {
+        <button mat-menu-item (click)="sortOrder = sort">
+          {{sortOrderLabels[sort]}}
+        </button>
+      }
+    </mat-menu>
+    <div class="settings">
+      <button mat-button [matMenuTriggerFor]="filterMenu">
+        <mat-icon>filter_list</mat-icon>
+        {{filterModeLabels[filterMode]}}
+      </button>
+      <button mat-button [matMenuTriggerFor]="sortMenu">
+        <mat-icon>sort</mat-icon>
+        {{sortOrderLabels[sortOrder]}}
+      </button>
+    </div>
+    @if (loadingSharedComment) {
+      <div class="loading-comment">
+        <h1>Loading the comment you linked to...</h1>
+        <mat-spinner [diameter]="300" [strokeWidth]="2"></mat-spinner>
+        <p>
+          If there are a lot of comments, this might take awhile!
+        </p>
+      </div>
+    }
+    @if (!loadingSharedComment && lastSharedCommentID) {
+      <div class="loading-comment">
+        @if (sharedCommentMissing) {
+          <a class="close" mat-icon-button matTooltip="Close this notice" href="javascript:;" (click)="lastSharedCommentID = null">
+            <mat-icon>close</mat-icon>
+          </a>
+          <h1>
+            <mat-icon>error</mat-icon>
+            Uh oh!
+          </h1>
+          <p>The comment you linked to can't be found! It may have been removed.</p>
+        }
+        @if (!sharedCommentMissing) {
+          <a class="close" mat-icon-button matTooltip="Close this notice" href="javascript:;" (click)="lastSharedCommentID = null">
+            <mat-icon>close</mat-icon>
+          </a>
+          <button mat-button (click)="navigateToSharedComment(lastSharedCommentID)">
+            <mat-icon>move_down</mat-icon> Jump to shared comment
+          </button>
+        }
+      </div>
+    }
+    <banta-comment-view
+      #commentView
+      [class.faded]="selectedMessage && !useInlineReplies"
+      [source]="source"
+      [fixedHeight]="fixedHeight"
+      [maxMessages]="maxMessages"
+      [maxVisibleMessages]="maxVisibleMessages"
+      [genericAvatarUrl]="genericAvatarUrl"
+      [customMenuItems]="customMenuItems"
+      [holdNewMessages]="selectedMessageVisible"
+      (userSelected)="selectMessageUser($event)"
+      (sortOrderChanged)="sortOrder = $event"
+      (filterModeChanged)="filterMode = $event"
+      (selected)="toggleSelectedMessage($event)"
+      (liked)="likeMessage(source, $event)"
+      (unliked)="unlikeMessage(source, $event)"
+      (pinned)="pinMessage(source, $event.message, $event.options)"
+      (unpinned)="unpinMessage(source, $event)"
+      (messageEdited)="editMessage(source, $event.message, $event.newMessage)"
+      (reported)="reportMessage($event)"
+      (usernameSelected)="selectUsername($event)"
+      (avatarSelected)="selectAvatar($event)"
+      (shared)="shareMessage($event)"
+      [selectedMessage]="selectedMessage"
+      (deleted)="deleteMessage($event)"
+      >
+      <div class="inline-replies" *bantaInlineReplies>
+        @if (selectedMessage) {
+          <div class="focused" [class.visible]="selectedMessageVisible">
+            <div class="replies">
+              @if (!selectedMessageThread) {
                 <div class="loading">
-                    <mat-spinner></mat-spinner>
+                  <mat-spinner></mat-spinner>
                 </div>
-            </ng-container>
-
-            <ng-container *ngIf="selectedMessageThread">
+              }
+              @if (selectedMessageThread) {
                 <banta-comment-view
-                    class="replies"
-                    #threadView
-                    [source]="selectedMessageThread"
-                    [allowReplies]="false"
-                    [fixedHeight]="false"
-                    [showEmptyState]="true"
-                    emptyStateMessage="Be the first to reply!"
-                    [newestLast]="true"
-                    [genericAvatarUrl]="genericAvatarUrl"
-                    (liked)="likeMessage(selectedMessageThread, $event)"
-                    (unliked)="unlikeMessage(selectedMessageThread, $event)"
-                    (pinned)="pinMessage(selectedMessageThread, $event.message, $event.options)"
-                    (unpinned)="unpinMessage(selectedMessageThread, $event)"
-                    (messageEdited)="editMessage(selectedMessageThread, $event.message, $event.newMessage)"
-                    (reported)="reportMessage($event)"
-                    (usernameSelected)="selectUsername($event)"
-                    (avatarSelected)="selectAvatar($event)"
-                    (shared)="shareMessage($event)"
-                    (deleted)="deleteMessage($event)"
-                    [customMenuItems]="customMenuItems"
-                    ></banta-comment-view>
-
-                <banta-comment-field
+                  [source]="selectedMessageThread"
+                  [allowReplies]="false"
+                  [fixedHeight]="false"
+                  [showEmptyState]="true"
+                  emptyStateMessage="Be the first to reply!"
+                  [newestLast]="true"
+                  [enableHoldOnClick]="false"
+                  [holdNewMessages]="replyFieldFocused"
+                  [genericAvatarUrl]="genericAvatarUrl"
+                  (liked)="likeMessage(selectedMessageThread, $event)"
+                  (unliked)="unlikeMessage(selectedMessageThread, $event)"
+                  (pinned)="pinMessage(selectedMessageThread, $event.message, $event.options)"
+                  (unpinned)="unpinMessage(selectedMessageThread, $event)"
+                  (messageEdited)="editMessage(selectedMessageThread, $event.message, $event.newMessage)"
+                  (reported)="reportMessage($event)"
+                  (usernameSelected)="selectUsername($event)"
+                  (avatarSelected)="selectAvatar($event)"
+                  (shared)="shareMessage($event)"
+                  (deleted)="deleteMessage($event)"
+                  />
+                  <banta-comment-field
                     [url]="url"
                     [sendLabel]="replyLabel"
                     [sendingLabel]="sendingLabel"
                     [signingInLabel]="signingInLabel"
                     [hashtags]="hashtags"
                     [participants]="participants"
-                    [readonly]="source?.readonly"
                     (signInSelected)="showSignIn()"
-                    (editAvatarSelected)="showEditAvatar()"
-                    [source]="selectedMessageThread"
                     [maxLength]="maxCommentLength"
-                    [canComment]="source?.permissions?.canPost"
+                    [source]="selectedMessageThread"
                     [signInState]="source?.signInState"
+                    [canComment]="source?.permissions?.canPost"
                     [signInLabel]="signInLabel"
                     [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
-                    (permissionDeniedError)="handlePermissionDenied($event)"
+                    [readonly]="source?.readonly"
                     [shouldInterceptMessageSend]="shouldInterceptMessageSend"
                     [user]="user"
                     [label]="postReplyLabel"
                     [submit]="sendReply"
                     [allowAttachments]="allowAttachments"
                     [genericAvatarUrl]="genericAvatarUrl"
+                    (permissionDeniedError)="handlePermissionDenied($event)"
+                    (editAvatarSelected)="showEditAvatar()"
+                    (focusChange)="replyFieldFocused = $event"
                     >
                     <ng-container *ngTemplateOutlet="sendReplyOptionsTemplate"></ng-container>
-                </banta-comment-field>
-            </ng-container>
-        </div>
-    </div>
-
-    <div class="main" [class.hidden]="selectedMessage && !useInlineReplies">
-        <banta-comment-field
-            [url]="url"
-            [source]="source"
-            [user]="user"
-            [sendLabel]="sendLabel"
-            [sendingLabel]="sendingLabel"
-            [signingInLabel]="signingInLabel"
-            [signInLabel]="signInLabel"
-            [signInState]="source?.signInState"
-            [canComment]="source?.permissions?.canPost"
-            [hashtags]="hashtags"
-            [participants]="participants"
-            [label]="postCommentLabel"
-            [maxLength]="maxCommentLength"
-            [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
-            [shouldInterceptMessageSend]="shouldInterceptMessageSend"
-            [submit]="sendMessage"
-            [allowAttachments]="allowAttachments"
-            [genericAvatarUrl]="genericAvatarUrl"
-            [readonly]="source?.readonly"
-            [allowServerInfoRequest]="allowServerInfoRequest"
-            (serverInfoRequested)="showServerInfo()"
-            (reconnectRequested)="reconnect()"
-            (editAvatarSelected)="showEditAvatar()"
-            (signInSelected)="showSignIn()"
-            (permissionDeniedError)="handlePermissionDenied($event)"
-            >
-        </banta-comment-field>
-
-        @if (serverInfoVisible) {
-            <div class="server-info">
-                <div class="server-info-header">
-                    Server Info
-                    <div class="spacer"></div>
-                    <button mat-icon-button matTooltip="Reload" (click)="showServerInfo()">
-                        <mat-icon>refresh</mat-icon>
-                    </button>
-                    <button mat-icon-button matTooltip="Hide" (click)="serverInfoVisible = false">
-                        <mat-icon>close</mat-icon>
-                    </button>
-                </div>
-                @if (serverInfoLoading) {
-                    <mat-spinner />
-                } @else {
-                    <pre>{{ serverInfo | json }}</pre>
+                  </banta-comment-field>
                 }
-            </div>
-        }
-        <mat-menu #filterMenu="matMenu">
-            <button mat-menu-item *ngFor="let filter of filterModes" (click)="filterMode = filter">
-                {{filterModeLabels[filter]}}
-            </button>
-        </mat-menu>
-        <mat-menu #sortMenu="matMenu">
-            <button mat-menu-item *ngFor="let sort of sortOrders" (click)="sortOrder = sort">
-                {{sortOrderLabels[sort]}}
-            </button>
-        </mat-menu>
-
-        <div class="settings">
-            <button mat-button [matMenuTriggerFor]="filterMenu">
-                <mat-icon>filter_list</mat-icon>
-                {{filterModeLabels[filterMode]}}
-            </button>
-            <button mat-button [matMenuTriggerFor]="sortMenu">
-                <mat-icon>sort</mat-icon>
-                {{sortOrderLabels[sortOrder]}}
-            </button>
-        </div>
-
-        <div class="loading-comment" *ngIf="loadingSharedComment">
-            <h1>Loading the comment you linked to...</h1>
-            <mat-spinner [diameter]="300" [strokeWidth]="2"></mat-spinner>
-            <p>
-                If there are a lot of comments, this might take awhile!
-            </p>
-        </div>
-        <div class="loading-comment" *ngIf="!loadingSharedComment && lastSharedCommentID">
-            <ng-container *ngIf="sharedCommentMissing">
-
-                <a class="close" mat-icon-button matTooltip="Close this notice" href="javascript:;" (click)="lastSharedCommentID = null">
-                    <mat-icon>close</mat-icon>
-                </a>
-
-                <h1>
-                    <mat-icon>error</mat-icon>
-                    Uh oh!
-                </h1>
-
-                <p>The comment you linked to can't be found! It may have been removed.</p>
-            </ng-container>
-            <ng-container *ngIf="!sharedCommentMissing">
-                <a class="close" mat-icon-button matTooltip="Close this notice" href="javascript:;" (click)="lastSharedCommentID = null">
-                    <mat-icon>close</mat-icon>
-                </a>
-                <button mat-button (click)="navigateToSharedComment(lastSharedCommentID)">
-                    <mat-icon>move_down</mat-icon> Jump to shared comment
-                </button>
-            </ng-container>
-        </div>
-
-        <banta-comment-view
-            #commentView
-            [class.faded]="selectedMessage && !useInlineReplies"
-            [source]="source"
-            [fixedHeight]="fixedHeight"
-            [maxMessages]="maxMessages"
-            [maxVisibleMessages]="maxVisibleMessages"
-            [genericAvatarUrl]="genericAvatarUrl"
-            [customMenuItems]="customMenuItems"
-            [holdNewMessages]="selectedMessageVisible"
-            (userSelected)="selectMessageUser($event)"
-            (sortOrderChanged)="sortOrder = $event"
-            (filterModeChanged)="filterMode = $event"
-            (selected)="toggleSelectedMessage($event)"
-            (liked)="likeMessage(source, $event)"
-            (unliked)="unlikeMessage(source, $event)"
-            (pinned)="pinMessage(source, $event.message, $event.options)"
-            (unpinned)="unpinMessage(source, $event)"
-            (messageEdited)="editMessage(source, $event.message, $event.newMessage)"
-            (reported)="reportMessage($event)"
-            (usernameSelected)="selectUsername($event)"
-            (avatarSelected)="selectAvatar($event)"
-            (shared)="shareMessage($event)"
-            [selectedMessage]="selectedMessage"
-            (deleted)="deleteMessage($event)"
-            >
-            <div class="inline-replies" *bantaInlineReplies>
-              <div class="focused" [class.visible]="selectedMessageVisible" *ngIf="selectedMessage">
-                  <div class="replies">
-
-                      <ng-container *ngIf="!selectedMessageThread">
-                          <div class="loading">
-                              <mat-spinner></mat-spinner>
-                          </div>
-                      </ng-container>
-
-                      <ng-container *ngIf="selectedMessageThread">
-                          <banta-comment-view
-                              [source]="selectedMessageThread"
-                              [allowReplies]="false"
-                              [fixedHeight]="false"
-                              [showEmptyState]="true"
-                              emptyStateMessage="Be the first to reply!"
-                              [newestLast]="true"
-                              [enableHoldOnClick]="false"
-                              [holdNewMessages]="replyFieldFocused"
-                              [genericAvatarUrl]="genericAvatarUrl"
-                              (liked)="likeMessage(selectedMessageThread, $event)"
-                              (unliked)="unlikeMessage(selectedMessageThread, $event)"
-                              (pinned)="pinMessage(selectedMessageThread, $event.message, $event.options)"
-                              (unpinned)="unpinMessage(selectedMessageThread, $event)"
-                              (messageEdited)="editMessage(selectedMessageThread, $event.message, $event.newMessage)"
-                              (reported)="reportMessage($event)"
-                              (usernameSelected)="selectUsername($event)"
-                              (avatarSelected)="selectAvatar($event)"
-                              (shared)="shareMessage($event)"
-                              (deleted)="deleteMessage($event)"
-                              />
-
-                          <banta-comment-field
-                              [url]="url"
-                              [sendLabel]="replyLabel"
-                              [sendingLabel]="sendingLabel"
-                              [signingInLabel]="signingInLabel"
-                              [hashtags]="hashtags"
-                              [participants]="participants"
-                              (signInSelected)="showSignIn()"
-                              [maxLength]="maxCommentLength"
-                              [source]="selectedMessageThread"
-                              [signInState]="source?.signInState"
-                              [canComment]="source?.permissions?.canPost"
-                              [signInLabel]="signInLabel"
-                              [permissionDeniedLabel]="source?.permissions?.canPostErrorMessage || permissionDeniedLabel"
-                              [readonly]="source?.readonly"
-                              [shouldInterceptMessageSend]="shouldInterceptMessageSend"
-                              [user]="user"
-                              [label]="postReplyLabel"
-                              [submit]="sendReply"
-                              [allowAttachments]="allowAttachments"
-                              [genericAvatarUrl]="genericAvatarUrl"
-                              (permissionDeniedError)="handlePermissionDenied($event)"
-                              (editAvatarSelected)="showEditAvatar()"
-                              (focusChange)="replyFieldFocused = $event"
-                              >
-                              <ng-container *ngTemplateOutlet="sendReplyOptionsTemplate"></ng-container>
-                          </banta-comment-field>
-                      </ng-container>
-                  </div>
               </div>
             </div>
-        </banta-comment-view>
+          }
+        </div>
+      </banta-comment-view>
     </div>
-    <div class="reconnecting" *ngIf="connectionState === 'lost'">
+    @if (connectionState === 'lost') {
+      <div class="reconnecting">
         <strong>Connection to Live Comments lost.</strong> Reconnecting...
-    </div>
-</ng-container>
+      </div>
+    }
+  }

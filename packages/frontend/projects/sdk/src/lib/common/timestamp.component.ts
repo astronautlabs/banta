@@ -4,13 +4,17 @@ import { TimerPool } from "../../lib/common/timer-pool.service";
 @Component({
     selector: 'banta-timestamp',
     template: `
-        <span *ngIf="showAbsolute" [title]="value | date : 'short'">
+        @if (showAbsolute) {
+          <span [title]="value | date : 'short'">
             {{value | date : 'shortDate'}}
-        </span>
-        <span *ngIf="!showAbsolute" [title]="value | date : 'short'">
+          </span>
+        }
+        @if (!showAbsolute) {
+          <span [title]="value | date : 'short'">
             {{relative}}
-        </span>
-    `,
+          </span>
+        }
+        `,
     styles: [``],
     standalone: false
 })

@@ -1,53 +1,65 @@
 <h1>Comments</h1>
 
 <div class="property">
-    <mat-form-field appearance="outline" floatLabel="always">
-        <mat-label>Topic ID</mat-label>
-        <input matInput type="text" [(ngModel)]="topicID" (change)="persistSettings()" />
-    </mat-form-field>
+  <mat-form-field appearance="outline" floatLabel="always">
+    <mat-label>Topic ID</mat-label>
+    <input matInput type="text" [(ngModel)]="topicID" (change)="persistSettings()" />
+  </mat-form-field>
 </div>
 <div class="property-row">
-    <div class="property">
-        <mat-form-field appearance="outline" floatLabel="always">
-            <mat-label>Max Visible Messages</mat-label>
-            <input matInput type="number" [(ngModel)]="maxVisibleMessages" (change)="persistSettings()" />
-        </mat-form-field>
-    </div>
-    <div class="property">
-        <mat-form-field appearance="outline" floatLabel="always">
-            <mat-label>Max Messages</mat-label>
-            <input matInput type="number" [(ngModel)]="maxMessages" (change)="persistSettings()" />
-        </mat-form-field>
-    </div>
-    <div class="property">
-        <mat-form-field appearance="outline" floatLabel="always">
-            <mat-label>Jump to Comment</mat-label>
-            <input matInput type="string" [(ngModel)]="jumpedCommentId" (change)="persistSettings()" />
-        </mat-form-field>
-    </div>
+  <div class="property">
+    <mat-form-field appearance="outline" floatLabel="always">
+      <mat-label>Max Visible Messages</mat-label>
+      <input matInput type="number" [(ngModel)]="maxVisibleMessages" (change)="persistSettings()" />
+    </mat-form-field>
+  </div>
+  <div class="property">
+    <mat-form-field appearance="outline" floatLabel="always">
+      <mat-label>Max Messages</mat-label>
+      <input matInput type="number" [(ngModel)]="maxMessages" (change)="persistSettings()" />
+    </mat-form-field>
+  </div>
+  <div class="property">
+    <mat-form-field appearance="outline" floatLabel="always">
+      <mat-label>Jump to Comment</mat-label>
+      <input matInput type="string" [(ngModel)]="jumpedCommentId" (change)="persistSettings()" />
+    </mat-form-field>
+  </div>
 </div>
 
 <div class="property">
-    <label>Message Count:</label>
-    <code>{{messageCount === undefined ? 'Unknown' : messageCount}}</code>
+  <label>Message Count:</label>
+  <code>{{messageCount === undefined ? 'Unknown' : messageCount}}</code>
 </div>
 
 <a href="javascript:;" (click)="goFullScreen()">Fullscreen</a> |
 
-<a *ngIf="hidden" href="javascript:;" (click)="hidden = false">Show</a> 
-<a *ngIf="!hidden" href="javascript:;" (click)="hidden = true">Hide</a> 
+@if (hidden) {
+  <a href="javascript:;" (click)="hidden = false">Show</a>
+}
+@if (!hidden) {
+  <a href="javascript:;" (click)="hidden = true">Hide</a>
+}
 
 |
 
-<a *ngIf="!isSmallMode" href="javascript:;" (click)="isSmallMode = true">Small Mode</a>
-<a *ngIf="isSmallMode" href="javascript:;" (click)="isSmallMode = false">Wide Mode</a>
+@if (!isSmallMode) {
+  <a href="javascript:;" (click)="isSmallMode = true">Small Mode</a>
+}
+@if (isSmallMode) {
+  <a href="javascript:;" (click)="isSmallMode = false">Wide Mode</a>
+}
 
-| 
+|
 
-<a *ngIf="useInlineReplies" href="javascript:;" (click)="useInlineReplies = false">Use Focused Replies</a>
-<a *ngIf="!useInlineReplies" href="javascript:;" (click)="useInlineReplies = true">Use Inline Replies</a>
+@if (useInlineReplies) {
+  <a href="javascript:;" (click)="useInlineReplies = false">Use Focused Replies</a>
+}
+@if (!useInlineReplies) {
+  <a href="javascript:;" (click)="useInlineReplies = true">Use Inline Replies</a>
+}
 
-| 
+|
 
 <a href="javascript:;" (click)="dumpComponent()">Dump Component</a>
 |
@@ -63,46 +75,52 @@
 <br/>
 
 <div class="fullscreen" #fullscreenElement>
-    <a *ngIf="isFullScreen" href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>
+  @if (isFullScreen) {
+    <a href="javascript:;" (click)="exitFullScreen()">Exit Fullscreen</a>
+  }
+  @if (!hidden) {
     <banta-comments
-        *ngIf="!hidden"
-        #comments
-        topicID="{{topicID}}_comments"
-        [customMenuItems]="customMenuItems"
-        [maxMessages]="maxMessages"
-        [maxVisibleMessages]="maxVisibleMessages"
-        [initialMessageCount]="20"
-        [useInlineReplies]="useInlineReplies"
-        [allowServerInfoRequest]="true"
-        (usernameSelected)="alert('Username was selected')"
-        (userSelected)="alert('User (avatar or username) was selected')"
-        (avatarSelected)="alert('Avatar was selected')"
-        (reported)="reportedMessage($event)"
-        (shared)="sharedMessage($event)"
-        [allowAttachments]="true"
-        (permissionDeniedError)="permissionDenied($event)"
-        >
-
-        <div *bantaReplySendOptions title="This is an example customization">Don't forget to be nice!</div>
+      #comments
+      topicID="{{topicID}}_comments"
+      [customMenuItems]="customMenuItems"
+      [maxMessages]="maxMessages"
+      [maxVisibleMessages]="maxVisibleMessages"
+      [initialMessageCount]="20"
+      [useInlineReplies]="useInlineReplies"
+      [allowServerInfoRequest]="true"
+      (usernameSelected)="alert('Username was selected')"
+      (userSelected)="alert('User (avatar or username) was selected')"
+      (avatarSelected)="alert('Avatar was selected')"
+      (reported)="reportedMessage($event)"
+      (shared)="sharedMessage($event)"
+      [allowAttachments]="true"
+      (permissionDeniedError)="permissionDenied($event)"
+      >
+      <div *bantaReplySendOptions title="This is an example customization">Don't forget to be nice!</div>
     </banta-comments>
+  }
 </div>
 
 <div class="custom-theme-editor">
-    <h1>Custom Theme</h1>
-    <a *ngIf="useCustomTheme" href="javascript:;" (click)="useCustomTheme = false">Use Default Theme</a>
-    <a *ngIf="!useCustomTheme" href="javascript:;" (click)="useCustomTheme = true">Use Custom Theme</a>
-    
-    <p>Banta is highly themeable. Try it below:</p>
-    <textarea class="custom-theme" [(ngModel)]="customTheme"></textarea>
+  <h1>Custom Theme</h1>
+  @if (useCustomTheme) {
+    <a href="javascript:;" (click)="useCustomTheme = false">Use Default Theme</a>
+  }
+  @if (!useCustomTheme) {
+    <a href="javascript:;" (click)="useCustomTheme = true">Use Custom Theme</a>
+  }
+
+  <p>Banta is highly themeable. Try it below:</p>
+  <textarea class="custom-theme" [(ngModel)]="customTheme"></textarea>
 </div>
 <ng-template cdkPortal #selectorPanelTemplate="cdkPortal">
-    <div class="share-popup">
-        <p>
-            Sharing is handled by the host application.
-        </p>
+  <div class="share-popup">
+    <p>
+      Sharing is handled by the host application.
+    </p>
 
-        This is an example of how you might do a popout overlay.
+    This is an example of how you might do a popout overlay.
 
-        The comment ID is: {{sharedComment?.id}}
-    </div>
+    The comment ID is: {{sharedComment?.id}}
+  </div>
 </ng-template>
