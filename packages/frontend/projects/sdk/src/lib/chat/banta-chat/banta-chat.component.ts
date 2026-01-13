@@ -159,8 +159,18 @@ export class BantaChatComponent {
     }
 
     async upvote(message : ChatMessage) {
-        await this.source.likeMessage(message.id);
-        this._upvoted.next(message);
+        const isAnonymous = !this.user;
+
+        if (isAnonymous) {
+            this.showSignIn();
+        }
+
+        try {
+            await this.source.likeMessage(message.id);
+            this._upvoted.next(message);
+        } catch (e) {
+            console.error('error while liking message', e);
+        }
     }
 
     get canChat() {
