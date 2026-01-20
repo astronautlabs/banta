@@ -16,7 +16,7 @@
     // button to not cause a scroll bar (because its
     // pos absolute, see .nav)
 
-    padding: 0.5em 1em 3em 0.5em;
+    padding: 0.5em 1em 2.5em 0.5em;
     opacity: 1;
     transition: 500ms opacity ease-in-out;
     position: relative;
@@ -55,7 +55,7 @@
 
 ::ng-deep .banta-empty-state {
     text-align: center;
-    margin: 3em;
+    margin: 0.2em 3em 0.2em 3em;
     color: #666;
 }
 
