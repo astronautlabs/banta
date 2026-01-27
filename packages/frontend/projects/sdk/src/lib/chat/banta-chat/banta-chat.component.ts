@@ -1,4 +1,5 @@
 import { Component, Input, Output, ViewChild, ElementRef } from "@angular/core";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { Subject, Observable, Subscription } from 'rxjs';
 
 import { User, ChatMessage, NewMessageForm } from '@banta/common';
@@ -17,7 +18,8 @@ import { ChatSourceBase } from "../../chat-source-base";
 })
 export class BantaChatComponent {
     constructor(
-        private backend : ChatBackendBase
+        private backend : ChatBackendBase,
+        private matSnackBar: MatSnackBar
     ) {
     }
 
@@ -120,11 +122,40 @@ export class BantaChatComponent {
 
     showEmojiPanel = false;
 
+    private handleBackendExceptionAsSnack(e: Error, prefix: string = '') {
+        try {
+            this.handleBackendException(e, prefix);
+        } catch (e) {
+            console.log(`[Banta/Comments] Showed user error (via snack): '${e.message}'`);
+            console.error(e);
+
+            this.matSnackBar.open(e.message, undefined, { duration: 3000 });
+        }
+    }
+
+    private handleBackendException(e: Error, prefix: string = '') {
+        let errorMessage = e.message;
+
+        if (errorMessage.startsWith('permission-denied|')) {
+            errorMessage = errorMessage.replace(/^permission-denied\|/, '');
+
+            if (errorMessage.startsWith(`app-handle|`)) {
+                // If this is an error during authorizeAction on the backend, pass control to the user-provided
+                // permission-denied handler.
+
+                this.sendPermissionError(errorMessage.replace(/^app-handle\|/, ''));
+                return;
+            }
+        }
+
+        throw new Error(`${prefix}${errorMessage}`);
+    }
+
     showSignIn() {
         this._signInSelected.next();
     }
 
-    sendPermissionError(message?: string) {
+    sendPermissionError(message: string) {
         this._permissionDeniedError.next(message);
     }
 
@@ -159,8 +190,23 @@ export class BantaChatComponent {
     }
 
     async upvote(message : ChatMessage) {
-        await this.source.likeMessage(message.id);
+        if (!this.user) {
+            this.showSignIn();
+            return;
+        }
+
         this._upvoted.next(message);
+        message.transientState ??= {};
+        message.transientState.liking = true;
+
+        try {
+            await this.source.likeMessage(message.id);
+        } catch (e) {
+            this.handleBackendExceptionAsSnack(e, 'Could not like this message: ');
+        } finally {
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 250));
+            message.transientState.liking = false;
+        }
     }
 
     get canChat() {

@@ -8,6 +8,7 @@ import { EmojiModule } from '../emoji';
 import { LiveChatMessageComponent } from './live-chat-message.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 const COMPONENTS = [
     ChatMessageComponent,
@@ -23,6 +24,7 @@ const COMPONENTS = [
         FormsModule,
         MatIconModule,
         MatButtonModule,
+        MatSnackBarModule,
         EmojiModule
     ],
     exports: COMPONENTS
