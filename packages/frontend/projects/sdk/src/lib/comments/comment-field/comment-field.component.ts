@@ -37,6 +37,10 @@ export class CommentFieldComponent {
         }
     }
 
+    ngOnDestroy() {
+        this.autocompleteEl.nativeElement.remove();
+    }
+
     //#region Source
 
     private _source : ChatSourceBase;
