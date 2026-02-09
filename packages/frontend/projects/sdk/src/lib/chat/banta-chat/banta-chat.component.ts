@@ -155,7 +155,7 @@ export class BantaChatComponent {
         this._signInSelected.next();
     }
 
-    sendPermissionError(message: string) {
+    sendPermissionError(message?: string) {
         this._permissionDeniedError.next(message);
     }
 
