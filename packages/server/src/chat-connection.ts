@@ -76,6 +76,9 @@ export class ChatConnection extends SocketRPC {
             }
         }
 
+        if (!user) {
+            throw new Error(`Could not authenticate user (validateToken returned null)`);
+        }
         user.ipAddress = this.ipAddress;
         user.userAgent = this.userAgent;
 
