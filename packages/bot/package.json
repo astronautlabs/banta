@@ -22,7 +22,6 @@
     "@alterior/runtime": "^3.9.0",
     "@alterior/web-server": "^3.9.0",
     "@banta/common": "^4.0.5",
-    "jsonwebtoken": "^8.5.1",
     "rxjs": "^7.8.1",
     "uuid": "^3.3.3",
     "zone.js": "^0.14.3"
@@ -31,7 +30,6 @@
     "@alterior/platform-nodejs": "^3.6.4",
     "@astronautlabs/jwt": "^1.1.0",
     "@types/express-serve-static-core": "^4.17.24",
-    "@types/jsonwebtoken": "^8.3.5",
     "@types/sanitize-html": "^2.6.2",
     "@types/serve-static": "^1.13.10",
     "@types/uuid": "^3.4.6",
