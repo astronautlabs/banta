@@ -5,10 +5,9 @@
     "declarationMap": true,
     "declaration": true,
     "inlineSources": true,
-    "types": [],
-    "lib": [
+    "types": [
       "dom",
-      "es2020"
+      "es2022"
     ]
   },
   "angularCompilerOptions": {
