@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FeaturesGridComponent } from './features-grid/features-grid.component';
 import { PricingGridComponent } from './pricing-grid/pricing-grid.component';
-import { MaterialModule } from 'src/material.module';
+import { MaterialModule } from '../material.module';
 
 const COMPONENTS = [
     PricingGridComponent,

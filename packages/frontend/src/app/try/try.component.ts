@@ -4,7 +4,7 @@ import { Component, ElementRef, HostBinding, inject, ViewChild } from '@angular/
 import { ActivatedRoute } from '@angular/router';
 import {ChatMessage} from "@banta/common";
 import { BantaCommentsComponent, ChatBackendBase } from '@banta/sdk';
-import { MessageMenuItem } from 'projects/sdk/src/lib';
+import { MessageMenuItem } from '@banta/sdk';
 
 const DEFAULT_CUSTOM_THEME = `
 .use-custom-theme banta-comment-view .banta-message-container {
@@ -70,7 +70,7 @@ export class TryComponent {
     messageCount: number;
     useInlineReplies = true;
     hidden = false;
-    
+
     sharedComment: ChatMessage;
 
     _customTheme = DEFAULT_CUSTOM_THEME;
@@ -86,7 +86,7 @@ export class TryComponent {
 
     @HostBinding('class.small-mode')
     isSmallMode = false;
-    
+
     @HostBinding('class.use-custom-theme')
     useCustomTheme = false;
 
@@ -106,9 +106,9 @@ export class TryComponent {
     exitFullScreen() {
         document.exitFullscreen();
     }
-    
+
     goFullScreen() {
-        
+
         let element = this.fullscreenElement.nativeElement;
 
         if (element.requestFullscreen)
@@ -145,7 +145,7 @@ export class TryComponent {
             this.jumpedCommentId = qp.comment;
 
             this.newTopicID = this.topicID;
-            
+
             this.messageCount = await this.chatBackend.getSourceCountForTopic(this.topicID);
             console.log(this.messageCount);
         });
@@ -179,7 +179,7 @@ export class TryComponent {
                     autoClose: true
                 })
             });
-            
+
             overlayRef.backdropClick().subscribe(() => {
                 overlayRef.detach();
             })

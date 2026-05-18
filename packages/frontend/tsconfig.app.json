@@ -5,7 +5,7 @@
         "types": [],
         "paths": {
             "@banta/sdk": [
-                "projects/sdk/src/public-api"
+                "./projects/sdk/src/public-api"
             ]
         }
     },

@@ -1,9 +1,10 @@
-@import './theme.scss';
+@use './theme.scss';
+@use "./material-overrides.scss";
 
 * {
     font-family: 'Montserrat';
     box-sizing: border-box;
-    
+
     scrollbar-color: #666 black;
     scrollbar-arrow-color: white;
 }
@@ -22,10 +23,8 @@
         background-color: #999;
         color: white;
     }
-    
-}
 
-@import "./material-overrides.scss";
+}
 
 body {
     font-family: sans-serif;
@@ -77,7 +76,7 @@ a {
             color: white;
         }
     }
-    
+
     a {
         color: #51cdb5;
     }

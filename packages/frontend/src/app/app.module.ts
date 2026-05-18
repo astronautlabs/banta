@@ -7,17 +7,16 @@ import { HomeComponent } from './home/home.component';
 import { MaterialModule } from '../material.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BantaSdkModule } from '@banta/sdk';
-import { SaasModule } from 'src/saas/saas.module';
+import { SaasModule } from '../saas/saas.module';
 import { NotFoundComponent } from './not-found.component';
 import { SourceComponent } from './source/source.component';
 import { TryComponent } from './try/try.component';
 import { DevComponent } from './dev/dev.component';
 
-// KEEP [see below]
+// KEEP [for easy use of the MockBackend, see below]
 import { MockBackend } from './mock-backend';
 import { TryChatComponent } from './try-chat/try-chat.component';
 import { CDNProvider, DataURICDNProvider } from '@banta/common';
-import { ChatBackendBase } from 'projects/sdk/src/lib';
 import { environment } from '../environments/environment';
 import { provideNativeDateAdapter } from '@angular/material/core';
 

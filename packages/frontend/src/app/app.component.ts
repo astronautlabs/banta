@@ -2,7 +2,7 @@ import { Component, HostBinding } from '@angular/core';
 import { User } from '@banta/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { environment } from 'src/environments/environment';
+import { environment } from '../environments/environment';
 import { ChatBackendBase } from '@banta/sdk';
 
 @Component({

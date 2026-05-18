@@ -16,8 +16,7 @@
         ],
         "paths": {
             "@banta/sdk": [
-                "dist/sdk/sdk",
-                "dist/sdk"
+                "./dist/sdk"
             ]
         },
         "useDefineForClassFields": false
