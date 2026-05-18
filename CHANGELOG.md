@@ -1,3 +1,7 @@
+# @banta/server@4.0.4
+
+- Clean up unused dependencies 
+
 # @banta/sdk@7.0.2
 
 - Clean up unused dependencies
