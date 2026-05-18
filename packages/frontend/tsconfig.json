@@ -1,28 +1,28 @@
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-    "outDir": "./dist/out-tsc",
-    "sourceMap": true,
-    "declaration": false,
-    "esModuleInterop": true,
-    "module": "es2020",
-    "moduleResolution": "bundler",
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "ES2022",
-    "lib": [
-      "es2022",
-      "dom"
-    ],
-    "paths": {
-      "@banta/sdk": [
-        "dist/sdk/sdk",
-        "dist/sdk"
-      ]
+    "compileOnSave": false,
+    "compilerOptions": {
+        "outDir": "./dist/out-tsc",
+        "sourceMap": true,
+        "declaration": false,
+        "esModuleInterop": true,
+        "module": "es2020",
+        "moduleResolution": "bundler",
+        "experimentalDecorators": true,
+        "importHelpers": true,
+        "target": "ES2022",
+        "lib": [
+            "es2022",
+            "dom"
+        ],
+        "paths": {
+            "@banta/sdk": [
+                "dist/sdk/sdk",
+                "dist/sdk"
+            ]
+        },
+        "useDefineForClassFields": false
     },
-    "useDefineForClassFields": false
-  },
-  "angularCompilerOptions": {
-    "strictTemplates": true
-  }
+    "angularCompilerOptions": {
+        "strictTemplates": true
+    }
 }

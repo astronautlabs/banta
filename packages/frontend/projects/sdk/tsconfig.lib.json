@@ -1,22 +1,22 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "outDir": "../../out-tsc/lib",
-    "declarationMap": true,
-    "declaration": true,
-    "inlineSources": true,
-    "types": [
-      "dom",
-      "es2022"
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "../../out-tsc/lib",
+        "declarationMap": true,
+        "declaration": true,
+        "inlineSources": true,
+        "types": [
+            "dom",
+            "es2022"
+        ]
+    },
+    "angularCompilerOptions": {
+        "skipTemplateCodegen": true,
+        "strictMetadataEmit": true,
+        "enableResourceInlining": true
+    },
+    "exclude": [
+        "src/test.ts",
+        "**/*.spec.ts"
     ]
-  },
-  "angularCompilerOptions": {
-    "skipTemplateCodegen": true,
-    "strictMetadataEmit": true,
-    "enableResourceInlining": true
-  },
-  "exclude": [
-    "src/test.ts",
-    "**/*.spec.ts"
-  ]
 }
