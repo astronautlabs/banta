@@ -19,7 +19,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1"
   },
-  "gitHead": "fd1f93eae0b637d9c85cef20ab5ee7d14e64f648",
+  "gitHead": "2d6f0860ed29d9589abec7c67967d6d3b9e09d10",
   "devDependencies": {
     "reflect-metadata": "^0.1.13",
     "typescript": "^4.6.3"

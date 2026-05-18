@@ -1,3 +1,7 @@
+# @banta/server@4.0.5
+
+- Update jsdom to version 29.1.1
+
 # @banta/server@4.0.4
 
 - Clean up unused dependencies 
