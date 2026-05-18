@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "target": "ES2016",
+        "module": "node16",
+        "moduleResolution": "node16",
+        "esModuleInterop": true,
+        "declaration": true,
+        "sourceMap": true
+    }
+}

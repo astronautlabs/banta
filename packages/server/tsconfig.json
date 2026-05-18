@@ -1,13 +1,6 @@
 {
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "moduleResolution": "node",
-        "declaration": true,
-        "sourceMap": true,
-        "esModuleInterop": true,
-        "module": "commonjs",
-        "target": "es2015",
         "lib": ["es2022"],
         "outDir": "./dist"
     },

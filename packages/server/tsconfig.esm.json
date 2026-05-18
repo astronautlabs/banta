@@ -3,6 +3,7 @@
     "compilerOptions": {
         "target": "ES2016",
         "module": "ESNext",
+        "moduleResolution": "bundler",
         "outDir": "dist.esm"
     }
 }
